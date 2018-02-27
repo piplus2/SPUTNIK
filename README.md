@@ -10,7 +10,13 @@
 - pull requests: https://github.com/paoloinglese/SPUTNIK/pulls
 - email contact: p.inglese14 at imperial.ac.uk
 
-## Install ##
+## Install from CRAN ##
+
+To install the CRAN package, run the command:
+
+    install.packages("SPUTNIK")
+
+## Install from source ##
 
 To install it, run the command:
 
