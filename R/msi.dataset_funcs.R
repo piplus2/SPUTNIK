@@ -73,15 +73,18 @@
                                       })
                 rm(quotients)
                 ## Normalized intensities
-                x <- tryCatch(x / rep(sc.factor, each = ncol(x)),
-                              error = function(e) {
-                                warning("Low memory. Using the slower method to calculate the normalized intensities.")
-                                for (j in 1:nrow(x))
-                                {
-                                  x[j, ] <- x[j, ] / sc.factor[j]
-                                }
-                                return(x)
-                              })
+                x <- tryCatch(tryCatch({
+                  sc.factor.mat <- sapply(sc.factor, function(z) rep(z, ncol(x)))
+                  x / t(sc.factor.mat)
+                },
+                error = function(e) {
+                  warning("Low memory. Using the slower method to calculate the normalized intensities.")
+                  for (j in 1:nrow(x))
+                  {
+                    x[j, ] <- x[j, ] / sc.factor[j]
+                  }
+                  return(x)
+                })
                 x[is.na(x)] <- 0
                 x
               })
