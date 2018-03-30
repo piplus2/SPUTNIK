@@ -73,7 +73,7 @@
                                       })
                 rm(quotients)
                 ## Normalized intensities
-                x <- tryCatch(tryCatch({
+                x <- tryCatch({
                   sc.factor.mat <- sapply(sc.factor, function(z) rep(z, ncol(x)))
                   x / t(sc.factor.mat)
                 },
