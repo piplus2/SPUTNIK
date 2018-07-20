@@ -93,9 +93,7 @@ globalPeaksFilter <- function(msiData,
     ## First fix the sign of the measure
     if (min(r) < 0)
     {
-      r <- apply(r, 2, function(z) {
-        return( (z - min(z)) / (max(z) - min(z)) )
-      })
+      r <- (r - min(r)) / (max(r) - min(r))
     }
     r <- 2 * r - 1
   }
