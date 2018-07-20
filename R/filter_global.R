@@ -69,12 +69,15 @@ globalPeaksFilter <- function(msiData,
     cat("Calculating the similarity values...\n")
 
   ## Use NMI only if the reference image is binary
-  if (length(unique(c(referenceImage@values))) != 2)
+  if (method == 'nmi')
   {
-    cat('nmi can be only used with binary reference images.\n')
-    stop()
+    if (length(unique(c(referenceImage@values))) != 2)
+    {
+      cat('nmi can be only used with binary reference images.\n')
+      stop()
+    }
   }
-  
+
   r <- switch(method,
               "pearson" = apply(msiData@matrix, 2, function(z)
                 cor(c(referenceImage@values), z, method = method)),
