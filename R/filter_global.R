@@ -83,7 +83,7 @@ globalPeaksFilter <- function(msiData,
               "ssim" = apply(msiData@matrix, 2, function(z)
                 SSIM(c(referenceImage@values), z)),
               "nmi" = apply(msiData@matrix, 2, function(z)
-                NMI(c(referenceImage@values), z))
+                NMI(z, c(referenceImage@values)))
               )
 
   names(r) <- msiData@mz
