@@ -228,7 +228,7 @@ SSIM <- function(x, y, numBreaks = 256)
 #' use of the functions available in \code{infotheo} R package.
 #'
 #' @param x numeric array. Image 1 color intensity array.
-#' @param y numeric array. Image 1 color intensity array.
+#' @param y numeric array. Image 2 binary mask.
 #' @param numBins numeric. Number of bins for discretizing the image colors. See
 #' \link[infotheo]{discretize}.
 #'
@@ -239,15 +239,18 @@ SSIM <- function(x, y, numBreaks = 256)
 #' @references Meyer, P. E. (2009). Infotheo: information-theoretic measures.
 #' R package. Version, 1(0).
 #'
-#' @importFrom infotheo discretize mutinformation entropy
+#' @importFrom infotheo mutinformation entropy
 #' @export
 #'
 NMI <- function(x, y, numBins = 256)
 {
-  x.dig <- discretize(as.numeric(c(x)), nbins = numBins)
-  y.dig <- discretize(as.numeric(c(y)), nbins = numBins)
+  x.dig <- cut(as.numeric(c(x)), breaks = numBins, labels = F) - 1
+  y.dig <- cut(as.numeric(c(y)), breaks = 2, labels = F) - 1
 
   mi <- mutinformation(x.dig, y.dig, method = "emp")
+  ## Add the sign to the mutual information
+  mi <- mi * sign(mean(x.dig[y.dig == 1]) - mean(x.dig[y.dig == 0]))
+  
   h1 <- entropy(x.dig, method = "emp")
   h2 <- entropy(y.dig, method = "emp")
 
