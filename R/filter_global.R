@@ -91,10 +91,7 @@ globalPeaksFilter <- function(msiData,
   if (method == "ssim" || method == "nmi")
   {
     ## First fix the sign of the measure
-    if (min(r) < 0)
-    {
-      r <- (r - min(r)) / (max(r) - min(r))
-    }
+    r <- (r - min(r)) / (max(r) - min(r))
     r <- 2 * r - 1
   }
 
