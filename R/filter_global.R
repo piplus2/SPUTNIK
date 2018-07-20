@@ -91,7 +91,7 @@ globalPeaksFilter <- function(msiData,
 
   names(r) <- msiData@mz
   # Scale in [-1, 1] for consistency
-  if (method == "ssim" || method == "nmi")
+  if (method == "ssim")
   {
     ## First fix the sign of the measure
     r <- (r - min(r)) / (max(r) - min(r))
