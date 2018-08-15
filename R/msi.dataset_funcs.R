@@ -95,12 +95,15 @@
 ## .varTransf
 .varTransf <- function(x, method = "log")
 {
-  accept.method <- c("log", "sqrt")
+  accept.method <- c("log", "log2", "log10", "sqrt")
   if (!any(method %in% accept.method))
   {
     stop("Valid methods are:", paste0(accept.method, collapse = ", "), ".")
   }
   x <- switch(method,
               "log" = log(x + 1),
+              "log2" = log2(x + 1),
+              "log10" = log10(x + 1),
               "sqrt" = sqrt(x))
+  return(x)
 }
