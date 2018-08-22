@@ -145,23 +145,12 @@ refAndROIimages <- function(msiData,
       "pca" = {
         msiData@matrix[is.na(msiData@matrix)] <- 0
         pca <- prcomp(msiData@matrix[, mz.indices])
-        # Sum the scores of the components that explain the 95% of the total
-        # variance
-        v <- cumsum(pca$sdev ** 2 / sum(pca$sdev ** 2))
-        out <- array(0, nrow(msiData@matrix))
-        for (iv in 1:length(v))
-        {
-          out <- out + (pca$x[, iv] - min(pca$x[, iv])) / (max(pca$x[, iv]) - min(pca$x[, iv]))
+          out <- (pca$x[, 1] - min(pca$x[, 1])) / (max(pca$x[, 1]) - min(pca$x[, 1]))
         }
         out
       }
     )
     ref.values[is.na(ref.values)] <- 0
-  }
-
-  # PCA scores can be also negative
-  if (method == "pca") {
-    ref.values <- (ref.values - min(ref.values)) / (max(ref.values) - min(ref.values))
   }
 
   # Reshape
