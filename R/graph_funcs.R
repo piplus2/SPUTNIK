@@ -145,8 +145,7 @@ refAndROIimages <- function(msiData,
       "pca" = {
         msiData@matrix[is.na(msiData@matrix)] <- 0
         pca <- prcomp(msiData@matrix[, mz.indices])
-          out <- (pca$x[, 1] - min(pca$x[, 1])) / (max(pca$x[, 1]) - min(pca$x[, 1]))
-        }
+        out <- (pca$x[, 1] - min(pca$x[, 1])) / (max(pca$x[, 1]) - min(pca$x[, 1]))
         out
       }
     )
@@ -198,14 +197,47 @@ refAndROIimages <- function(msiData,
 #'
 SSIM <- function(x, y, numBreaks = 256)
 {
+  x <- c(x)
+  y <- c(y)
+  
   x <- x / max(x)
   y <- y / max(y)
-  x.dig <- cut(as.numeric(c(x)), numBreaks, labels = F)
-  y.dig <- cut(as.numeric(c(y)), numBreaks, labels = F)
-  C1 <- (0.0001 * numBreaks) ^ 2
-  C2 <- C1
-  ssim <- ((2 * mean(x.dig) * mean(y.dig) + C1) * (2 * cov(x.dig, y.dig) + C2)) /
-    ((mean(x) ^ 2 + mean(y) ^ 2 + C1) * (sd(x.dig) ^ 2 + sd(y.dig) ^ 2 + C2))
+  x.dig <- cut(as.numeric(c(x)), numBreaks, labels = F) - 1
+  y.dig <- cut(as.numeric(c(y)), numBreaks, labels = F) - 1
+  
+  C1 <- (0.01 * (numBreaks - 1)) ^ 2
+  C2 <- (0.03 * (numBreaks - 1)) ^ 2
+  C3 <- C2 / 2
+  
+  luminance <- function(x, y)
+  {
+    ux <- mean(x)
+    uy <- mean(y)
+
+    return ((2 * ux * uy + C1) / ((ux * ux) + (uy * uy) + C1))
+  }
+  
+  contrast <- function(x, y) {
+    sx2 <- var(x)
+    sy2 <- var(y)
+    sx <- sqrt(sx2)
+    sy <- sqrt(sy2)
+    
+    return ((2 * sx * sy + C2) / (sx2 + sy2 + C2))
+  }
+  
+  structure <- function(x, y)
+  {
+    sx <- sqrt(var(x))
+    sy <-  sqrt(var(y))
+    sxy <- cov(x, y)
+    
+    return ((sxy + C3) / (sx * sy + C3))   
+  }
+  
+  
+  ssim <- luminance(x, y) * contrast(x, y) * structure(x, y)
+  
   return(ssim)
 }
 
