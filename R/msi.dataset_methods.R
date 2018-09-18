@@ -72,7 +72,7 @@ setMethod(f = "binKmeans",
           signature = signature(object = "msi.dataset"),
           definition = function(object)
           {
-            y.clust <- kmeans(object@matrix, centers = 2)
+            y.clust <- kmeans(object@matrix, centers = 2, iter.max = 1000, nstart = 5)
             y.clust <- (y.clust$cluster == 2) * 1
 
             values <- matrix(y.clust, object@nrow, object@ncol)
