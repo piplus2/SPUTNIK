@@ -85,12 +85,12 @@ CSRPeaksFilter <- function(msiData,
   # Check the statistical method
   accept.methods <- c("KS", "ClarkEvans")
   if (!any(method %in% accept.methods)) {
-    stop("Valid values for 'method' are: ",
+    stop("CSRPeaksFilter: valid values for 'method' are: ",
          paste0(accept.methods, collapse = ", "), ".")
   }
 
   if (!any(adjMethod %in% p.adjust.methods)) {
-    stop("Accepted values for 'adjMethod' are: ",
+    stop("CSRPeaksFilter: accepted values for 'adjMethod' are: ",
          paste0(p.adjust.methods, collapse = ", "), ".")
   }
 

@@ -5,7 +5,7 @@
   accept.method <- c("TIC", "median", "PQN")
   if (!any(method %in% accept.method))
   {
-    stop("Valid methods are: ", paste0(accept.method, collapse = ", "), ".")
+    stop(".normIntensity: Valid methods are: ", paste0(accept.method, collapse = ", "), ".")
   }
   x[x == 0] <- NA
   x <- switch(method,
@@ -34,7 +34,7 @@
                 }
                 x[x == 0] <- NA
 
-                ## Try to use the faster method, if memory is not enough then
+                ## Try to use the faster method, if there is not enough RAM, then
                 ## use the slower method
 
                 ## Reference spectrum = non-zero median peaks
@@ -92,13 +92,30 @@
   x
 }
 
-## .varTransf
+## Reduce heteroscedasticity
 .varTransf <- function(x, method = "log")
 {
+  ## Check if NAs are present
+  if (any(is.na(x)))
+  {
+    stop('.varTransf: NAs values found in the matrix.')
+  }
+  ## Check if negative values are present
+  if (min(x) < 0)
+  {
+    stop('.varTransf: found negative values in the matrix.')
+  }
+  ## If the smallest intensity is not zero, show a warning saying that the intensities
+  ## will still summed to 1
+  if (min(x) > 0)
+  {
+    warning('.varTransf: the smallest value is larger than 0.')
+  }
+  
   accept.method <- c("log", "log2", "log10", "sqrt")
   if (!any(method %in% accept.method))
   {
-    stop("Valid methods are:", paste0(accept.method, collapse = ", "), ".")
+    stop(".varTransf: Valid methods are:", paste0(accept.method, collapse = ", "), ".")
   }
   x <- switch(method,
               "log" = log(x + 1),

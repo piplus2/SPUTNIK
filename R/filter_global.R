@@ -73,8 +73,7 @@ globalPeaksFilter <- function(msiData,
   {
     if (length(unique(c(referenceImage@values))) != 2)
     {
-      cat('nmi can be only used with binary reference images.\n')
-      stop()
+      stop("globalPeaksFilter: 'nmi' can be only used with binary reference images.")
     }
   }
 

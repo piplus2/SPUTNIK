@@ -62,7 +62,7 @@ refAndROIimages <- function(msiData,
   accept.method.roi <- c("otsu", "kmeans")
   if (!any(roiMethod %in% accept.method.roi))
   {
-    stop("Valid roiMethod values are: ", paste0(accept.method.roi, collapse = ", "), ".")
+    stop("refAndROIimages: Valid roiMethod values are: ", paste0(accept.method.roi, collapse = ", "), ".")
   }
 
   # Ref image
@@ -93,22 +93,22 @@ refAndROIimages <- function(msiData,
   accept.method.ref <- c("sum", "median", "mean", "pca")
   if (!any(method %in% accept.method.ref))
   {
-    stop("Valid method values are: ", paste0(accept.method.ref, collapse = ", "), ".")
+    stop(".refImage: Valid method values are: ", paste0(accept.method.ref, collapse = ", "), ".")
   }
 
   .stopIfNotValidMSIDataset(msiData)
 
   if (length(mzQuery) == 0 && !useFullMZ)
   {
-    stop("mzQuery and useFullMZ are not compatible.")
+    stop(".refImage: mzQuery and useFullMZ are not compatible.")
   }
   if (length(mzQuery) != 0 && useFullMZ)
   {
-    stop("mzQuery and useFullMZ are not compatible.")
+    stop(".refImage: mzQuery and useFullMZ are not compatible.")
   }
   if (length(mzQuery) != 0 && length(mzTolerance) == 0)
   {
-    stop("mzTolerance missing.")
+    stop(".refImage: mzTolerance missing.")
   }
 
   # Match the peaks indices
@@ -199,7 +199,7 @@ SSIM <- function(x, y, numBreaks = 256)
 {
   x <- c(x)
   y <- c(y)
-  
+
   x <- x / max(x)
   y <- y / max(y)
   x.dig <- cut(as.numeric(c(x)), numBreaks, labels = F) - 1
@@ -216,7 +216,7 @@ SSIM <- function(x, y, numBreaks = 256)
 
     return ((2 * ux * uy + C1) / ((ux * ux) + (uy * uy) + C1))
   }
-  
+
   contrast <- function(x, y) {
     sx2 <- var(x)
     sy2 <- var(y)
@@ -225,7 +225,7 @@ SSIM <- function(x, y, numBreaks = 256)
     
     return ((2 * sx * sy + C2) / (sx2 + sy2 + C2))
   }
-  
+
   structure <- function(x, y)
   {
     sx <- sqrt(var(x))
@@ -234,10 +234,9 @@ SSIM <- function(x, y, numBreaks = 256)
     
     return ((sxy + C3) / (sx * sy + C3))   
   }
-  
-  
+
   ssim <- luminance(x, y) * contrast(x, y) * structure(x, y)
-  
+
   return(ssim)
 }
 

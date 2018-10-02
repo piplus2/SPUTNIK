@@ -107,7 +107,7 @@ setMethod(f = "smoothImage",
               return(object)
             }
             if (sigma < 0) {
-              stop("'sigma' must be positive.")
+              stop("smoothImage: 'sigma' must be positive.")
             }
 
             object@values <- as.matrix(blur(as.im(object@values), sigma = sigma))

@@ -70,7 +70,7 @@
 
   } else {
 
-    stop("Accepted values for mz are: 2 values vector for
+    stop(".mz.search.type: accepted values for mz are: 2 values vector for
          interval, array of values, or single mass value.")
 
   }
@@ -84,7 +84,7 @@
   mz.vector <- sort(mz.vector)
 
   if (mz.value < mz.vector[1] || mz.value > mz.vector[length(mz.vector)]) {
-    stop("M/Z outside the range of matched peaks m/z values.")
+    stop(".match.mz.single: M/Z outside the range of matched peaks m/z values.")
   }
 
   matched.idx <- c()
@@ -115,10 +115,10 @@
   mz.vector <- sort(mz.vector)
 
   if (mz.tol <= 0) {
-    stop("mz.tol must be positive")
+    stop(".match.mz.interval: mz.tol must be positive")
   }
   if (mz.values[1] < mz.vector[1] || mz.values[2] > mz.vector[length(mz.vector)]) {
-    stop("m/z range provided lays outside the measured m/z vector.")
+    stop(".match.mz.interval: m/z range provided lays outside the measured m/z vector.")
   }
 
   # Check the closest masses within the mz.hw.ppm half window
@@ -133,10 +133,10 @@
     }
   }
   if (length(matched.lx) == 0) {
-    stop("No m/z matched the first element of the m/z interval.")
+    stop(".match.mz.interval: no m/z matched the first element of the m/z interval.")
   }
   if (length(matched.rx) == 0) {
-    stop("No m/z matched the last element of the m/z interval.")
+    stop(".match.mz.interval: no m/z matched the last element of the m/z interval.")
   }
   # In case of multiple matched peaks, select the closest
   if (length(matched.lx) > 1) {
@@ -166,7 +166,7 @@
   # If some of the input mz.values are outside the range of mz.vector, stop.
   if (any(mz.values < mz.vector[1]) ||
       any(mz.values > mz.vector[length(mz.vector)])) {
-    stop("Some m/z outside the range of matched peaks m/z values.")
+    stop(".match.mz.array: some m/z outside the range of matched peaks m/z values.")
   }
 
   matched.idx <- vector(mode = "list", length = length(mz.values))
@@ -181,7 +181,7 @@
   # or none of them
   l <- unlist(lapply(matched.idx, length))
   if (any(l == 0)) {
-    stop("M/Z not matched: ", paste0(mz.values[l == 0], collapse = ", "), ".")
+    stop(".match.mz.array: M/Z not matched: ", paste0(mz.values[l == 0], collapse = ", "), ".")
   }
   # These are the mz.values matched with 1 value of mz.vector
   fin.mz.idx <- unlist(matched.idx[l == 1])

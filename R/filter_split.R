@@ -82,7 +82,7 @@ splitPeaksFilter <- function(msiData,
 
   sparse.accept <- c("gini.index", "scatter.ratio", "spatial.chaos")
   if (!any(sparseness %in% sparse.accept))
-    stop("Accepted values for 'sparseness' are: ",
+    stop("splitPeaksFilter: accepted values for 'sparseness' are: ",
          paste0(sparse.accept, collapse = ", "), ".")
 
   # Determine the peaks closest than mzTolerance

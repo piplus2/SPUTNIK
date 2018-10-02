@@ -208,7 +208,7 @@ setMethod(f = "applyPeaksFilter",
             {
               if (!any(object@mz[peakFilter$sel.peaks] %in% names(peakFilter$sel.peaks)))
               {
-                stop("peakFilter not compatible with the MSI dataset.")
+                stop("applyPeaksFilter: peakFilter not compatible with the MSI dataset.")
               }
               object@matrix <- object@matrix[, peakFilter$sel.peaks]
               object@mz <- object@mz[peakFilter$sel.peaks]
