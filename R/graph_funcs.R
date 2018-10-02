@@ -18,6 +18,7 @@
 #' \itemize{
 #'   \item "otsu": the reference image is binarized using Otsu's thresholding
 #'   \item "kmeans": msiData is partitioned in 2 clusters using k-means
+#'   \item "kmeans2": k-means is applied with a user-defined number of clusters (see Details)
 #' }
 #' @param mzQueryRef numeric. Values of m/z used to calculate the reference image.
 #' 2 values are interpreted as interval, multiple or single values are searched
@@ -39,7 +40,11 @@
 #' object. Two references images are returned, a continuous-valued and a binary-valued.
 #' Multiple methods can be used to extract both the continuous and the binary
 #' reference images, which afterwards can be used as argument for the \code{\link{globalPeaksFilter}}
-#' filter.
+#' filter. When 'kmeans2' is applied, the ROI is obtained by merging the sample-related
+#' clusters. The user can set a larger number of cluster than 2 (like in 'kmeans'), in
+#' such a way a finer segmentation of the sample-related area can be generated.
+#' Currently, the off-sample clusters are identified by looking at the most frequent
+#' (statistical mode) labels in the corners of the image.
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #'
@@ -57,9 +62,13 @@ refAndROIimages <- function(msiData,
                             smoothRef = FALSE,
                             smoothSigma = 2,
                             invertRef = FALSE,
+                            ## Parameters for kmeans2
+                            numClusters = 4, ## number of clusters
+                            sizeKernel = 5, ## number of corners pixels used to identify the
+                                            ## off-sample clusters
                             verbose = TRUE)
 {
-  accept.method.roi <- c("otsu", "kmeans")
+  accept.method.roi <- c("otsu", "kmeans", "kmeans2")
   if (!any(roiMethod %in% accept.method.roi))
   {
     stop("refAndROIimages: Valid roiMethod values are: ", paste0(accept.method.roi, collapse = ", "), ".")
@@ -73,7 +82,13 @@ refAndROIimages <- function(msiData,
   # ROI
   roi.im <- switch(roiMethod,
                    "otsu" = binOtsu(ref.image),
-                   "kmeans" = binKmeans(msiData))
+                   "kmeans" = binKmeans(msiData),
+                   "kmeans2" = binKmeans2(msiData, mzQuery = mzQueryRef,
+                                          mzTolerance = mzTolerance,
+                                          useFullMZ = useFullMZRef,
+                                          numClusters = numClusters,
+                                          kernelSize = sizeKernel)
+                   )
 
   return(list(Reference = ref.image, ROI = roi.im))
 }
@@ -100,15 +115,15 @@ refAndROIimages <- function(msiData,
 
   if (length(mzQuery) == 0 && !useFullMZ)
   {
-    stop(".refImage: mzQuery and useFullMZ are not compatible.")
+    stop(".refImage: 'mzQuery' and 'useFullMZ' are not compatible.")
   }
   if (length(mzQuery) != 0 && useFullMZ)
   {
-    stop(".refImage: mzQuery and useFullMZ are not compatible.")
+    stop(".refImage: 'mzQuery' and 'useFullMZ' are not compatible.")
   }
   if (length(mzQuery) != 0 && length(mzTolerance) == 0)
   {
-    stop(".refImage: mzTolerance missing.")
+    stop(".refImage: 'mzTolerance' missing.")
   }
 
   # Match the peaks indices

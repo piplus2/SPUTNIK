@@ -8,6 +8,8 @@ if (is.null(getGeneric("getShapeMSI")))
   setGeneric("getShapeMSI", function(object, ...) standardGeneric("getShapeMSI"))
 if (is.null(getGeneric("binKmeans")))
   setGeneric("binKmeans", function(object, ...) standardGeneric("binKmeans"))
+if (is.null(getGeneric("binKmeans2")))
+  setGeneric("binKmeans2", function(object, ...) standardGeneric("binKmeans2"))
 if (is.null(getGeneric("normIntensity")))
   setGeneric("normIntensity", function(object, ...) standardGeneric("normIntensity"))
 if (is.null(getGeneric("varTransform")))
@@ -78,6 +80,140 @@ setMethod(f = "binKmeans",
             values <- matrix(y.clust, object@nrow, object@ncol)
 
             bw <- msImage(values, "ROI")
+            bw
+          }
+)
+
+#' Return a binary mask generated applying k-means clustering
+#' on peaks intensities. A finer segmentation is obtained by using a larger
+#' number of clusters than 2. The off-sample clusters are merged looking at the
+#' most frequent labels in the image corners. The lookup areas are defined by
+#' the kernel size.
+#'
+#' @param object \link{msi.dataset-class} object
+#' @param mzQueryRef numeric. Values of m/z used to calculate the reference image.
+#' 2 values are interpreted as interval, multiple or single values are searched
+#' in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.
+#' @param mzTolerance numeric. Tolerance in PPM to match the \code{mzQueryRef}
+#' values in the m/z vector. Only valid when \code{useFullMZ = FALSE}.
+#' @param useFullMZRef logical (default = TRUE). Whether all the peaks should be
+#' used to calculate the reference image.
+#' @param numClusters numeric (default = 4). Number of k-means clusters.
+#' @param kernelSize 4D array (default = c(3, 3, 3, 3)). Array of sizes in pixels of the corner
+#' kernels used to identify the off-sample clusters. The elements represent the
+#' size of the top-left, top-right, bottom-right and bottom-left corners. A negative
+#' value can be used to skip the corresponding corner.
+#' @param numCores (default = 1). Multi-core parallel computation of k-means clusters.
+#'
+#' @return \link{ms.image-class} object representing the binary mask image.
+#'
+#' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
+#' 
+#' @export
+#' @importFrom stats kmeans imager parallel
+#' @aliases binKmeans2
+#'
+setMethod(f = "binKmeans2",
+          signature = signature(object = "msi.dataset"),
+          definition = function(object, mzQuery = numeric(), useFullMZ = T,
+                                mzTolerance = numeric(), numClusters = 4,
+                                kernelSize = c(3, 3, 3, 3), numCores = 1)
+          {
+            if (length(kernelSize) != 4)
+            {
+              stop("binKmeans2: 'kernelSize' must be a 4-elements array.")
+            }
+            if (all(kernelSize < 1))
+            {
+              stop("binKmeans2: at least one positive value is required for 'kernelSize'.")
+            }
+            if (length(mzQuery) == 0 && !useFullMZ)
+            {
+              stop("binKmeans2: 'mzQuery' and 'useFullMZ' are not compatible.")
+            }
+            if (length(mzQuery) != 0 && useFullMZ)
+            {
+              stop("binKmeans2: 'mzQuery' and 'useFullMZ' are not compatible.")
+            }
+            if (length(mzQuery) != 0 && length(mzTolerance) == 0)
+            {
+              stop("binKmeans2: 'mzTolerance' missing.")
+            }
+            # Match the peaks indices
+            if (useFullMZ)
+            {
+              mz.indices <- seq(1, length(msiData@mz))
+            } else
+            {
+              mz.indices <- .mzQueryIndices(mzQuery, msiData@mz, mzTolerance, verbose)
+            }
+            
+            ## Parallel
+            if (numCores > 1)
+            {
+              closeAllConnections()
+              cl <- makeCluster(numCores)
+              registerDoParallel(cl = cl)
+              
+              clusterExport(cl = cl, varlist = c('object', 'numClusters', 'mz.indices'),
+                            envir = environment())
+              results <- clusterApply(cl, 1:10,
+                                      function(n, x) {
+                                        set.seed(NULL)
+                                        kmeans(x, numClusters, nstart = 1,
+                                               iter.max = 1000)
+                                      },
+                                      object@matrix[, mz.indices])
+              stopCluster(cl = cl)
+              registerDoSEQ()
+              closeAllConnections()
+              gc()
+              ## Get the clusters with the smallest WSS
+              i <- sapply(results, function(result) result$tot.withinss)
+              y.clust <- results[[which.min(i)]]
+            } else
+            ## Serial
+            {
+              y.clust <- kmeans(object@matrix[, mz.indices], centers = numClusters,
+                                iter.max = 1000, nstart = 5)
+            }
+            
+            ## Merge the sample-related clusters
+            im_clusters <- matrix(factor(y.clust$cluster), object@nrow, object@ncol)
+            
+            roi <- matrix(0, object@nrow, object@ncol)
+            for (k in 1:numClusters)
+            {
+              curr_clust_im <- matrix(0, object@nrow, object@ncol)
+              curr_clust_im[res$cluster == k] <- 1
+              ## Top-left corner
+              if (kernelSize[1] > 0)
+              {
+                if (.mode(curr_clust_im[1:kernelSize[1], 1:kernelSize[1]] == 1))
+                  next()
+              }
+              ## Top-right
+              if (kernelSize[2] > 0)
+              {
+                if (.mode(curr_clust_im[1:kernelSize[2], (object@ncol-kernelSize[2]):object@ncol] == 1))
+                  next()
+              }
+              ## Bottom-right
+              if (kernelSize[3] > 0)
+              {
+                if (.mode(curr_clust_im[(object@nrow-kernelSize[3]):shape[1], (object@ncol-kernelSize[3]):object@ncol] == 1))
+                  next()
+              }
+              ## Bottom-left
+              if (kernelSize[4] > 0)
+              {
+                if (.mode(curr_clust_im[(object@nrow-kernelSize[4]):object@nrow, 1:kernelSize[4]] == 1))
+                  next()
+              }
+              roi[curr_clust_im == 1] <- roi[curr_clust_im == 1] + 1
+            }
+            
+            bw <- msImage(roi, "ROI")
             bw
           }
 )
