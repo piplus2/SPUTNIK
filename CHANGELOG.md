@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - New ROI detection using k-means with a larger number of clusters than 2. This allows a finer detection of the sample-related region.
 
-## [1.0.4]
+## [1.0.4] - 2018-10-06
 ### Fixed
 - Fixed a bug in the function .match.mz.array.
 - Improved the comments in the function .match.mz.array.
