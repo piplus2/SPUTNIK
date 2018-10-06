@@ -11,5 +11,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.4]
 ### Fixed
-- Fixed a bug in the m/z matching when multiple individual values were queried.
-- Improved the comments in the .mz.search.array function.
+- Fixed a bug in the function .match.mz.array.
+- Improved the comments in the function .match.mz.array.
