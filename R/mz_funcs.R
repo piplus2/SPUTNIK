@@ -170,10 +170,10 @@
   }
 
   matched.idx <- vector(mode = "list", length = length(mz.values))
-  for (j in 1:length(mz.values)) {
-    for (i in 1:length(mz.vector)) {
+  for (i in 1:length(mz.values)) {
+    for (j in 1:length(mz.vector)) {
       if (.distance.ppm(mz.values[i], mz.vector[j]) <= mz.tol) {
-        matched.idx[[j]] <- c(matched.idx[[j]], i)
+        matched.idx[[i]] <- c(matched.idx[[i]], j)
       }
     }
   }
@@ -190,7 +190,11 @@
     warning("Multiple matched m/z. Selecting the closest m/z value.")
     multi_ <- which(l > 1)
     matched.idx <- matched.idx[multi_]
+    # Now matched.idx contains only the mz.values matched with multiple elements
+    # of mz.vector. For each of those elements, take the closest.
     for (i in 1:length(matched.idx)) {
+      # Calculate the distances between the mz.value[multi_[i]] and the matched
+      # elements in mz.vector
       d <- numeric(length(matched.idx[[i]]))
       for (j in 1:length(matched.idx[i])) {
         d[j] <- abs(mz.vector[matched.idx[[i]][j]] - mz.values[multi_[i]])
