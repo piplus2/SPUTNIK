@@ -5,8 +5,9 @@
 \title{Compute the reference image and the ROI mask.}
 \usage{
 refAndROIimages(msiData, refMethod = "sum", roiMethod = "otsu",
-  mzQueryRef = numeric(), mzTolerance = numeric(), useFullMZRef = TRUE,
-  smoothRef = FALSE, smoothSigma = 2, invertRef = FALSE, verbose = TRUE)
+  mzQueryRef = numeric(), mzTolerance = numeric(),
+  useFullMZRef = TRUE, smoothRef = FALSE, smoothSigma = 2,
+  invertRef = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{msiData}{\link[SPUTNIK]{msiDataset} object..}

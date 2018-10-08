@@ -127,7 +127,7 @@ setMethod(f = "smoothImage",
 #' @example R/examples/msImage_binOtsu.R
 #'
 #' @export
-#' @importFrom autothresholdr auto_thresh
+#' @import imager
 #' @aliases binOtsu
 #'
 setMethod(f = "binOtsu",
@@ -138,10 +138,9 @@ setMethod(f = "binOtsu",
               bw <- msImage(object@values, "ROI")
             }
             im.size <- dim(object@values)
-            im8bit <- cut(x = c(object@values), breaks = 256, labels = F) - 1
-            lev <- auto_thresh(im8bit, method = "Otsu")
-            values <- (im8bit > lev) * 1
-            bw <- msImage(matrix(values, im.size[1], im.size[2]), "ROI")
+            im <- as.cimg(object@values)
+            bw <- threshold(im, thr = "auto")
+            bw <- msImage(as.matrix(bw), "ROI")
             bw
           }
 )
