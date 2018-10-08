@@ -110,7 +110,8 @@ setMethod(f = "binKmeans",
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #' 
 #' @export
-#' @importFrom stats kmeans imager parallel
+#' @importFrom stats kmeans
+#' @import imager parallel
 #' @aliases binKmeans2
 #'
 setMethod(f = "binKmeans2",
@@ -119,6 +120,10 @@ setMethod(f = "binKmeans2",
                                 mzTolerance = numeric(), numClusters = 4,
                                 kernelSize = c(3, 3, 3, 3), numCores = 1)
           {
+            if (length(kernelSize) == 1)
+            {
+              kernelSize <- rep(kernelSize, 4)
+            }
             if (length(kernelSize) != 4)
             {
               stop("binKmeans2: 'kernelSize' must be a 4-elements array.")
@@ -142,10 +147,10 @@ setMethod(f = "binKmeans2",
             # Match the peaks indices
             if (useFullMZ)
             {
-              mz.indices <- seq(1, length(msiData@mz))
+              mz.indices <- seq(1, length(object@mz))
             } else
             {
-              mz.indices <- .mzQueryIndices(mzQuery, msiData@mz, mzTolerance, verbose)
+              mz.indices <- .mzQueryIndices(mzQuery, object@mz, mzTolerance, verbose)
             }
             
             ## Parallel
@@ -153,8 +158,7 @@ setMethod(f = "binKmeans2",
             {
               closeAllConnections()
               cl <- makeCluster(numCores)
-              registerDoParallel(cl = cl)
-              
+
               clusterExport(cl = cl, varlist = c('object', 'numClusters', 'mz.indices'),
                             envir = environment())
               results <- clusterApply(cl, 1:10,
@@ -165,7 +169,6 @@ setMethod(f = "binKmeans2",
                                       },
                                       object@matrix[, mz.indices])
               stopCluster(cl = cl)
-              registerDoSEQ()
               closeAllConnections()
               gc()
               ## Get the clusters with the smallest WSS
@@ -185,7 +188,7 @@ setMethod(f = "binKmeans2",
             for (k in 1:numClusters)
             {
               curr_clust_im <- matrix(0, object@nrow, object@ncol)
-              curr_clust_im[res$cluster == k] <- 1
+              curr_clust_im[y.clust$cluster == k] <- 1
               ## Top-left corner
               if (kernelSize[1] > 0)
               {
@@ -201,7 +204,7 @@ setMethod(f = "binKmeans2",
               ## Bottom-right
               if (kernelSize[3] > 0)
               {
-                if (.mode(curr_clust_im[(object@nrow-kernelSize[3]):shape[1], (object@ncol-kernelSize[3]):object@ncol] == 1))
+                if (.mode(curr_clust_im[(object@nrow-kernelSize[3]):object@nrow, (object@ncol-kernelSize[3]):object@ncol] == 1))
                   next()
               }
               ## Bottom-left

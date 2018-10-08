@@ -35,6 +35,17 @@
 #' colors should be inverted. This can be necessary when the signal is more
 #' intense outside the ROI.
 #' @param verbose logical (default = TRUE). Additional output text.
+#' @param numClusters numeric (default = 4). Only for 'kmeans2' method. Number
+#' of clusters.
+#' @param kernelSize 4-D numeric array or numeric (default = 5). Only for 'kmeans2'.
+#' Each element of the 4-D array represents the size of the corners square kernels
+#' used to determine the off-tissue clusters. The element order is clockwise:
+#' top-left, top-right, bottom-left, bottom-right. If negative, the corresponding
+#' corner is skipped. If only a single value is passed, the same kernel size is
+#' used for the 4 corners.
+#' @param numCores numeric (default = 1). Only for 'kmeans2' method. Number of
+#' CPU cores for parallel k-means. It must be smaller than the number of
+#' available cores.
 #'
 #' @details Function to extract the reference image from a \code{\link{msi.dataset-class}}
 #' object. Two references images are returned, a continuous-valued and a binary-valued.
@@ -66,6 +77,7 @@ refAndROIimages <- function(msiData,
                             numClusters = 4, ## number of clusters
                             sizeKernel = 5, ## number of corners pixels used to identify the
                                             ## off-sample clusters
+                            numCores = 1, ## parallel computation for k-means2
                             verbose = TRUE)
 {
   accept.method.roi <- c("otsu", "kmeans", "kmeans2")
@@ -87,6 +99,7 @@ refAndROIimages <- function(msiData,
                                           mzTolerance = mzTolerance,
                                           useFullMZ = useFullMZRef,
                                           numClusters = numClusters,
+                                          numCores = numCores,
                                           kernelSize = sizeKernel)
                    )
 

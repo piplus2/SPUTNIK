@@ -5,8 +5,8 @@
 \title{Estimate the indices of split peaks.}
 \usage{
 splitPeaksFilter(msiData, mzTolerance = 5, sharedPixelsRatio = 0,
-  sparseness = "scatter.ratio", threshold = 0.5, returnDetails = TRUE,
-  verbose = TRUE)
+  sparseness = "scatter.ratio", threshold = 0.5,
+  returnDetails = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{msiData}{\link{msi.dataset-class} object. See \link{msiDataset}.}

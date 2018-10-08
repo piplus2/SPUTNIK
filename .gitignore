@@ -35,3 +35,4 @@ vignettes/*.pdf
 # Mac
 .DS_Store
 
+.Rproj.user

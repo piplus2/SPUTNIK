@@ -9,7 +9,7 @@ NMI(x, y, numBins = 256)
 \arguments{
 \item{x}{numeric array. Image 1 color intensity array.}
 
-\item{y}{numeric array. Image 1 color intensity array.}
+\item{y}{numeric array. Image 2 binary mask.}
 
 \item{numBins}{numeric. Number of bins for discretizing the image colors. See
 \link[infotheo]{discretize}.}
