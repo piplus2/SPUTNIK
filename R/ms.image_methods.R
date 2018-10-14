@@ -9,6 +9,8 @@ if (is.null(getGeneric("closeImage")))
   setGeneric("closeImage", function(object, ...) standardGeneric("closeImage"))
 if (is.null(getGeneric("binOtsu")))
   setGeneric("binOtsu", function(object, ...) standardGeneric("binOtsu"))
+if (is.null(getGeneric("removeSmallObjects")))
+  setGeneric("removeSmallObjects", function(object, ...) standardGeneric("removeSmallObjects"))
 
 #' Visualize a MS image.
 #' \code{plot} extends the generic function to \link{ms.image-class} objects.
@@ -169,5 +171,70 @@ setMethod(f = "closeImage",
             }
             object@values <- as.matrix(mclosing_square(as.cimg(object@values), kern.size))
             object
+          }
+)
+
+#' Remove binary ROI objects smaller than user-defined number of pixels
+#'
+#' @param object \link{ms.image-class} object. See \link{msImage}.
+#' @param threshold numeric. Smallest number of connected pixels.
+#'
+#' @return \link{ms.image-class} object after filtering.
+#'
+#' @example R/examples/msImage_removeSmallObjects.R
+#'
+#' @export
+#' @importFrom imager split_connected as.cimg
+#' @aliases removeSmallObjects
+#'
+setMethod(f = "removeSmallObjects",
+          signature = signature(object = "ms.image"),
+          definition = function(object, threshold = 5)
+          {
+            if (!.isBinary(object))
+            {
+              stop("'removeSmallObjects' can be applied on binary images only.")
+            }
+            
+            # Add a border to the ROI image. This can help to identify groups of
+            # connected pixels close to the borders.
+            roiMat <- addBorder(ref_roi$ROI@values == 1, border = 3)
+            roiMat[roiMat == 0] <- NA
+            
+            # Identify the connected components
+            CC <- SDMTools::ConnCompLabel(roiMat)
+            
+            # Remove the border
+            CC <- remBorder(CC, border = 3)
+            
+            # Filter the connected objects with a number of pixels smaller than
+            # threshold
+            ux <- unique(c(CC))
+            ux <- ux[!is.na(ux)]
+            numPixelsObjects <- array(NA, length(ux))
+            for (i in 1:length(ux))
+              numPixelsObjects[i] <- sum(CC == ux[i], na.rm = T)
+            
+            ux <- ux[numPixelsObjects >= threshold]
+            
+            if (length(ux) == 0)
+            {
+              warning('All objects were removed. Returning the original image.')
+              return(object)
+            }
+            
+            # Define the new ROI
+            newRoi <- array(NA, prod(dim(object@values)))
+            for (i in 1:length(ux))
+            {
+              newRoi[CC == ux[i]] <- 1
+            }
+            newRoi <- matrix(newRoi, nrow(object@values), ncol(object@values))
+            stopifnot(all(sort(unique(c(newRoi))) == c(NA, 1)))
+            
+            newRoi[is.na(newRoi)] <- 0
+            
+            object <- msImage(values = newRoi, name = 'ROI', scale = F)
+            return(object)
           }
 )

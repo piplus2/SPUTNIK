@@ -10,6 +10,8 @@ if (is.null(getGeneric("binKmeans")))
   setGeneric("binKmeans", function(object, ...) standardGeneric("binKmeans"))
 if (is.null(getGeneric("binKmeans2")))
   setGeneric("binKmeans2", function(object, ...) standardGeneric("binKmeans2"))
+if (is.null(getGeneric("binSupervised")))
+  setGeneric("binSupervised", function(object, ...) standardGeneric("binSupervised"))
 if (is.null(getGeneric("normIntensity")))
   setGeneric("normIntensity", function(object, ...) standardGeneric("normIntensity"))
 if (is.null(getGeneric("varTransform")))
@@ -218,6 +220,99 @@ setMethod(f = "binKmeans2",
             
             bw <- msImage(roi, "ROI")
             bw
+          }
+)
+
+#' Return a binary mask generated applying a supervised classifier
+#' on peaks intensities using manually selected regions corresponding to off-sample
+#' and sample-related areas. 
+#'
+#' @param object \link{msi.dataset-class} object
+#' @param refImage \link{ms.image-class} object. Image used as reference to
+#' manually select the ROI pixels.
+#' @param mzQueryRef numeric. Values of m/z used to calculate the reference image.
+#' 2 values are interpreted as interval, multiple or single values are searched
+#' in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.
+#' @param mzTolerance numeric. Tolerance in PPM to match the \code{mzQueryRef}
+#' values in the m/z vector. Only valid when \code{useFullMZ = FALSE}.
+#' @param useFullMZRef logical (default = TRUE). Whether all the peaks should be
+#' used to calculate the reference image.
+#' @param method string (default = 'svm'). Supervised classifier used to segment
+#' the ROI.
+#'
+#' @return \link{ms.image-class} object representing the binary mask image.
+#'
+#' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
+#' 
+#' @export
+#' @import imager e1071
+#' @aliases binSupervised
+#'
+setMethod(f = "binSupervised",
+          signature = signature(object = "msi.dataset"),
+          definition = function(object,
+                                refImage,
+                                mzQuery = numeric(),     # Filter m/z values
+                                useFullMZ = T,           #
+                                mzTolerance = numeric(), #
+                                method = 'svm')
+          {
+            accept.methods <- c('svm')
+            
+            .stopIfNotValidMSIDataset(object)
+            .stopIfNotValidMSImage(refImage)
+            stopifnot(isnumeric(mzQuery))
+            stopifnot(is.logical(useFullMZ))
+            stopifnot(is.numeric(mzTolerance))
+            stopifnot(method %in% accept.methods)
+            
+            # Match the peaks indices
+            if (useFullMZ)
+            {
+              mz.indices <- seq(1, length(object@mz))
+            } else
+            {
+              mz.indices <- .mzQueryIndices(mzQuery, object@mz, mzTolerance, verbose)
+            }
+            
+            # User-defined pixels
+            userCoords <- vector(mode = 'list', length = 2)
+            names(userCoords) <- c('off-sample', 'sample')
+            
+            for (i in 1:2)
+            {
+              cat(paste0('Select the ', names(userCoords)[i], ' area...\n'))
+              
+              userCoords[[i]] <- grabRect(as.cimg(refImage), output = 'coord')
+            }
+            
+            # Define the mask corresponding to the user-defined pixels
+            mask = matrix(0, object@nrow, object@ncol)
+            mask[seq(userCoords[[1]][1], userCoords[[1]][3]),
+                 seq(userCoords[[1]][2], userCoords[[1]][4])] <- 1
+            mask[seq(userCoords[[2]][1], userCoords[[2]][3]),
+                 seq(userCoords[[2]][2], userCoords[[2]][4])] <- 2
+            
+            # Classify the pixels
+            idx.train <- which(mask != 0)
+            idx.test <- which(mask == 0)
+            
+            y = factor(mask[idx.train])
+            stopifnot(all(sort(unique(y)) == c(1, 2)))
+            
+            mdl <- switch(method,
+                          'svm' = svm(msx@matrix[idx.train, ], y, kernel = 'linear')
+            )
+            
+            ypred = as.character(c(mask))
+            ypred[idx.test] <- as.character(predict(mdl, msx@matrix[idx.test, ]))
+            
+            ypred <- as.numeric(ypred)
+            stopifnot(all(sort(unique(ypred)) == c(1, 2)))
+            
+            binRoi <- (ypred == 2) * 1
+            binRoi <- matrix(binRoi, object@nrow, object@ncol)
+            return(msImage(values = binRoi, name = 'ROI', scale = F))
           }
 )
 

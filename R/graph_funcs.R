@@ -304,3 +304,23 @@ NMI <- function(x, y, numBins = 256)
 
   return(mi / sqrt(h1 * h2))
 }
+
+# Add a border to an image
+addBorder <- function(imMat, border = 2)
+{
+  imMat <- rbind(matrix(0, border, ncol(imMat)),
+                 imMat,
+                 matrix(0, border, ncol(imMat)))
+  imMat <- cbind(matrix(0, nrow(imMat), border),
+                 imMat,
+                 matrix(0, nrow(imMat), border))
+  return(imMat)
+}
+
+# Remove the border from an image
+remBorder <- function(imMat, border = 2)
+{
+  imMat <- imMat[seq(border + 1, nrow(imMat)-border),
+                 seq(border + 1, ncol(imMat)-border)]
+  return(imMat)
+}
