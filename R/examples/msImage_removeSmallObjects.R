@@ -1,7 +1,7 @@
 library(SPUTNIK)
 
 fakeBinImage <- matrix(0, 100, 100)
-fakeBinImage[sample(prod(dim(fakeBinImage)), 50)] <- 1
+fakeBinImage[sample(prod(dim(fakeBinImage)), 2000)] <- 1
 
 fakeBinMsImage <- msImage(values = fakeBinImage, name = 'ROI', scale = F)
 

@@ -198,7 +198,7 @@ setMethod(f = "removeSmallObjects",
             
             # Add a border to the ROI image. This can help to identify groups of
             # connected pixels close to the borders.
-            roiMat <- addBorder(ref_roi$ROI@values == 1, border = 3)
+            roiMat <- addBorder(object@values == 1, border = 3)
             roiMat[roiMat == 0] <- NA
             
             # Identify the connected components
