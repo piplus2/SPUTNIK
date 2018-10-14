@@ -261,7 +261,7 @@ setMethod(f = "binSupervised",
             
             .stopIfNotValidMSIDataset(object)
             .stopIfNotValidMSImage(refImage)
-            stopifnot(isnumeric(mzQuery))
+            stopifnot(is.numeric(mzQuery))
             stopifnot(is.logical(useFullMZ))
             stopifnot(is.numeric(mzTolerance))
             stopifnot(method %in% accept.methods)
@@ -283,7 +283,7 @@ setMethod(f = "binSupervised",
             {
               cat(paste0('Select the ', names(userCoords)[i], ' area...\n'))
               
-              userCoords[[i]] <- grabRect(as.cimg(refImage), output = 'coord')
+              userCoords[[i]] <- grabRect(as.cimg(refImage@values), output = 'coord')
             }
             
             # Define the mask corresponding to the user-defined pixels
@@ -300,6 +300,7 @@ setMethod(f = "binSupervised",
             y = factor(mask[idx.train])
             stopifnot(all(sort(unique(y)) == c(1, 2)))
             
+            cat('Segmentation...\n')
             mdl <- switch(method,
                           'svm' = svm(msx@matrix[idx.train, ], y, kernel = 'linear')
             )

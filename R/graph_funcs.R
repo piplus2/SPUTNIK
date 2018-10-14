@@ -19,6 +19,8 @@
 #'   \item "otsu": the reference image is binarized using Otsu's thresholding
 #'   \item "kmeans": msiData is partitioned in 2 clusters using k-means
 #'   \item "kmeans2": k-means is applied with a user-defined number of clusters (see Details)
+#'   \item "supervised": supervised segmentation based on user-defined areas corresponding
+#'   to off-sample and sample regions.
 #' }
 #' @param mzQueryRef numeric. Values of m/z used to calculate the reference image.
 #' 2 values are interpreted as interval, multiple or single values are searched
@@ -80,7 +82,7 @@ refAndROIimages <- function(msiData,
                             numCores = 1, ## parallel computation for k-means2
                             verbose = TRUE)
 {
-  accept.method.roi <- c("otsu", "kmeans", "kmeans2")
+  accept.method.roi <- c("otsu", "kmeans", "kmeans2", "supervised")
   if (!any(roiMethod %in% accept.method.roi))
   {
     stop("refAndROIimages: Valid roiMethod values are: ", paste0(accept.method.roi, collapse = ", "), ".")
@@ -100,7 +102,13 @@ refAndROIimages <- function(msiData,
                                           useFullMZ = useFullMZRef,
                                           numClusters = numClusters,
                                           numCores = numCores,
-                                          kernelSize = sizeKernel)
+                                          kernelSize = sizeKernel),
+                   "supervised" = binSupervised(msiData,
+                                           refImage = ref.image,
+                                           mzQuery = mzQueryRef,      # Filter m/z values
+                                           useFullMZ = useFullMZRef,  #
+                                           mzTolerance = mzTolerance, #
+                                           method = 'svm') # Currently only 'svm' available
                    )
 
   return(list(Reference = ref.image, ROI = roi.im))
