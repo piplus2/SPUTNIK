@@ -230,7 +230,7 @@ setMethod(f = "removeSmallObjects",
               newRoi[CC == ux[i]] <- 1
             }
             newRoi <- matrix(newRoi, nrow(object@values), ncol(object@values))
-            stopifnot(all(sort(unique(c(newRoi))) == c(NA, 1)))
+            stopifnot(all(sort(unique(c(newRoi))) == 1))
             
             newRoi[is.na(newRoi)] <- 0
             
