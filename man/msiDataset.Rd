@@ -2,7 +2,7 @@
 % Please edit documentation in R/construct_funcs.R
 \name{msiDataset}
 \alias{msiDataset}
-\title{Constructior for \link{msi.dataset-class} objects.}
+\title{Constructor for \link{msi.dataset-class} objects.}
 \usage{
 msiDataset(values, mz, rsize, csize)
 }
@@ -21,14 +21,14 @@ pixels and columns represent peaks.}
 }
 \description{
 \code{msiDataset} returns a \link{msi.dataset-class} object. It
-containg information about the matched peaks intensities, the geometrical
-dimensions of the mass spectral image, the matched m/z values.
+contains information about the matched peaks intensities, the geometrical
+dimensions of the mass spectral image, and the common m/z values.
 }
 \details{
 Function used to construct the main object \code{\link{msi.dataset-class}}.
 This object contains all the information about peaks intensities (intensity
 matrix), the geometrical shape of the image (rows, columns), and the vector
-of the matched m/z values, generated during the peak matching process.
+of the common m/z values, generated during the peak matching process.
 }
 \examples{
 ## Load package
@@ -36,8 +36,9 @@ library("SPUTNIK")
 
 ## Create the msi.dataset-class object
 sz <- c(5, 4)
-x <- matrix(rnorm(sz[1] * sz[2] * 20), sz[1]*sz[2], 20)
-mz <- sort(sample(100, ncol(x)))
+numIons <- 20
+x <- matrix(rnorm(prod(sz) * numIons), prod(sz), numIons)
+mz <- sort(sample(100, numIons))
 msiX <- msiDataset(x, mz, sz[1], sz[2])
 
 }

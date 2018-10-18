@@ -6,7 +6,8 @@
 \alias{removeSmallObjects}
 \title{Remove binary ROI objects smaller than user-defined number of pixels}
 \usage{
-\S4method{removeSmallObjects}{ms.image}(object, threshold = 5)
+\S4method{removeSmallObjects}{ms.image}(object, threshold = 5,
+  border = 3)
 }
 \arguments{
 \item{object}{\link{ms.image-class} object. See \link{msImage}.}

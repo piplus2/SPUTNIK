@@ -26,7 +26,8 @@ Constructor for \link{ms.image-class} objects.
 library("SPUTNIK")
 
 ## MS image
-matIm <- matrix(rnorm(200), 40, 50)
+imShape <- c(40, 50)
+matIm <- matrix(rnorm(200), imShape[1], imShape[2])
 im <- msImage(values = matIm, name = "random", scale = TRUE)
 
 }

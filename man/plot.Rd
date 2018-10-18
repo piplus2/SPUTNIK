@@ -4,16 +4,18 @@
 \name{plot,ms.image,missing-method}
 \alias{plot,ms.image,missing-method}
 \alias{plot}
-\title{Visualize a MS image.
+\title{Visualize an MS image.
 \code{plot} extends the generic function to \link{ms.image-class} objects.}
 \usage{
-\S4method{plot}{ms.image,missing}(x)
+\S4method{plot}{ms.image,missing}(x, palette = "inferno")
 }
 \arguments{
 \item{x}{\link{ms.image-class} object. See \link{msImage}.}
+
+\item{palette}{string. Color palette. See \link{viridis}.}
 }
 \description{
-Visualize a MS image.
+Visualize an MS image.
 \code{plot} extends the generic function to \link{ms.image-class} objects.
 }
 \examples{

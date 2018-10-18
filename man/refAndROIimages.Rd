@@ -27,9 +27,10 @@ binary mask. Valid values are:
 \itemize{
   \item "otsu": the reference image is binarized using Otsu's thresholding
   \item "kmeans": msiData is partitioned in 2 clusters using k-means
-  \item "kmeans2": k-means is applied with a user-defined number of clusters (see Details)
-  \item "supervised": supervised segmentation based on user-defined areas corresponding
-  to off-sample and sample regions.
+  \item "kmeans2": k-means is applied with a user-defined number of clusters
+  (see Details)
+  \item "supervised": supervised segmentation based on user-defined areas
+  corresponding to off-sample and sample regions.
 }}
 
 \item{mzQueryRef}{numeric. Values of m/z used to calculate the reference image.

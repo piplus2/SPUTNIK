@@ -11,7 +11,7 @@ globalPeaksFilter(msiData, referenceImage, method = "pearson",
 \item{msiData}{\link{msi.dataset-class} object. See \link{msiDataset}.}
 
 \item{referenceImage}{\link{ms.image-class} object. Reference image used
-to calculate the correlations.}
+to calculate the similarity values.}
 
 \item{method}{method used to calculate the similariry between the peak
 intensities and the reference image. Accepted values are:
@@ -27,7 +27,7 @@ similarity values between the peaks images and the reference image. The
 default value of 0 guarantees that only the ions with a positive similarity with
 the reference image (typically representing the spatial distribution of the
 signal source) are retrieved. For consistency, the SSIM and NMI are scaled
-in [-1, 1] as the correlations.}
+in [-1, 1] to match the same range of correlations.}
 
 \item{verbose}{logical (default = \code{TRUE}). Additional output text.}
 }

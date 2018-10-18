@@ -4,7 +4,7 @@
 \name{invertImage,ms.image-method}
 \alias{invertImage,ms.image-method}
 \alias{invertImage}
-\title{Invert the colors of a MS image.}
+\title{Invert the colors of an MS image.}
 \usage{
 \S4method{invertImage}{ms.image}(object)
 }
@@ -15,7 +15,7 @@
 \link{ms.image-class} object after inverting colors.
 }
 \description{
-Invert the colors of a MS image.
+Invert the colors of an MS image.
 }
 \examples{
 ## Load package
