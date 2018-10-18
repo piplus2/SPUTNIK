@@ -1,24 +1,31 @@
 ## set generics for msi.dataset-class methods
 
-if (is.null(getGeneric("getMZ")))
-  setGeneric("getMZ", function(object, ...) standardGeneric("getMZ"))
-if (is.null(getGeneric("getIntensityMat")))
-  setGeneric("getIntensityMat", function(object, ...) standardGeneric("getIntensityMat"))
-if (is.null(getGeneric("getShapeMSI")))
-  setGeneric("getShapeMSI", function(object, ...) standardGeneric("getShapeMSI"))
-if (is.null(getGeneric("binKmeans")))
-  setGeneric("binKmeans", function(object, ...) standardGeneric("binKmeans"))
-if (is.null(getGeneric("binKmeans2")))
-  setGeneric("binKmeans2", function(object, ...) standardGeneric("binKmeans2"))
-if (is.null(getGeneric("binSupervised")))
-  setGeneric("binSupervised", function(object, ...) standardGeneric("binSupervised"))
-if (is.null(getGeneric("normIntensity")))
-  setGeneric("normIntensity", function(object, ...) standardGeneric("normIntensity"))
-if (is.null(getGeneric("varTransform")))
-  setGeneric("varTransform", function(object, ...) standardGeneric("varTransform"))
 if (is.null(getGeneric("applyPeaksFilter")))
   setGeneric("applyPeaksFilter", function(object, ...) standardGeneric("applyPeaksFilter"))
 
+if (is.null(getGeneric("binKmeans")))
+  setGeneric("binKmeans", function(object, ...) standardGeneric("binKmeans"))
+
+if (is.null(getGeneric("binKmeans2")))
+  setGeneric("binKmeans2", function(object, ...) standardGeneric("binKmeans2"))
+
+if (is.null(getGeneric("binSupervised")))
+  setGeneric("binSupervised", function(object, ...) standardGeneric("binSupervised"))
+
+if (is.null(getGeneric("getIntensityMat")))
+  setGeneric("getIntensityMat", function(object, ...) standardGeneric("getIntensityMat"))
+
+if (is.null(getGeneric("getMZ")))
+  setGeneric("getMZ", function(object, ...) standardGeneric("getMZ"))
+
+if (is.null(getGeneric("getShapeMSI")))
+  setGeneric("getShapeMSI", function(object, ...) standardGeneric("getShapeMSI"))
+
+if (is.null(getGeneric("normIntensity")))
+  setGeneric("normIntensity", function(object, ...) standardGeneric("normIntensity"))
+
+if (is.null(getGeneric("varTransform")))
+  setGeneric("varTransform", function(object, ...) standardGeneric("varTransform"))
 
 ## Methods ---------------------------------------------------------------------
 
@@ -37,7 +44,7 @@ setMethod(f = "getMZ",
           signature = signature(object = "msi.dataset"),
           definition = function(object)
           {
-            object@mz
+            return(object@mz)
           })
 
 #' Return the peaks intensity matrix.
@@ -56,7 +63,7 @@ setMethod(f = "getIntensityMat",
           signature = signature(object = "msi.dataset"),
           definition = function(object)
           {
-            object@matrix
+            return(object@matrix)
           })
 
 #' Return a binary mask generated applying k-means clustering
@@ -82,7 +89,8 @@ setMethod(f = "binKmeans",
             values <- matrix(y.clust, object@nrow, object@ncol)
 
             bw <- msImage(values, "ROI")
-            bw
+            
+            return(bw)
           }
 )
 
@@ -206,20 +214,23 @@ setMethod(f = "binKmeans2",
               ## Bottom-right
               if (kernelSize[3] > 0)
               {
-                if (.mode(curr_clust_im[(object@nrow-kernelSize[3]):object@nrow, (object@ncol-kernelSize[3]):object@ncol] == 1))
+                if (.mode(curr_clust_im[(object@nrow-kernelSize[3]):object@nrow,
+                                        (object@ncol-kernelSize[3]):object@ncol] == 1))
                   next()
               }
               ## Bottom-left
               if (kernelSize[4] > 0)
               {
-                if (.mode(curr_clust_im[(object@nrow-kernelSize[4]):object@nrow, 1:kernelSize[4]] == 1))
+                if (.mode(curr_clust_im[(object@nrow-kernelSize[4]):object@nrow,
+                                        1:kernelSize[4]] == 1))
                   next()
               }
               roi[curr_clust_im == 1] <- roi[curr_clust_im == 1] + 1
             }
             
             bw <- msImage(roi, "ROI")
-            bw
+            
+            return(bw)
           }
 )
 
@@ -272,7 +283,7 @@ setMethod(f = "binSupervised",
               mz.indices <- seq(1, length(object@mz))
             } else
             {
-              mz.indices <- .mzQueryIndices(mzQuery, object@mz, mzTolerance, verbose)
+              mz.indices <- .mzQueryIndices(mzQuery, object@mz, mzTolerance, T)
             }
             
             # User-defined pixels
@@ -305,7 +316,7 @@ setMethod(f = "binSupervised",
                           'svm' = svm(msx@matrix[idx.train, ], y, kernel = 'linear')
             )
             
-            ypred = as.character(c(mask))
+            ypred <- as.character(c(mask))
             ypred[idx.test] <- as.character(predict(mdl, msx@matrix[idx.test, ]))
             
             ypred <- as.numeric(ypred)
@@ -313,6 +324,7 @@ setMethod(f = "binSupervised",
             
             binRoi <- (ypred == 2) * 1
             binRoi <- matrix(binRoi, object@nrow, object@ncol)
+            
             return(msImage(values = binRoi, name = 'ROI', scale = F))
           }
 )
@@ -360,7 +372,8 @@ setMethod(f = "normIntensity",
           definition = function(object, method = "median")
           {
             object@matrix <- .normIntensity(object@matrix, method = method)
-            object
+            
+            return(object)
           }
 )
 
@@ -387,7 +400,8 @@ setMethod(f = "varTransform",
           definition = function(object, method = "log")
           {
             object@matrix <- .varTransf(object@matrix, method)
-            object
+            
+            return(object)
           })
 
 #' Apply the results of a peaks filter.
@@ -449,7 +463,7 @@ setMethod(f = "applyPeaksFilter",
               object@mz <- object@mz[peakFilter$sel.peaks]
             }
 
-            object
+            return(object)
           }
 )
 
@@ -468,5 +482,6 @@ setMethod(f = "getShapeMSI",
           signature = signature(object = "msi.dataset"),
           definition = function(object)
           {
-            c(object@nrow, object@ncol)
-          })
+            return(c(object@nrow, object@ncol))
+          }
+)

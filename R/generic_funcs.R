@@ -13,7 +13,7 @@
   return(msi.data)
 }
 
-## Statistical moda
+## Statistical mode
 .mode <- function(x)
 {
   ux <- unique(x)

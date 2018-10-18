@@ -12,13 +12,14 @@
 #' applied to the peaks signal. Accepted values are:
 #' \itemize{
 #'    \item "ClarkEvans": performs a test based on the Clark and Evans aggregation
-#'    R index.
+#'    R index. This test evaluates the compares of the nearest-neighbors distances
+#'    to the case of purely random pattern.
 #'    \item "KS": performs a test of goodness-of-fit between the signal pixels
 #'    associated point process pattern and a spatial covariate using the
 #'    Kolmogorov-Smirnov test. The covariate is defined by the reference image.
 #' }
 #'
-#' @param calculateCovariate logical (default = \code{TRUE}). Whether the covariance
+#' @param calculateCovariate logical (default = \code{FALSE}). Whether the covariance
 #' image should be calculated. Necessary when \code{method = "KS"}.
 #' @param covMethod string (default = \code{"sum"}). Method used to calculate the
 #' reference image. Read only when \code{method = "KS"}. Possible values
@@ -40,7 +41,7 @@
 #' colors should be inverted.]
 #'
 #' @param adjMethod string (default = \code{"bonferroni"}). Multiple testing correction
-#' method. Possible values coincide with stats::p.adjust function.
+#' method. Possible values coincide with those of the \code{stats::p.adjust} function.
 #' @param returnQvalues logical (default = \code{TRUE}). Whether the computed
 #' q-values should be returned together with the p-values.
 #' @param plotCovariate logical (default = \code{FALSE}). Whether the covariate image
@@ -48,7 +49,8 @@
 #' @param verbose logical (defaul = \code{TRUE}). Additional output texts are
 #' generated.
 #' @param ... additional parameters compatible with the \code{statspat} functions.
-#' See \link[spatstat]{cdf.test} and \link[spatstat]{clarkevans.test}.
+#' See \link[spatstat]{cdf.test} for "KS" and \link[spatstat]{clarkevans.test}.
+#' for "ClarkEvans"
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #'
@@ -65,8 +67,8 @@
 #' @importFrom spatstat as.im
 #'
 CSRPeaksFilter <- function(msiData,
-                           method = "KS",
-                           calculateCovariate = TRUE,
+                           method = "ClarkEvans",
+                           calculateCovariate = FALSE,
                            covMethod = "sum",       # --------------------
                            mzQueryCov = numeric(),  # Covariate arguments
                            mzTolerance = numeric(), #
@@ -96,11 +98,12 @@ CSRPeaksFilter <- function(msiData,
 
   # Calculate the reference image. This is used as reference for Kolmogorov-
   # Smirnov test.
-  if (verbose)
-    cat("Calculating the reference image. This may take a while...\n")
-
   ref.covariate <- NULL
-
+  if (calculateCovariate)
+  {
+    if (verbose)
+      cat("Calculating the reference image. This may take a while...\n")
+  }
   if (method == "KS")
   {
     # Convert the reference image for the spatstat test
@@ -146,12 +149,16 @@ CSRPeaksFilter <- function(msiData,
                             ...)
   }
   cat("\n")
+  
+  # Multiple testing correction
   q_ <- NULL
   if (returnQvalues) {
     q_ <- p.adjust(p = p_, method = adjMethod)
   }
   out <- list(p.value = p_,
               q.value = q_)
+  
+  return(out)
 }
 
 ## .csr.test.im
@@ -165,7 +172,7 @@ CSRPeaksFilter <- function(msiData,
                          win = NULL,
                          ...) {
   if (is.null(win)) {
-    win <- spatstat::owin(xrange = c(1, nrow(im@values)), yrange = c(1, ncol(im@values)))
+    win <- owin(xrange = c(1, nrow(im@values)), yrange = c(1, ncol(im@values)))
   }
   # Transform the image into a point pattern process
   im.bw <- binOtsu(im)

@@ -39,8 +39,10 @@
 
                 ## Reference spectrum = non-zero median peaks
                 ref.spectrum <- tryCatch(apply(x, 2, median, na.rm = T),
-                                         error = function(e) {
-                                           warning("Low memory. Using the slower method to calculate the reference spectrum.")
+                                         error = function(e)
+                                         {
+                                           warning("Low memory. Using the slower
+                                                   method to calculate the reference spectrum.")
                                            z <- array(NA, ncol(x))
                                            for (j in 1:ncol(x))
                                            {
@@ -50,8 +52,10 @@
                                          })
                 ## Quotients
                 quotients <- tryCatch(x / rep(ref.spectrum, each = nrow(x)),
-                                      error = function(e) {
-                                        warning("Low memory. Using the slower method to calculate the quotients.")
+                                      error = function(e)
+                                      {
+                                        warning("Low memory. Using the slower
+                                                method to calculate the quotients.")
                                         z <- matrix(NA, nrow(x), ncol(x))
                                         for (j in 1:nrow(x))
                                         {
@@ -62,8 +66,10 @@
                 quotients[quotients == 0] <- NA
                 ## Scaling factors
                 sc.factor <- tryCatch(apply(quotients, 1, median, na.rm = T),
-                                      error = function(e) {
-                                        warning("Low memory. Using the slower method to calculate the scaling factors.")
+                                      error = function(e)
+                                      {
+                                        warning("Low memory. Using the slower
+                                                method to calculate the scaling factors.")
                                         z <- array(NA, nrow(quotients))
                                         for (j in 1:nrow(quotients))
                                         {
@@ -77,19 +83,26 @@
                   sc.factor.mat <- sapply(sc.factor, function(z) rep(z, ncol(x)))
                   x / t(sc.factor.mat)
                 },
-                error = function(e) {
-                  warning("Low memory. Using the slower method to calculate the normalized intensities.")
+                error = function(e)
+                {
+                  warning("Low memory. Using the slower method to calculate the
+                          normalized intensities.")
                   for (j in 1:nrow(x))
                   {
                     x[j, ] <- x[j, ] / sc.factor[j]
                   }
                   return(x)
                 })
+                
                 x[is.na(x)] <- 0
+                
                 x
-              })
+              }
+  )
+  
   x[is.na(x)] <- 0
-  x
+  
+  return(x)
 }
 
 ## Reduce heteroscedasticity

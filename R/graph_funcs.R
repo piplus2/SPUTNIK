@@ -18,9 +18,10 @@
 #' \itemize{
 #'   \item "otsu": the reference image is binarized using Otsu's thresholding
 #'   \item "kmeans": msiData is partitioned in 2 clusters using k-means
-#'   \item "kmeans2": k-means is applied with a user-defined number of clusters (see Details)
-#'   \item "supervised": supervised segmentation based on user-defined areas corresponding
-#'   to off-sample and sample regions.
+#'   \item "kmeans2": k-means is applied with a user-defined number of clusters
+#'   (see Details)
+#'   \item "supervised": supervised segmentation based on user-defined areas
+#'   corresponding to off-sample and sample regions.
 #' }
 #' @param mzQueryRef numeric. Values of m/z used to calculate the reference image.
 #' 2 values are interpreted as interval, multiple or single values are searched
@@ -75,20 +76,21 @@ refAndROIimages <- function(msiData,
                             smoothRef = FALSE,
                             smoothSigma = 2,
                             invertRef = FALSE,
-                            ## Parameters for kmeans2
-                            numClusters = 4, ## number of clusters
-                            sizeKernel = 5, ## number of corners pixels used to identify the
-                                            ## off-sample clusters
-                            numCores = 1, ## parallel computation for k-means2
+                                             ## Parameters for kmeans2 ##
+                            numClusters = 4, # number of clusters
+                            sizeKernel = 5,  # number of corners pixels used to
+                                             # identify the off-sample clusters
+                            numCores = 1, # parallel computation for k-means2
                             verbose = TRUE)
 {
   accept.method.roi <- c("otsu", "kmeans", "kmeans2", "supervised")
   if (!any(roiMethod %in% accept.method.roi))
   {
-    stop("refAndROIimages: Valid roiMethod values are: ", paste0(accept.method.roi, collapse = ", "), ".")
+    stop("refAndROIimages: Valid roiMethod values are: ",
+         paste0(accept.method.roi, collapse = ", "), ".")
   }
 
-  # Ref image
+  # Reference image
   ref.image <- .refImage(msiData = msiData, method = refMethod, mzQuery = mzQueryRef,
                          mzTolerance = mzTolerance, useFullMZ = useFullMZRef,
                          smoothIm = smoothRef, smoothSigma = smoothSigma,
@@ -184,6 +186,7 @@ refAndROIimages <- function(msiData,
         out <- (pca$x[, 1] - min(pca$x[, 1])) / (max(pca$x[, 1]) - min(pca$x[, 1]))
         out
       }
+      
     )
     ref.values[is.na(ref.values)] <- 0
   }
@@ -284,9 +287,8 @@ SSIM <- function(x, y, numBreaks = 256)
 #' use of the functions available in \code{infotheo} R package.
 #'
 #' @param x numeric array. Image 1 color intensity array.
-#' @param y numeric array. Image 2 binary mask.
-#' @param numBins numeric. Number of bins for discretizing the image colors. See
-#' \link[infotheo]{discretize}.
+#' @param y numeric array. Image 2 (binary mask).
+#' @param numBins numeric. Number of bins for discretizing the image colors.
 #'
 #' @return NMI value between 0 and 1.
 #'
@@ -314,7 +316,7 @@ NMI <- function(x, y, numBins = 256)
 }
 
 # Add a border to an image
-addBorder <- function(imMat, border = 2)
+addBorderImage <- function(imMat, border = 2)
 {
   imMat <- rbind(matrix(0, border, ncol(imMat)),
                  imMat,
@@ -326,7 +328,7 @@ addBorder <- function(imMat, border = 2)
 }
 
 # Remove the border from an image
-remBorder <- function(imMat, border = 2)
+remBorderImage <- function(imMat, border = 2)
 {
   imMat <- imMat[seq(border + 1, nrow(imMat)-border),
                  seq(border + 1, ncol(imMat)-border)]

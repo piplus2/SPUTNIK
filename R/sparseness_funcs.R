@@ -18,15 +18,23 @@
 #'
 #' @export
 #' @importFrom SDMTools ConnCompLabel
-#' @importFrom autothresholdr auto_thresh
+#' @import imager
 #'
 scatter.ratio <- function(im)
 {
-  im.size <- dim(im)
-  im8bit <- cut(x = c(im), breaks = 256, labels = F) - 1
-  lev_ <- auto_thresh(im8bit, method = "Otsu")
-  bin_ <- (im8bit > lev_) * 1
-  lbl_ <- unique(c(ConnCompLabel(matrix(bin_, im.size[1], im.size[2]))))
+  stopifnot(length(dim(im)) == 2)
+  stopifnot(all(!is.nan(im)))
+  # Convert to gray scale [0, 1]
+  if (min(im) < 0)
+  {
+    im <- (im - min(im)) / (max(im) - min(im))
+  } else
+  {
+    im <- im / max(im)
+  }
+  bin_ <- threshold(as.cimg(im), thr = 'auto')
+  bin_ <- as.matrix(bin_)
+  lbl_ <- unique(c(ConnCompLabel(bin_)))
   return(length(lbl_[lbl_ != 0]) / sum(bin_))
 }
 
@@ -100,13 +108,22 @@ gini.index <- function(x, levels = 256)
 #'
 spatial.chaos <- function(im, levels = 30, morph = TRUE)
 {
-  im <- im / max(im)
+  stopifnot(length(dim(im)) == 2)
+  stopifnot(all(!is.nan(im)))
+  
+  if (min(im) < 0)
+  {
+    im <- (im - min(im)) / (max(im) - min(im))
+  } else
+  {
+    im <- im / max(im)
+  }
   num.obj <- array(0, levels)
   num.pix <- sum(im != 0)
   for (n in 1:levels)
   {
     th <- n / levels
-    bw <- im > th
+    bw <- (im > th) * 1
     if (morph)
     {
       bw <- as.matrix(mclosing_square(as.cimg(bw), 3))

@@ -5,7 +5,7 @@
 #'
 #' @param msiData \link{msi.dataset-class} object. See \link{msiDataset}.
 #' @param referenceImage \link{ms.image-class} object. Reference image used
-#' to calculate the correlations.
+#' to calculate the similarity values.
 #' @param method method used to calculate the similariry between the peak
 #' intensities and the reference image. Accepted values are:
 #' \itemize{
@@ -19,7 +19,7 @@
 #' default value of 0 guarantees that only the ions with a positive similarity with
 #' the reference image (typically representing the spatial distribution of the
 #' signal source) are retrieved. For consistency, the SSIM and NMI are scaled
-#' in [-1, 1] as the correlations.
+#' in [-1, 1] to match the same range of correlations.
 #'
 #' @param verbose logical (default = \code{TRUE}). Additional output text.
 #'
@@ -63,8 +63,7 @@ globalPeaksFilter <- function(msiData,
     warning("For binary reference images, it is suggested to use the other available methods.\n")
   }
 
-  # Calculate the Pearson's correlation between the ion images and the reference
-  # image.
+  # Calculate the similarity between the ion images and the reference image
   if (verbose)
     cat("Calculating the similarity values...\n")
 
