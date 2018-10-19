@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_split.R
 \name{splitPeaksFilter}
 \alias{splitPeaksFilter}
-\title{Estimate the indices of split peaks.}
+\title{Test for the presence of split peaks.}
 \usage{
 splitPeaksFilter(msiData, mzTolerance = 5, sharedPixelsRatio = 0,
   sparseness = "scatter.ratio", threshold = 0.5,

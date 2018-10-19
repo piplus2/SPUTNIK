@@ -10,5 +10,12 @@
   }
   msi.data@matrix <- x
 
-  msi.data
+  return(msi.data)
+}
+
+## Statistical mode
+.mode <- function(x)
+{
+  ux <- unique(x)
+  return(ux[which.max(tabulate(match(x, ux)))])
 }

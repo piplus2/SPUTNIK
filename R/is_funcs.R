@@ -19,8 +19,10 @@
   if (all(unique(c(x@values)) %in% c(0, 1)))
   {
     return(TRUE)
+  } else
+  {
+    return(FALSE)
   }
-  FALSE
 }
 
 ## .isPeakFilter

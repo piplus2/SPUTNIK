@@ -5,7 +5,7 @@
 #'
 #' @param msiData \link{msi.dataset-class} object. See \link{msiDataset}.
 #' @param referenceImage \link{ms.image-class} object. Reference image used
-#' to calculate the correlations.
+#' to calculate the similarity values.
 #' @param method method used to calculate the similariry between the peak
 #' intensities and the reference image. Accepted values are:
 #' \itemize{
@@ -14,12 +14,12 @@
 #'    \item \code{ssim}: structural similarity index measure
 #'    \item \code{nmi}: normalized mutual information.
 #' }
-#' @param threshold numeric (default = 0). The threshold applied to the
-#' similarity values between the peaks images and the reference image. The
-#' default value of 0 guarantees that only the ions with a positive similarity with
-#' the reference image (typically representing the spatial distribution of the
-#' signal source) are retrieved. For consistency, the SSIM and NMI are scaled
-#' in [-1, 1] as the correlations.
+#' @param threshold numeric (default = 0, default = 0.001 (SSIM)). The threshold
+#' applied to the similarity values between the peaks images and the reference
+#' image. The default value of 0 guarantees that only the ions with a positive
+#' similarity with the reference image (typically representing the spatial
+#' distribution of the signal source) are retrieved. For consistency, the NMI are
+#' scaled in [-1, 1] to match the same range of correlations.
 #'
 #' @param verbose logical (default = \code{TRUE}). Additional output text.
 #'
@@ -32,8 +32,7 @@
 #' between the peaks signal and the reference image and select those with a similarity
 #' larger than \code{threshold}. Multiple measures are available, correlation,
 #' structural similarity index measure (SSIM), and normalized mutual information (NMI).
-#' Since correlation can assume values in [-1, 1], also SSIM and NMI are scaled
-#' in [-1, 1].
+#' Since correlation can assume values in [-1, 1], also NMI are scaled in [-1, 1].
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #'
@@ -51,7 +50,7 @@
 globalPeaksFilter <- function(msiData,
                               referenceImage,
                               method = "pearson",
-                              threshold = 0,
+                              threshold = NULL,
                               verbose = TRUE)
 {
   .stopIfNotValidMSIDataset(msiData)
@@ -63,41 +62,46 @@ globalPeaksFilter <- function(msiData,
     warning("For binary reference images, it is suggested to use the other available methods.\n")
   }
 
-  # Calculate the Pearson's correlation between the ion images and the reference
-  # image.
+  if (is.null(threshold))
+  {
+    # Default threshold for SSIM is slightly higher
+    if (method == 'ssim')
+    {
+      threshold <- 0.001
+    } else
+    {
+      threshold <- 0
+    }
+  }
+  
+  # Calculate the similarity between the ion images and the reference image
   if (verbose)
     cat("Calculating the similarity values...\n")
 
   ## Use NMI only if the reference image is binary
-  if (method == 'nmi')
+  if (method == 'nmi' && !.isBinary(referenceImage))
   {
-    if (length(unique(c(referenceImage@values))) != 2)
-    {
-      cat('nmi can be only used with binary reference images.\n')
-      stop()
-    }
+      stop("globalPeaksFilter: 'nmi' can be only used with binary reference images.")
   }
 
   r <- switch(method,
               "pearson" = apply(msiData@matrix, 2, function(z)
-                cor(c(referenceImage@values), z, method = method)),
+                cor(z, c(referenceImage@values), method = method)),
               "spearman" = apply(msiData@matrix, 2, function(z)
-                cor(c(referenceImage@values), z, method = method)),
+                cor(z, c(referenceImage@values), method = method)),
               "ssim" = apply(msiData@matrix, 2, function(z)
-                SSIM(c(referenceImage@values), z)),
+                SSIM(z, referenceImage@values)),
               "nmi" = apply(msiData@matrix, 2, function(z)
                 NMI(z, c(referenceImage@values)))
               )
-
+  
+  if (verbose)
+    print(quantile(r))
+  
+  if (verbose)
+    cat(paste0('Selecting peaks with similarity larger than ', threshold, '...\n'))
+  
   names(r) <- msiData@mz
-  # Scale in [-1, 1] for consistency
-  if (method == "ssim")
-  {
-    ## First fix the sign of the measure
-    r <- (r - min(r)) / (max(r) - min(r))
-    r <- 2 * r - 1
-  }
-
   out <- list(sim.values = r, sel.peaks = which(r > threshold))
   attr(out, "peak.filter") <- TRUE
   attr(out, "filter") <- "globalPeaks"

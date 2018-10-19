@@ -1,0 +1,26 @@
+# ChangeLog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.1] - 2018-10-19
+### Added
+- New ROI detection using linear SVM. The user must select representative regions of the off-sample and sample-related
+  areas. Then, a linear SVM performs the segmentation of the data, generating the ROI.
+- New ROI detection using k-means with a larger number of clusters than 2. This allows a finer detection of the sample-related region.
+- New functions 'addBorderImage' and 'remBorderImage' to add or remove a border of N pixels from an MS image
+### Fixed
+- Fixed the SSIM function (it does not require scaling)
+- Fixed typos in the help
+
+## [1.0.4.1] - 2018-10-08
+### Removed
+- Removed dependency from 'autothresholdr' package. Now Otsu is performed using
+the function threshold(x, 'auto') from 'imager'.
+
+## [1.0.4] - 2018-10-06
+### Fixed
+- Fixed a bug in the function .match.mz.array.
+- Improved the comments in the function .match.mz.array.
