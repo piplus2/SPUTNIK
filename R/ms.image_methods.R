@@ -170,7 +170,7 @@ setMethod(f = "binOtsu",
               bw <- (object@values > thr) * 1
               bw <- msImage(as.matrix(bw), "ROI")
             }
-            
+
             return(bw)
           }
 )
