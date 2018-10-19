@@ -162,11 +162,15 @@ setMethod(f = "binOtsu",
             if (.isBinary(object))
             {
               bw <- msImage(object@values, "ROI")
+            } else
+            {
+              km <- kmeans(c(object@values), 2)
+              m <- which.min(km$centers)
+              thr <- max(c(object@values)[km$cluster == m])
+              bw <- (object@values > thr) * 1
+              bw <- msImage(as.matrix(bw), "ROI")
             }
-            im.size <- dim(object@values)
-            im <- as.cimg(object@values)
-            bw <- threshold(im, thr = "auto")
-            bw <- msImage(as.matrix(bw), "ROI")
+            
             return(bw)
           }
 )
@@ -230,7 +234,7 @@ setMethod(f = "removeSmallObjects",
             # Add a border to the ROI image. This can help to identify groups of
             # connected pixels close to the borders.
             if (border > 0)
-              roiMat <- addBorder(roiMat, border = border)
+              roiMat <- addBorderImage(roiMat, border = border)
             
             roiMat[roiMat == 0] <- NA
             
@@ -239,7 +243,7 @@ setMethod(f = "removeSmallObjects",
             
             # Remove the border
             if (border > 0)
-              CC <- remBorder(CC, border = border)
+              CC <- remBorderImage(CC, border = border)
             
             # Filter the connected objects with a number of pixels smaller than
             # threshold

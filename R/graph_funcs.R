@@ -241,41 +241,22 @@ SSIM <- function(x, y, numBreaks = 256)
 
   x <- x / max(x)
   y <- y / max(y)
-  x.dig <- cut(as.numeric(c(x)), numBreaks, labels = F) - 1
-  y.dig <- cut(as.numeric(c(y)), numBreaks, labels = F) - 1
+  x.dig <- cut(as.numeric(x), numBreaks, labels = F) - 1
+  y.dig <- cut(as.numeric(y), numBreaks, labels = F) - 1
+  rm(x, y)
   
   C1 <- (0.01 * (numBreaks - 1)) ^ 2
   C2 <- (0.03 * (numBreaks - 1)) ^ 2
-  C3 <- C2 / 2
+
+  mux <- mean(x.dig)
+  muy <- mean(y.dig)
+  sigxy <- cov(x.dig, y.dig)
+  sigx <- var(x.dig)
+  sigy <- var(y.dig)
   
-  luminance <- function(x, y)
-  {
-    ux <- mean(x)
-    uy <- mean(y)
-
-    return ((2 * ux * uy + C1) / ((ux * ux) + (uy * uy) + C1))
-  }
-
-  contrast <- function(x, y) {
-    sx2 <- var(x)
-    sy2 <- var(y)
-    sx <- sqrt(sx2)
-    sy <- sqrt(sy2)
-    
-    return ((2 * sx * sy + C2) / (sx2 + sy2 + C2))
-  }
-
-  structure <- function(x, y)
-  {
-    sx <- sqrt(var(x))
-    sy <-  sqrt(var(y))
-    sxy <- cov(x, y)
-    
-    return ((sxy + C3) / (sx * sy + C3))   
-  }
-
-  ssim <- luminance(x, y) * contrast(x, y) * structure(x, y)
-
+  ssim <- ( (2*mux*muy+C1) * (2*sigxy+C2) ) / ( (mux**2+muy**2+C1) * (sigx+sigy+C2) )
+  stopifnot(ssim >= -1 && ssim <= 1)
+  
   return(ssim)
 }
 
@@ -304,6 +285,7 @@ NMI <- function(x, y, numBins = 256)
 {
   x.dig <- cut(as.numeric(c(x)), breaks = numBins, labels = F) - 1
   y.dig <- cut(as.numeric(c(y)), breaks = 2, labels = F) - 1
+  rm(x, y)
 
   mi <- mutinformation(x.dig, y.dig, method = "emp")
   ## Add the sign to the mutual information
@@ -312,7 +294,10 @@ NMI <- function(x, y, numBins = 256)
   h1 <- entropy(x.dig, method = "emp")
   h2 <- entropy(y.dig, method = "emp")
 
-  return(mi / sqrt(h1 * h2))
+  I <- mi / sqrt(h1 * h2)
+  stopifnot(I >= -1 && I <= 1)
+  
+  return(I)
 }
 
 # Add a border to an image

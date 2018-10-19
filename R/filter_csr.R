@@ -143,6 +143,10 @@ CSRPeaksFilter <- function(msiData,
     # Transform into a 2D matrix
     im <- msImage(matrix(msiData@matrix[, ion], msiData@nrow, msiData@ncol),
                   scale = F)
+    ## Skip constant images
+    if (var(c(im@values)) == 0)
+      next()
+    
     p_[ion] <- .csr.test.im(im = im,
                             method = method,
                             ref.im = ref.covariate,
