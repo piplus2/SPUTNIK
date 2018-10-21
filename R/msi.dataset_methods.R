@@ -126,9 +126,10 @@ setMethod(f = "binKmeans",
 #'
 setMethod(f = "binKmeans2",
           signature = signature(object = "msi.dataset"),
-          definition = function(object, mzQuery = numeric(), useFullMZ = T,
+          definition = function(object, mzQuery = numeric(), useFullMZ = TRUE,
                                 mzTolerance = numeric(), numClusters = 4,
-                                kernelSize = c(3, 3, 3, 3), numCores = 1)
+                                kernelSize = c(3, 3, 3, 3), numCores = 1,
+                                verbose = TRUE)
           {
             if (length(kernelSize) == 1)
             {

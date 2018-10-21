@@ -1,15 +1,15 @@
 ---
-title: "SPUTNIK"
-author: "Paolo Inglese"
-date: "21/10/2018"
-output: html_document
+title: "Introduction to SPUTNIK"
+output:
+  html_document:
+    theme: readable
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## SPUTNIK
+## Introduction
 
 Welcome to SPUTNIK Github Page!
 SPUTNIK is a filter tool for Mass Spectrometry Imaging (MSI) data. It is designed
@@ -23,6 +23,9 @@ sample, and can interfere with the statistical analysis of the data. Furthermore
 the presence of these signals makes the dimensionality of the data uselessly big.
 SPUTNIK uses three classes of filters to identify and remove these types of
 signals.
+
+## Global reference filter
+
 The first family of filters, called *general similarity filters*, uses the expected
 location of the sample (ROI) to determine if a signal is informative or not.
 Simple similarity measures between the ROI, or a continuous reference signal
@@ -61,10 +64,54 @@ First load the example MALDI-MSI data
 bladderMALDI <- bladderMALDIRompp2010() 
 ```
 
-Then, create the msiDataset object
+Then, create the msiDataset object using the `msiDataset` command, and apply the
+normalization and log2-transformation
 ```{r create msiDataset}
 msiX <- msiDataset(values = bladderMALDI,
                    mz = attr(bladderMALDI, 'mass'),
                    rsize = attr(bladderMALDI, 'size')[1],
                    csize = attr(bladderMALDI, 'size')[2])
+msiX <- normIntensity(msiX, 'PQN')
+msiX <- varTransform(msiX, 'log2')
+```
+
+The `refAndRoiImages` command generates the continuous reference and ROI
+```{r ref and roi}
+ref_roi <- refAndROIimages(msiData = msiX, refMethod = "sum", roiMethod = "otsu")
+```
+
+Both the continuous reference and ROI can be plotted using the `plot` command
+```{r plot ref}
+plot(ref_roi$Reference)
+```
+```{r plot roi}
+plot(ref_roi$ROI)
+```
+
+The sum of the peaks intensities does not show clearly the area occupied by the
+sample. Therefore, we can use k-means to extract the ROI, setting the
+`roifMethod` to `kmeans`. Also, we use only the peaks in the expected informative m/z
+range.
+
+```{r ref and roi 2}
+ref_roi <- refAndROIimages(msiData = msiX, refMethod = "sum", roiMethod = "kmeans2",
+                           mzQueryRef = c(850, 900), mzTolerance = Inf,
+                           useFullMZRef = FALSE)
+```
+
+Now the images are positively correlated with the sample region.
+```{r plot ref 2}
+plot(ref_roi$Reference)
+```
+```{r plot roi 2}
+plot(ref_roi$ROI)
+```
+
+Often the ROI contains several scattered pixels, as result of the presence of noise
+in the original data. The isolated pixels can be removed through the `removeSmallObjects`
+command. Now we remove all the connected objects smaller than 50 pixels.
+
+```{r remove small objects}
+ref_roi$ROI <- removeSmallObjects(ref_roi$ROI, threshold = 50)
+plot(ref_roi$ROI)
 ```
