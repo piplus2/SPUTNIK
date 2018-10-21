@@ -11,8 +11,8 @@ most frequent labels in the image corners. The lookup areas are defined by
 the kernel size.}
 \usage{
 \S4method{binKmeans2}{msi.dataset}(object, mzQuery = numeric(),
-  useFullMZ = T, mzTolerance = numeric(), numClusters = 4,
-  kernelSize = c(3, 3, 3, 3), numCores = 1)
+  useFullMZ = TRUE, mzTolerance = numeric(), numClusters = 4,
+  kernelSize = c(3, 3, 3, 3), numCores = 1, verbose = TRUE)
 }
 \arguments{
 \item{object}{\link{msi.dataset-class} object}

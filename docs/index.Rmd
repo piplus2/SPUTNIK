@@ -1,5 +1,5 @@
 ---
-title: "Introduction to SPUTNIK"
+title: "SPatially aUTomatic deNoising for Ims toolKit (SPUTNIK)"
 output:
   html_document:
     theme: readable
@@ -90,13 +90,10 @@ plot(ref_roi$ROI)
 
 The sum of the peaks intensities does not show clearly the area occupied by the
 sample. Therefore, we can use k-means to extract the ROI, setting the
-`roifMethod` to `kmeans`. Also, we use only the peaks in the expected informative m/z
-range.
+`roifMethod` to `kmeans2`.
 
 ```{r ref and roi 2}
-ref_roi <- refAndROIimages(msiData = msiX, refMethod = "sum", roiMethod = "kmeans2",
-                           mzQueryRef = c(850, 900), mzTolerance = Inf,
-                           useFullMZRef = FALSE)
+ref_roi <- refAndROIimages(msiData = msiX, refMethod = "sum", roiMethod = "kmeans2")
 ```
 
 Now the images are positively correlated with the sample region.
@@ -109,9 +106,39 @@ plot(ref_roi$ROI)
 
 Often the ROI contains several scattered pixels, as result of the presence of noise
 in the original data. The isolated pixels can be removed through the `removeSmallObjects`
-command. Now we remove all the connected objects smaller than 50 pixels.
+command. Now we remove all the connected objects smaller than 5 pixels.
 
 ```{r remove small objects}
-ref_roi$ROI <- removeSmallObjects(ref_roi$ROI, threshold = 50)
+ref_roi$ROI <- removeSmallObjects(ref_roi$ROI, threshold = 5)
 plot(ref_roi$ROI)
+```
+
+The global reference filter uses the similarity between the peak intensity image
+and the continuous reference or the binary ROI. In this case, we calculate the
+normalized mutual information (NMI) with the ROI
+
+```{r gpf}
+gpf <- globalPeaksFilter(msiData = msiX, referenceImage = ref_roi$ROI,
+                         method = 'nmi')
+```
+
+Then, we can apply the filter to remove the uninformative peaks.
+
+```{r apply gpf}
+msiX <- applyPeaksFilter(msiX, gpf)
+print(dim(getIntensityMat(msiX)))
+```
+
+We can check the effect of filtering by plotting the RGB image corresponding to
+the scores of the first 3 principal components. This gives a qualitative idea of
+the spatial structures present in the dataset
+
+```{r pca image}
+pca <- prcomp(getIntensityMat(msiX), center = TRUE, scale. = TRUE)
+pcaRGB <- matrix(NA, prod(getShapeMSI(msiX)), 3)
+for (i in 1:3)
+  pcaRGB[, i] <- (pca$x[, i] - min(pca$x[, i])) / (max(pca$x[, i]) - min(pca$x[, i]))
+pcaRGB <- rgb(pcaRGB)
+plot(as.raster(matrix(pcaRGB, getShapeMSI(msiX)[1], getShapeMSI(msiX)[2])),
+     interpolate = F)
 ```
