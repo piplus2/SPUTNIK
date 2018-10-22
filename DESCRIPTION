@@ -8,12 +8,12 @@ Authors@R: c(person("Paolo", "Inglese", email = "p.inglese14@imperial.ac.uk", ro
         person("Goncalo", "Correia", role = c("aut", "ctb")))
 Description: A set of tools for the peak filtering of mass spectrometry
   imaging data (MSI or IMS) based on spatial distribution of signal. Given a 
-  region-of-interest (ROI), representing the spatial region where the informative signal is expected to be
-  localized, a series of filters determine which peak signals are characterized by
-  an implausible spatial distribution. The filters reduce the dataset dimensionality
-  and increase its information vs noise ratio, improving the quality of the
-  unsupervised analysis results, reducing data dimensionality and simplifying
-  the chemical interpretation.
+  region-of-interest (ROI), representing the spatial region where the informative
+  signal is expected to be localized, a series of filters determine which peak
+  signals are characterized by an implausible spatial distribution. The filters
+  reduce the dataset dimensionality and increase its information vs noise ratio,
+  improving the quality of the unsupervised analysis results, reducing data
+  dimensionality and simplifying the chemical interpretation.
 Depends: R (>= 3.4.0)
 License: GPL (>= 3)
 Encoding: UTF-8
