@@ -4,9 +4,8 @@
 \alias{CSRPeaksFilter}
 \title{Performs the peak selection based on complete spatial randomness test.}
 \usage{
-CSRPeaksFilter(msiData, method = "ClarkEvans",
-  calculateCovariate = FALSE, covMethod = "sum",
-  mzQueryCov = numeric(), mzTolerance = numeric(),
+CSRPeaksFilter(msiData, method = "ClarkEvans", covariateImage = NULL,
+  covMethod = "sum", mzQueryCov = numeric(), mzTolerance = numeric(),
   useFullMZCov = TRUE, smoothCov = FALSE, smoothCovSigma = 2,
   invertCov = FALSE, adjMethod = "bonferroni", returnQvalues = TRUE,
   plotCovariate = FALSE, verbose = TRUE, ...)
@@ -25,8 +24,9 @@ applied to the peaks signal. Accepted values are:
    Kolmogorov-Smirnov test. The covariate is defined by the reference image.
 }}
 
-\item{calculateCovariate}{logical (default = \code{FALSE}). Whether the covariance
-image should be calculated. Necessary when \code{method = "KS"}.}
+\item{covariateImage}{\link{ms.image-class} object. An image used as covariate
+(necessary for Kolmogorov-Smirnov test). If NULL, the covariate image is
+calculated using the method defined by `covMethod`.}
 
 \item{covMethod}{string (default = \code{"sum"}). Method used to calculate the
 reference image. Read only when \code{method = "KS"}. Possible values

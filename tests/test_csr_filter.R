@@ -7,12 +7,14 @@ test_that("CRS filter", {
   shape <- attr(x, 'size')
   
   msX <- msiDataset(values = x, mz = mz, rsize = shape[1], csize = shape[2])
+  msX <- normIntensity(msX, 'PQN')
+  msX <- varTransform(msX, 'log2')
   refRoi <- refAndROIimages(msX, refMethod = 'sum', roiMethod = 'otsu')
   
   cat('Clark-Evans test...\n')
   csrCE <- CSRPeaksFilter(msX,
                           method = "ClarkEvans",
-                          calculateCovariate = FALSE,
+                          covariateImage = NULL, # Not necessary for Clark-Evans
                           covMethod = "sum",       # --------------------
                           mzQueryCov = numeric(),  # Covariate arguments
                           mzTolerance = numeric(), #
@@ -28,7 +30,7 @@ test_that("CRS filter", {
   cat('Kolmogorov-Smirnov test...\n')
   csrKS <- CSRPeaksFilter(msX,
                           method = "KS",
-                          calculateCovariate = TRUE,
+                          covariateImage = NULL, # Calculate the covariate
                           covMethod = "sum",       # --------------------
                           mzQueryCov = numeric(),  # Covariate arguments
                           mzTolerance = numeric(), #
@@ -41,14 +43,34 @@ test_that("CRS filter", {
                           plotCovariate = FALSE,
                           verbose = TRUE)
   
+  cat('Passing covariate as argument for Kolmogorov-Smirnov test...\n')
+  csrKS2 <- CSRPeaksFilter(msX,
+                           method = "KS",
+                           covariateImage = refRoi$ROI, # Calculate the covariate
+                           covMethod = "sum",       # --------------------
+                           mzQueryCov = numeric(),  # Covariate arguments
+                           mzTolerance = numeric(), #
+                           useFullMZCov = TRUE,     #
+                           smoothCov = FALSE,       #
+                           smoothCovSigma = 2,      #
+                           invertCov = FALSE,       #---------------------
+                           adjMethod = "bonferroni",
+                           returnQvalues = TRUE,
+                           plotCovariate = FALSE,
+                           verbose = TRUE)
+  
   expect_is(csrCE, 'list')
   expect_equal(attr(csrCE, 'names'), c('p.value', 'q.value'))
   expect_is(csrKS, 'list')
   expect_equal(attr(csrKS, 'names'), c('p.value', 'q.value'))
+  expect_is(csrKS, 'list')
+  expect_equal(attr(csrKS2, 'names'), c('p.value', 'q.value'))
   
   csrFiltCE <- createPeaksFilter(which(csrCE$q.value < 0.05))
   csrFiltKS <- createPeaksFilter(which(csrKS$q.value < 0.05))
+  csrFiltKS2 <- createPeaksFilter(which(csrKS2$q.value < 0.05))
   
-  expect_equal(length(csrFiltCE$sel.peaks), 373)
-  expect_equal(length(csrFiltKS$sel.peaks), 569)
+  expect_equal(length(csrFiltCE$sel.peaks), 369)
+  expect_equal(length(csrFiltKS$sel.peaks), 543)
+  expect_equal(length(csrFiltKS$sel.peaks), 442)
 })

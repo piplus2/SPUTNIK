@@ -23,17 +23,24 @@
 bladderMALDIRompp2010 <- function(verbose = TRUE)
 {
   maldiData <- NULL
+  
   if (verbose)
   {
     cat("Downloading the data from the repository...\n")
   }
+  
   addr <- "https://raw.github.com/paoloinglese/SPUTNIKexamples/master/data/maldiData.rda"
   z <- paste0(tempfile(), ".rda")
-  download.file(addr, z, mode = "wb")
+  tryCatch(download.file(addr, z, mode = "wb"),
+           error = function(e) {
+             stop(e)
+           })
+  
   if (verbose)
   {
     cat("Loading the data in the R environment...\n")
   }
+  
   load(z)
   ## Delete the temporary file
   file.remove(z)
@@ -66,17 +73,24 @@ bladderMALDIRompp2010 <- function(verbose = TRUE)
 ovarianDESIDoria2016 <- function(verbose = TRUE)
 {
   desiData <- NULL
+  
   if (verbose)
   {
     cat("Downloading the data from the repository...\n")
   }
+  
   addr <- "https://raw.github.com/paoloinglese/SPUTNIKexamples/master/data/desiData.rda"
   z <- paste0(tempfile(), ".RData")
-  download.file(addr, z, mode = "wb")
+  tryCatch(download.file(addr, z, mode = "wb"),
+           error = function(e) {
+             stop(e)
+           })
+  
   if (verbose)
   {
     cat("Loading the data in the R environment...\n")
   }
+  
   load(z)
   ## Delete the temporary file
   file.remove(z)

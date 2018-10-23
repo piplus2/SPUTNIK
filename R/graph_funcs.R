@@ -83,10 +83,12 @@ refAndROIimages <- function(msiData,
                             numCores = 1, # parallel computation for k-means2
                             verbose = TRUE)
 {
+  .stopIfNotValidMSIDataset(msiData)
+  
   accept.method.roi <- c("otsu", "kmeans", "kmeans2", "supervised")
   if (!any(roiMethod %in% accept.method.roi))
   {
-    stop("refAndROIimages: Valid roiMethod values are: ",
+    stop("valid roiMethod values are: ",
          paste0(accept.method.roi, collapse = ", "), ".")
   }
 
@@ -96,22 +98,23 @@ refAndROIimages <- function(msiData,
                          smoothIm = smoothRef, smoothSigma = smoothSigma,
                          invertIm = invertRef)
   # ROI
-  roi.im <- switch(roiMethod,
-                   "otsu" = binOtsu(ref.image),
-                   "kmeans" = binKmeans(msiData),
-                   "kmeans2" = binKmeans2(msiData, mzQuery = mzQueryRef,
-                                          mzTolerance = mzTolerance,
-                                          useFullMZ = useFullMZRef,
-                                          numClusters = numClusters,
-                                          numCores = numCores,
-                                          kernelSize = sizeKernel),
-                   "supervised" = binSupervised(msiData,
-                                           refImage = ref.image,
-                                           mzQuery = mzQueryRef,      # Filter m/z values
-                                           useFullMZ = useFullMZRef,  #
-                                           mzTolerance = mzTolerance, #
-                                           method = 'svm') # Currently only 'svm' available
-                   )
+  roi.im <- switch(
+    roiMethod,
+    "otsu" = binOtsu(ref.image),
+    "kmeans" = binKmeans(msiData),
+    "kmeans2" = binKmeans2(msiData, mzQuery = mzQueryRef,
+                           mzTolerance = mzTolerance,
+                           useFullMZ = useFullMZRef,
+                           numClusters = numClusters,
+                           numCores = numCores,
+                           kernelSize = sizeKernel),
+    "supervised" = binSupervised(msiData,
+                                 refImage = ref.image,
+                                 mzQuery = mzQueryRef,      # Filter m/z values
+                                 useFullMZ = useFullMZRef,  #
+                                 mzTolerance = mzTolerance, #
+                                 method = 'svm') # Currently only 'svm' available
+  )
 
   return(list(Reference = ref.image, ROI = roi.im))
 }
@@ -131,22 +134,22 @@ refAndROIimages <- function(msiData,
   accept.method.ref <- c("sum", "median", "mean", "pca")
   if (!any(method %in% accept.method.ref))
   {
-    stop(".refImage: Valid method values are: ", paste0(accept.method.ref, collapse = ", "), ".")
+    stop("valid method values are: ", paste0(accept.method.ref, collapse = ", "), ".")
   }
 
   .stopIfNotValidMSIDataset(msiData)
 
   if (length(mzQuery) == 0 && !useFullMZ)
   {
-    stop(".refImage: 'mzQuery' and 'useFullMZ' are not compatible.")
+    stop("'mzQuery' and 'useFullMZ' are not compatible.")
   }
   if (length(mzQuery) != 0 && useFullMZ)
   {
-    stop(".refImage: 'mzQuery' and 'useFullMZ' are not compatible.")
+    stop("'mzQuery' and 'useFullMZ' are not compatible.")
   }
   if (length(mzQuery) != 0 && length(mzTolerance) == 0)
   {
-    stop(".refImage: 'mzTolerance' missing.")
+    stop("'mzTolerance' missing.")
   }
 
   # Match the peaks indices
@@ -186,7 +189,6 @@ refAndROIimages <- function(msiData,
         out <- (pca$x[, 1] - min(pca$x[, 1])) / (max(pca$x[, 1]) - min(pca$x[, 1]))
         out
       }
-      
     )
     ref.values[is.na(ref.values)] <- 0
   }
@@ -207,7 +209,7 @@ refAndROIimages <- function(msiData,
     ref.image <- invertImage(ref.image)
   }
 
-  ref.image
+  return(ref.image)
 }
 
 #' Structural similarity index (SSIM).
@@ -303,6 +305,19 @@ NMI <- function(x, y, numBins = 256)
 # Add a border to an image
 addBorderImage <- function(imMat, border = 2)
 {
+  if (!is.matrix(imMat))
+  {
+    stop("input must be a numeric matrix.")
+  }
+  if (border == 0)
+  {
+    return(imMat)
+  }
+  if (border < 0)
+  {
+    stop("addBorderImage: border must be positive.")
+  }
+  
   imMat <- rbind(matrix(0, border, ncol(imMat)),
                  imMat,
                  matrix(0, border, ncol(imMat)))
@@ -315,6 +330,19 @@ addBorderImage <- function(imMat, border = 2)
 # Remove the border from an image
 remBorderImage <- function(imMat, border = 2)
 {
+  if (!is.matrix(imMat))
+  {
+    stop("input must be a numeric matrix.")
+  }
+  if (border == 0)
+  {
+    return(imMat)
+  }
+  if (border < 0)
+  {
+    stop("border must be positive.")
+  }
+  
   imMat <- imMat[seq(border + 1, nrow(imMat)-border),
                  seq(border + 1, ncol(imMat)-border)]
   return(imMat)

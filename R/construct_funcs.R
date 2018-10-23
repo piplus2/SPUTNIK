@@ -36,11 +36,11 @@ msiDataset <-  function(values, mz, rsize, csize)
 {
   if (ncol(values) != length(mz))
   {
-    stop("msiDataset: incompatible dimensions of m/z vector and intensity matrix.")
+    stop("incompatible dimensions of m/z vector and intensity matrix.")
   }
   if (nrow(values) != rsize * csize)
   {
-    stop("msiDataset: incompatible rsize and csize values for the provided intensity matrix.")
+    stop("incompatible rsize and csize values for the provided intensity matrix.")
   }
 
   object <- new("msi.dataset")
@@ -86,8 +86,10 @@ msImage <- function(values, name = character(), scale = TRUE)
   object <- new("ms.image")
   
   if (any(is.na(values)))
-    stop('msImage: NA values present in the image matrix.')
-
+  {
+    stop('NA values present in the image matrix.')
+  }
+  
   if (scale)
   {
     values <- values / max(values)
@@ -135,7 +137,7 @@ createPeaksFilter <- function(peaksIndices)
 {
   if (is.null(names(peaksIndices)))
   {
-    warning("msiDataset: names of peak indices vector elements should match the selected m/z values.")
+    warning("names of 'peakIndices' elements should match the selected m/z values.")
   }
   
   l <- list(sel.peaks = peaksIndices)

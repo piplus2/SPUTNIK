@@ -8,6 +8,8 @@ test_that("pixel count filter", {
   shape <- attr(x, 'size')
   
   msX <- msiDataset(values = x, mz = mz, rsize = shape[1], csize = shape[2])
+  msX <- normIntensity(msX, 'PQN')
+  msX <- varTransform(msX, 'log2')
   refRoi <- refAndROIimages(msX, refMethod = 'sum', roiMethod = 'otsu')
   cpfAggr0 <- countPixelsFilter(msiData = msX, roiImage = refRoi$ROI,
                                 minNumPixels = MIN_NUM_PIXELS, aggressive = 0)
@@ -30,7 +32,7 @@ test_that("pixel count filter", {
   expect_true((length(cpfAggr0$sel.peaks) >= length(cpfAggr1$sel.peaks)) &&
                 (length(cpfAggr0$sel.peaks) >= length(cpfAggr2$sel.peaks)) &&
                 (length(cpfAggr1$sel.peaks) >= length(cpfAggr2$sel.peaks)))
-  expect_equal(length(cpfAggr0$sel.peaks), 144)
-  expect_equal(length(cpfAggr1$sel.peaks), 72)
-  expect_equal(length(cpfAggr2$sel.peaks), 45)
+  expect_equal(length(cpfAggr0$sel.peaks), 201)
+  expect_equal(length(cpfAggr1$sel.peaks), 181)
+  expect_equal(length(cpfAggr2$sel.peaks), 85)
 })

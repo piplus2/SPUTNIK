@@ -7,6 +7,8 @@ test_that("global reference filter", {
   shape <- attr(x, 'size')
   
   msX <- msiDataset(values = x, mz = mz, rsize = shape[1], csize = shape[2])
+  msX <- normIntensity(msX, 'PQN')
+  msX <- varTransform(msX, 'log2')
   refRoi <- refAndROIimages(msX, refMethod = 'sum', roiMethod = 'otsu')
   
   cat('similarity: pearson\n')
@@ -35,8 +37,8 @@ test_that("global reference filter", {
   expect_equal(attr(gpfNMI, 'peak.filter'), T)
   expect_equal(attr(gpfNMI, 'filter'), 'globalPeaks')
   
-  expect_equal(length(gpfPearson$sel.peaks), 560)
-  expect_equal(length(gpfSpearman$sel.peaks), 535)
-  expect_equal(length(gpfSSIM$sel.peaks), 789)
-  expect_equal(length(gpfNMI$sel.peaks), 558)
+  expect_equal(length(gpfPearson$sel.peaks), 406)
+  expect_equal(length(gpfSpearman$sel.peaks), 520)
+  expect_equal(length(gpfSSIM$sel.peaks), 1148)
+  expect_equal(length(gpfNMI$sel.peaks), 392)
 })

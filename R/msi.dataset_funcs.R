@@ -111,24 +111,24 @@
   ## Check if NAs are present
   if (any(is.na(x)))
   {
-    stop('.varTransf: NAs values found in the matrix.')
+    stop("NAs values found in the matrix.")
   }
   ## Check if negative values are present
   if (min(x) < 0)
   {
-    stop('.varTransf: found negative values in the matrix.')
+    stop("found negative values in the matrix.")
   }
   ## If the smallest intensity is not zero, show a warning saying that the intensities
   ## will still summed to 1
   if (min(x) > 0)
   {
-    warning('.varTransf: the smallest value is larger than 0.')
+    warning("the smallest value is larger than 0.")
   }
   
   accept.method <- c("log", "log2", "log10", "sqrt")
   if (!any(method %in% accept.method))
   {
-    stop(".varTransf: Valid methods are:", paste0(accept.method, collapse = ", "), ".")
+    stop("Valid methods are:", paste0(accept.method, collapse = ", "), ".")
   }
   x <- switch(method,
               "log" = log(x + 1),

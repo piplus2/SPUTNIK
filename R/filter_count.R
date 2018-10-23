@@ -57,14 +57,19 @@ countPixelsFilter <- function(msiData,
                               closePeakImage = FALSE,
                               closeKernSize = 5,
                               aggressive = 0,
-                              verbose = TRUE) {
-
+                              verbose = TRUE)
+{
+  .stopIfNotValidMSIDataset(msiData)
+  .stopIfNotValidMSImage(roiImage)
+  
   # Count the number of connected pixels within and outside the ROI. In order
   # to accept a peak as informative, there must be at least one group of connected
   # pixels of minNumPixels size within the ROI. This is necessary to discriminate
   # between peaks that are randomly distributed within the ROI.
   if (verbose)
+  {
     cat("Counting connected pixels within signal region...\n")
+  }
 
   filter.results <- array(NA, length(msiData@mz), dimnames = list(msiData@mz))
   max.count.inside <- filter.results
