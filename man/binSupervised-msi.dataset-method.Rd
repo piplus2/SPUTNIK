@@ -18,18 +18,18 @@ and sample-related areas.}
 \item{refImage}{\link{ms.image-class} object. Image used as reference to
 manually select the ROI pixels.}
 
+\item{mzQuery}{numeric. Values of m/z used to calculate the reference image.
+2 values are interpreted as interval, multiple or single values are searched
+in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.}
+
+\item{useFullMZ}{logical (default = TRUE). Whether all the peaks should be
+used to calculate the reference image.}
+
 \item{mzTolerance}{numeric. Tolerance in PPM to match the \code{mzQueryRef}
 values in the m/z vector. Only valid when \code{useFullMZ = FALSE}.}
 
 \item{method}{string (default = 'svm'). Supervised classifier used to segment
 the ROI.}
-
-\item{mzQueryRef}{numeric. Values of m/z used to calculate the reference image.
-2 values are interpreted as interval, multiple or single values are searched
-in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.}
-
-\item{useFullMZRef}{logical (default = TRUE). Whether all the peaks should be
-used to calculate the reference image.}
 }
 \value{
 \link{ms.image-class} object representing the binary mask image.

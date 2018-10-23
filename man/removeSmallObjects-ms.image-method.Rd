@@ -13,6 +13,10 @@
 \item{object}{\link{ms.image-class} object. See \link{msImage}.}
 
 \item{threshold}{numeric. Smallest number of connected pixels.}
+
+\item{border}{numeric (default = 3). Size of the empty border to add before
+detecting the connected objects. The border is removed at the end of the
+process. If `border = 0`, no border is added.}
 }
 \value{
 \link{ms.image-class} object after filtering.
@@ -26,7 +30,7 @@ library(SPUTNIK)
 fakeBinImage <- matrix(0, 100, 100)
 fakeBinImage[sample(prod(dim(fakeBinImage)), 2000)] <- 1
 
-fakeBinMsImage <- msImage(values = fakeBinImage, name = 'ROI', scale = F)
+fakeBinMsImage <- msImage(values = fakeBinImage, name = 'ROI', scale = FALSE)
 
 # Remove the objects with a number of connected pixels smaller than 5
 fakeBinMsImage <- removeSmallObjects(fakeBinMsImage, threshold = 5)

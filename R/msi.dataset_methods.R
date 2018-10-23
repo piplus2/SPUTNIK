@@ -101,12 +101,12 @@ setMethod(f = "binKmeans",
 #' the kernel size.
 #'
 #' @param object \link{msi.dataset-class} object
-#' @param mzQueryRef numeric. Values of m/z used to calculate the reference image.
+#' @param mzQuery numeric. Values of m/z used to calculate the reference image.
 #' 2 values are interpreted as interval, multiple or single values are searched
 #' in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.
 #' @param mzTolerance numeric. Tolerance in PPM to match the \code{mzQueryRef}
 #' values in the m/z vector. Only valid when \code{useFullMZ = FALSE}.
-#' @param useFullMZRef logical (default = TRUE). Whether all the peaks should be
+#' @param useFullMZ logical (default = TRUE). Whether all the peaks should be
 #' used to calculate the reference image.
 #' @param numClusters numeric (default = 4). Number of k-means clusters.
 #' @param kernelSize 4D array (default = c(3, 3, 3, 3)). Array of sizes in pixels of the corner
@@ -114,6 +114,7 @@ setMethod(f = "binKmeans",
 #' size of the top-left, top-right, bottom-right and bottom-left corners. A negative
 #' value can be used to skip the corresponding corner.
 #' @param numCores (default = 1). Multi-core parallel computation of k-means clusters.
+#' @param verbose logical (default = `TRUE``). Show additional output.
 #'
 #' @return \link{ms.image-class} object representing the binary mask image.
 #'
@@ -126,9 +127,13 @@ setMethod(f = "binKmeans",
 #'
 setMethod(f = "binKmeans2",
           signature = signature(object = "msi.dataset"),
-          definition = function(object, mzQuery = numeric(), useFullMZ = TRUE,
-                                mzTolerance = numeric(), numClusters = 4,
-                                kernelSize = c(3, 3, 3, 3), numCores = 1,
+          definition = function(object,
+                                mzQuery = numeric(),
+                                useFullMZ = TRUE,
+                                mzTolerance = numeric(),
+                                numClusters = 4,
+                                kernelSize = c(3, 3, 3, 3),
+                                numCores = 1,
                                 verbose = TRUE)
           {
             if (length(kernelSize) == 1)
@@ -242,12 +247,12 @@ setMethod(f = "binKmeans2",
 #' @param object \link{msi.dataset-class} object
 #' @param refImage \link{ms.image-class} object. Image used as reference to
 #' manually select the ROI pixels.
-#' @param mzQueryRef numeric. Values of m/z used to calculate the reference image.
+#' @param mzQuery numeric. Values of m/z used to calculate the reference image.
 #' 2 values are interpreted as interval, multiple or single values are searched
 #' in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.
 #' @param mzTolerance numeric. Tolerance in PPM to match the \code{mzQueryRef}
 #' values in the m/z vector. Only valid when \code{useFullMZ = FALSE}.
-#' @param useFullMZRef logical (default = TRUE). Whether all the peaks should be
+#' @param useFullMZ logical (default = TRUE). Whether all the peaks should be
 #' used to calculate the reference image.
 #' @param method string (default = 'svm'). Supervised classifier used to segment
 #' the ROI.
@@ -258,6 +263,7 @@ setMethod(f = "binKmeans2",
 #' 
 #' @export
 #' @import imager e1071
+#' @importFrom stats predict quantile
 #' @aliases binSupervised
 #'
 setMethod(f = "binSupervised",
@@ -314,11 +320,11 @@ setMethod(f = "binSupervised",
             
             cat('Segmentation...\n')
             mdl <- switch(method,
-                          'svm' = svm(msx@matrix[idx.train, ], y, kernel = 'linear')
+                          'svm' = svm(object@matrix[idx.train, ], y, kernel = 'linear')
             )
             
             ypred <- as.character(c(mask))
-            ypred[idx.test] <- as.character(predict(mdl, msx@matrix[idx.test, ]))
+            ypred[idx.test] <- as.character(predict(mdl, object@matrix[idx.test, ]))
             
             ypred <- as.numeric(ypred)
             stopifnot(all(sort(unique(ypred)) == c(1, 2)))

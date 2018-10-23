@@ -40,7 +40,7 @@
 #' @param verbose logical (default = TRUE). Additional output text.
 #' @param numClusters numeric (default = 4). Only for 'kmeans2' method. Number
 #' of clusters.
-#' @param kernelSize 4-D numeric array or numeric (default = 5). Only for 'kmeans2'.
+#' @param sizeKernel 4-D numeric array or numeric (default = 5). Only for 'kmeans2'.
 #' Each element of the 4-D array represents the size of the corners square kernels
 #' used to determine the off-tissue clusters. The element order is clockwise:
 #' top-left, top-right, bottom-left, bottom-right. If negative, the corresponding
@@ -93,21 +93,27 @@ refAndROIimages <- function(msiData,
   }
 
   # Reference image
-  ref.image <- .refImage(msiData = msiData, method = refMethod, mzQuery = mzQueryRef,
-                         mzTolerance = mzTolerance, useFullMZ = useFullMZRef,
-                         smoothIm = smoothRef, smoothSigma = smoothSigma,
+  ref.image <- .refImage(msiData = msiData,
+                         method = refMethod,
+                         mzQuery = mzQueryRef,
+                         mzTolerance = mzTolerance,
+                         useFullMZ = useFullMZRef,
+                         smoothIm = smoothRef,
+                         smoothSigma = smoothSigma,
                          invertIm = invertRef)
   # ROI
   roi.im <- switch(
     roiMethod,
     "otsu" = binOtsu(ref.image),
     "kmeans" = binKmeans(msiData),
-    "kmeans2" = binKmeans2(msiData, mzQuery = mzQueryRef,
+    "kmeans2" = binKmeans2(msiData,
+                           mzQuery = mzQueryRef,
                            mzTolerance = mzTolerance,
                            useFullMZ = useFullMZRef,
                            numClusters = numClusters,
                            numCores = numCores,
-                           kernelSize = sizeKernel),
+                           kernelSize = sizeKernel,
+                           verbose = verbose),
     "supervised" = binSupervised(msiData,
                                  refImage = ref.image,
                                  mzQuery = mzQueryRef,      # Filter m/z values
@@ -300,50 +306,4 @@ NMI <- function(x, y, numBins = 256)
   stopifnot(I >= -1 && I <= 1)
   
   return(I)
-}
-
-# Add a border to an image
-addBorderImage <- function(imMat, border = 2)
-{
-  if (!is.matrix(imMat))
-  {
-    stop("input must be a numeric matrix.")
-  }
-  if (border == 0)
-  {
-    return(imMat)
-  }
-  if (border < 0)
-  {
-    stop("addBorderImage: border must be positive.")
-  }
-  
-  imMat <- rbind(matrix(0, border, ncol(imMat)),
-                 imMat,
-                 matrix(0, border, ncol(imMat)))
-  imMat <- cbind(matrix(0, nrow(imMat), border),
-                 imMat,
-                 matrix(0, nrow(imMat), border))
-  return(imMat)
-}
-
-# Remove the border from an image
-remBorderImage <- function(imMat, border = 2)
-{
-  if (!is.matrix(imMat))
-  {
-    stop("input must be a numeric matrix.")
-  }
-  if (border == 0)
-  {
-    return(imMat)
-  }
-  if (border < 0)
-  {
-    stop("border must be positive.")
-  }
-  
-  imMat <- imMat[seq(border + 1, nrow(imMat)-border),
-                 seq(border + 1, ncol(imMat)-border)]
-  return(imMat)
 }

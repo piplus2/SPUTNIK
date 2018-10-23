@@ -17,6 +17,13 @@ the kernel size.}
 \arguments{
 \item{object}{\link{msi.dataset-class} object}
 
+\item{mzQuery}{numeric. Values of m/z used to calculate the reference image.
+2 values are interpreted as interval, multiple or single values are searched
+in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.}
+
+\item{useFullMZ}{logical (default = TRUE). Whether all the peaks should be
+used to calculate the reference image.}
+
 \item{mzTolerance}{numeric. Tolerance in PPM to match the \code{mzQueryRef}
 values in the m/z vector. Only valid when \code{useFullMZ = FALSE}.}
 
@@ -29,12 +36,7 @@ value can be used to skip the corresponding corner.}
 
 \item{numCores}{(default = 1). Multi-core parallel computation of k-means clusters.}
 
-\item{mzQueryRef}{numeric. Values of m/z used to calculate the reference image.
-2 values are interpreted as interval, multiple or single values are searched
-in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.}
-
-\item{useFullMZRef}{logical (default = TRUE). Whether all the peaks should be
-used to calculate the reference image.}
+\item{verbose}{logical (default = `TRUE``). Show additional output.}
 }
 \value{
 \link{ms.image-class} object representing the binary mask image.

@@ -208,6 +208,9 @@ setMethod(f = "closeImage",
 #'
 #' @param object \link{ms.image-class} object. See \link{msImage}.
 #' @param threshold numeric. Smallest number of connected pixels.
+#' @param border numeric (default = 3). Size of the empty border to add before
+#' detecting the connected objects. The border is removed at the end of the
+#' process. If `border = 0`, no border is added.
 #'
 #' @return \link{ms.image-class} object after filtering.
 #'

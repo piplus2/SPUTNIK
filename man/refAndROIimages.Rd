@@ -56,18 +56,18 @@ intense outside the ROI.}
 \item{numClusters}{numeric (default = 4). Only for 'kmeans2' method. Number
 of clusters.}
 
-\item{numCores}{numeric (default = 1). Only for 'kmeans2' method. Number of
-CPU cores for parallel k-means. It must be smaller than the number of
-available cores.}
-
-\item{verbose}{logical (default = TRUE). Additional output text.}
-
-\item{kernelSize}{4-D numeric array or numeric (default = 5). Only for 'kmeans2'.
+\item{sizeKernel}{4-D numeric array or numeric (default = 5). Only for 'kmeans2'.
 Each element of the 4-D array represents the size of the corners square kernels
 used to determine the off-tissue clusters. The element order is clockwise:
 top-left, top-right, bottom-left, bottom-right. If negative, the corresponding
 corner is skipped. If only a single value is passed, the same kernel size is
 used for the 4 corners.}
+
+\item{numCores}{numeric (default = 1). Only for 'kmeans2' method. Number of
+CPU cores for parallel k-means. It must be smaller than the number of
+available cores.}
+
+\item{verbose}{logical (default = TRUE). Additional output text.}
 }
 \description{
 \code{refAndROIimages} returns the reference image, calculated using the
