@@ -4,7 +4,7 @@
 \alias{CSRPeaksFilter}
 \title{Performs the peak selection based on complete spatial randomness test.}
 \usage{
-CSRPeaksFilter(msiData, method = "KS", calculateCovariate = TRUE,
+CSRPeaksFilter(msiData, method = "ClarkEvans", covariateImage = NULL,
   covMethod = "sum", mzQueryCov = numeric(), mzTolerance = numeric(),
   useFullMZCov = TRUE, smoothCov = FALSE, smoothCovSigma = 2,
   invertCov = FALSE, adjMethod = "bonferroni", returnQvalues = TRUE,
@@ -17,14 +17,16 @@ CSRPeaksFilter(msiData, method = "KS", calculateCovariate = TRUE,
 applied to the peaks signal. Accepted values are:
 \itemize{
    \item "ClarkEvans": performs a test based on the Clark and Evans aggregation
-   R index.
+   R index. This test evaluates the compares of the nearest-neighbors distances
+   to the case of purely random pattern.
    \item "KS": performs a test of goodness-of-fit between the signal pixels
    associated point process pattern and a spatial covariate using the
    Kolmogorov-Smirnov test. The covariate is defined by the reference image.
 }}
 
-\item{calculateCovariate}{logical (default = \code{TRUE}). Whether the covariance
-image should be calculated. Necessary when \code{method = "KS"}.}
+\item{covariateImage}{\link{ms.image-class} object. An image used as covariate
+(necessary for Kolmogorov-Smirnov test). If NULL, the covariate image is
+calculated using the method defined by `covMethod`.}
 
 \item{covMethod}{string (default = \code{"sum"}). Method used to calculate the
 reference image. Read only when \code{method = "KS"}. Possible values
@@ -52,7 +54,7 @@ Gaussian kernel. Read only when \code{method = "KS"}.}
 colors should be inverted.]}
 
 \item{adjMethod}{string (default = \code{"bonferroni"}). Multiple testing correction
-method. Possible values coincide with stats::p.adjust function.}
+method. Possible values coincide with those of the \code{stats::p.adjust} function.}
 
 \item{returnQvalues}{logical (default = \code{TRUE}). Whether the computed
 q-values should be returned together with the p-values.}
@@ -64,7 +66,8 @@ should be visualized. Read only when \code{method = "KS"}.}
 generated.}
 
 \item{...}{additional parameters compatible with the \code{statspat} functions.
-See \link[spatstat]{cdf.test} and \link[spatstat]{clarkevans.test}.}
+See \link[spatstat]{cdf.test} for "KS" and \link[spatstat]{clarkevans.test}.
+for "ClarkEvans"}
 }
 \description{
 \code{CSRPeaksFilter} returns the significance for the null hypothesis that the

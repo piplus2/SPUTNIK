@@ -18,6 +18,10 @@
 #' \itemize{
 #'   \item "otsu": the reference image is binarized using Otsu's thresholding
 #'   \item "kmeans": msiData is partitioned in 2 clusters using k-means
+#'   \item "kmeans2": k-means is applied with a user-defined number of clusters
+#'   (see Details)
+#'   \item "supervised": supervised segmentation based on user-defined areas
+#'   corresponding to off-sample and sample regions.
 #' }
 #' @param mzQueryRef numeric. Values of m/z used to calculate the reference image.
 #' 2 values are interpreted as interval, multiple or single values are searched
@@ -34,12 +38,27 @@
 #' colors should be inverted. This can be necessary when the signal is more
 #' intense outside the ROI.
 #' @param verbose logical (default = TRUE). Additional output text.
+#' @param numClusters numeric (default = 4). Only for 'kmeans2' method. Number
+#' of clusters.
+#' @param sizeKernel 4-D numeric array or numeric (default = 5). Only for 'kmeans2'.
+#' Each element of the 4-D array represents the size of the corners square kernels
+#' used to determine the off-tissue clusters. The element order is clockwise:
+#' top-left, top-right, bottom-left, bottom-right. If negative, the corresponding
+#' corner is skipped. If only a single value is passed, the same kernel size is
+#' used for the 4 corners.
+#' @param numCores numeric (default = 1). Only for 'kmeans2' method. Number of
+#' CPU cores for parallel k-means. It must be smaller than the number of
+#' available cores.
 #'
 #' @details Function to extract the reference image from a \code{\link{msi.dataset-class}}
 #' object. Two references images are returned, a continuous-valued and a binary-valued.
 #' Multiple methods can be used to extract both the continuous and the binary
 #' reference images, which afterwards can be used as argument for the \code{\link{globalPeaksFilter}}
-#' filter.
+#' filter. When 'kmeans2' is applied, the ROI is obtained by merging the sample-related
+#' clusters. The user can set a larger number of cluster than 2 (like in 'kmeans'), in
+#' such a way a finer segmentation of the sample-related area can be generated.
+#' Currently, the off-sample clusters are identified by looking at the most frequent
+#' (statistical mode) labels in the corners of the image.
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #'
@@ -57,23 +76,51 @@ refAndROIimages <- function(msiData,
                             smoothRef = FALSE,
                             smoothSigma = 2,
                             invertRef = FALSE,
+                                             ## Parameters for kmeans2 ##
+                            numClusters = 4, # number of clusters
+                            sizeKernel = 5,  # number of corners pixels used to
+                                             # identify the off-sample clusters
+                            numCores = 1, # parallel computation for k-means2
                             verbose = TRUE)
 {
-  accept.method.roi <- c("otsu", "kmeans")
+  .stopIfNotValidMSIDataset(msiData)
+  
+  accept.method.roi <- c("otsu", "kmeans", "kmeans2", "supervised")
   if (!any(roiMethod %in% accept.method.roi))
   {
-    stop("Valid roiMethod values are: ", paste0(accept.method.roi, collapse = ", "), ".")
+    stop("valid roiMethod values are: ",
+         paste0(accept.method.roi, collapse = ", "), ".")
   }
 
-  # Ref image
-  ref.image <- .refImage(msiData = msiData, method = refMethod, mzQuery = mzQueryRef,
-                         mzTolerance = mzTolerance, useFullMZ = useFullMZRef,
-                         smoothIm = smoothRef, smoothSigma = smoothSigma,
+  # Reference image
+  ref.image <- .refImage(msiData = msiData,
+                         method = refMethod,
+                         mzQuery = mzQueryRef,
+                         mzTolerance = mzTolerance,
+                         useFullMZ = useFullMZRef,
+                         smoothIm = smoothRef,
+                         smoothSigma = smoothSigma,
                          invertIm = invertRef)
   # ROI
-  roi.im <- switch(roiMethod,
-                   "otsu" = binOtsu(ref.image),
-                   "kmeans" = binKmeans(msiData))
+  roi.im <- switch(
+    roiMethod,
+    "otsu" = binOtsu(ref.image),
+    "kmeans" = binKmeans(msiData),
+    "kmeans2" = binKmeans2(msiData,
+                           mzQuery = mzQueryRef,
+                           mzTolerance = mzTolerance,
+                           useFullMZ = useFullMZRef,
+                           numClusters = numClusters,
+                           numCores = numCores,
+                           kernelSize = sizeKernel,
+                           verbose = verbose),
+    "supervised" = binSupervised(msiData,
+                                 refImage = ref.image,
+                                 mzQuery = mzQueryRef,      # Filter m/z values
+                                 useFullMZ = useFullMZRef,  #
+                                 mzTolerance = mzTolerance, #
+                                 method = 'svm') # Currently only 'svm' available
+  )
 
   return(list(Reference = ref.image, ROI = roi.im))
 }
@@ -93,22 +140,22 @@ refAndROIimages <- function(msiData,
   accept.method.ref <- c("sum", "median", "mean", "pca")
   if (!any(method %in% accept.method.ref))
   {
-    stop("Valid method values are: ", paste0(accept.method.ref, collapse = ", "), ".")
+    stop("valid method values are: ", paste0(accept.method.ref, collapse = ", "), ".")
   }
 
   .stopIfNotValidMSIDataset(msiData)
 
   if (length(mzQuery) == 0 && !useFullMZ)
   {
-    stop("mzQuery and useFullMZ are not compatible.")
+    stop("'mzQuery' and 'useFullMZ' are not compatible.")
   }
   if (length(mzQuery) != 0 && useFullMZ)
   {
-    stop("mzQuery and useFullMZ are not compatible.")
+    stop("'mzQuery' and 'useFullMZ' are not compatible.")
   }
   if (length(mzQuery) != 0 && length(mzTolerance) == 0)
   {
-    stop("mzTolerance missing.")
+    stop("'mzTolerance' missing.")
   }
 
   # Match the peaks indices
@@ -168,7 +215,7 @@ refAndROIimages <- function(msiData,
     ref.image <- invertImage(ref.image)
   }
 
-  ref.image
+  return(ref.image)
 }
 
 #' Structural similarity index (SSIM).
@@ -199,44 +246,24 @@ SSIM <- function(x, y, numBreaks = 256)
 {
   x <- c(x)
   y <- c(y)
-  
+
   x <- x / max(x)
   y <- y / max(y)
-  x.dig <- cut(as.numeric(c(x)), numBreaks, labels = F) - 1
-  y.dig <- cut(as.numeric(c(y)), numBreaks, labels = F) - 1
+  x.dig <- cut(as.numeric(x), numBreaks, labels = F) - 1
+  y.dig <- cut(as.numeric(y), numBreaks, labels = F) - 1
+  rm(x, y)
   
   C1 <- (0.01 * (numBreaks - 1)) ^ 2
   C2 <- (0.03 * (numBreaks - 1)) ^ 2
-  C3 <- C2 / 2
-  
-  luminance <- function(x, y)
-  {
-    ux <- mean(x)
-    uy <- mean(y)
 
-    return ((2 * ux * uy + C1) / ((ux * ux) + (uy * uy) + C1))
-  }
+  mux <- mean(x.dig)
+  muy <- mean(y.dig)
+  sigxy <- cov(x.dig, y.dig)
+  sigx <- var(x.dig)
+  sigy <- var(y.dig)
   
-  contrast <- function(x, y) {
-    sx2 <- var(x)
-    sy2 <- var(y)
-    sx <- sqrt(sx2)
-    sy <- sqrt(sy2)
-    
-    return ((2 * sx * sy + C2) / (sx2 + sy2 + C2))
-  }
-  
-  structure <- function(x, y)
-  {
-    sx <- sqrt(var(x))
-    sy <-  sqrt(var(y))
-    sxy <- cov(x, y)
-    
-    return ((sxy + C3) / (sx * sy + C3))   
-  }
-  
-  
-  ssim <- luminance(x, y) * contrast(x, y) * structure(x, y)
+  ssim <- ( (2*mux*muy+C1) * (2*sigxy+C2) ) / ( (mux**2+muy**2+C1) * (sigx+sigy+C2) )
+  stopifnot(ssim >= -1 && ssim <= 1)
   
   return(ssim)
 }
@@ -249,9 +276,8 @@ SSIM <- function(x, y, numBreaks = 256)
 #' use of the functions available in \code{infotheo} R package.
 #'
 #' @param x numeric array. Image 1 color intensity array.
-#' @param y numeric array. Image 2 binary mask.
-#' @param numBins numeric. Number of bins for discretizing the image colors. See
-#' \link[infotheo]{discretize}.
+#' @param y numeric array. Image 2 (binary mask).
+#' @param numBins numeric. Number of bins for discretizing the image colors.
 #'
 #' @return NMI value between 0 and 1.
 #'
@@ -267,6 +293,7 @@ NMI <- function(x, y, numBins = 256)
 {
   x.dig <- cut(as.numeric(c(x)), breaks = numBins, labels = F) - 1
   y.dig <- cut(as.numeric(c(y)), breaks = 2, labels = F) - 1
+  rm(x, y)
 
   mi <- mutinformation(x.dig, y.dig, method = "emp")
   ## Add the sign to the mutual information
@@ -275,5 +302,8 @@ NMI <- function(x, y, numBins = 256)
   h1 <- entropy(x.dig, method = "emp")
   h2 <- entropy(y.dig, method = "emp")
 
-  return(mi / sqrt(h1 * h2))
+  I <- mi / sqrt(h1 * h2)
+  stopifnot(I >= -1 && I <= 1)
+  
+  return(I)
 }

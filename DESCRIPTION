@@ -1,24 +1,25 @@
 Package: SPUTNIK
 Type: Package
 Title: SPatially aUTomatic deNoising for Ims toolKit
-Version: 1.0.4.1
+Version: 1.1.1
 Author: Paolo Inglese [aut, cre], Goncalo Correia [aut, ctb]
 Maintainer: Paolo Inglese <p.inglese14@imperial.ac.uk>
 Authors@R: c(person("Paolo", "Inglese", email = "p.inglese14@imperial.ac.uk", role = c("aut", "cre")),
         person("Goncalo", "Correia", role = c("aut", "ctb")))
 Description: A set of tools for the peak filtering of mass spectrometry
   imaging data (MSI or IMS) based on spatial distribution of signal. Given a 
-  region-of-interest (ROI), representing the spatial region where the informative signal is expected to be
-  localized, a series of filters determine which peak signals are characterized by
-  an implausible spatial distribution. The filters reduce the dataset dimensionality
-  and increase its information vs noise ratio, improving the quality of the
-  unsupervised analysis results, reducing data dimensionality and simplifying
-  the chemical interpretation.
+  region-of-interest (ROI), representing the spatial region where the informative
+  signal is expected to be localized, a series of filters determine which peak
+  signals are characterized by an implausible spatial distribution. The filters
+  reduce the dataset dimensionality and increase its information vs noise ratio,
+  improving the quality of the unsupervised analysis results, reducing data
+  dimensionality and simplifying the chemical interpretation.
 Depends: R (>= 3.4.0)
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: no
 Imports:
+    e1071,
     spatstat,
     viridis,
     SDMTools,
@@ -26,7 +27,8 @@ Imports:
     reshape,
     imager,
     methods,
-    infotheo
+    infotheo,
+    parallel
 RoxygenNote: 6.1.0
 URL: https://github.com/paoloinglese/SPUTNIK
 BugReports: https://github.com/paoloinglese/SPUTNIK/issues

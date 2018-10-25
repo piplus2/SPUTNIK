@@ -1,8 +1,8 @@
-#' Constructior for \link{msi.dataset-class} objects.
+#' Constructor for \link{msi.dataset-class} objects.
 #'
 #' \code{msiDataset} returns a \link{msi.dataset-class} object. It
-#' containg information about the matched peaks intensities, the geometrical
-#' dimensions of the mass spectral image, the matched m/z values.
+#' contains information about the matched peaks intensities, the geometrical
+#' dimensions of the mass spectral image, and the common m/z values.
 #'
 #' @param values numeric matrix containing the peaks intensities. Rows represent
 #' pixels and columns represent peaks.
@@ -15,7 +15,7 @@
 #' @details Function used to construct the main object \code{\link{msi.dataset-class}}.
 #' This object contains all the information about peaks intensities (intensity
 #' matrix), the geometrical shape of the image (rows, columns), and the vector
-#' of the matched m/z values, generated during the peak matching process.
+#' of the common m/z values, generated during the peak matching process.
 #'
 #' @examples
 #' ## Load package
@@ -23,8 +23,9 @@
 #'
 #' ## Create the msi.dataset-class object
 #' sz <- c(5, 4)
-#' x <- matrix(rnorm(sz[1] * sz[2] * 20), sz[1]*sz[2], 20)
-#' mz <- sort(sample(100, ncol(x)))
+#' numIons <- 20
+#' x <- matrix(rnorm(prod(sz) * numIons), prod(sz), numIons)
+#' mz <- sort(sample(100, numIons))
 #' msiX <- msiDataset(x, mz, sz[1], sz[2])
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
@@ -35,11 +36,11 @@ msiDataset <-  function(values, mz, rsize, csize)
 {
   if (ncol(values) != length(mz))
   {
-    stop("Incompatible dimensions of m/z vector and intensity matrix.")
+    stop("incompatible dimensions of m/z vector and intensity matrix.")
   }
   if (nrow(values) != rsize * csize)
   {
-    stop("Incompatible rsize and csize values for the provided intensity matrix.")
+    stop("incompatible rsize and csize values for the provided intensity matrix.")
   }
 
   object <- new("msi.dataset")
@@ -53,7 +54,7 @@ msiDataset <-  function(values, mz, rsize, csize)
   object@nrow <- as.integer(rsize)
   object@ncol <- as.integer(csize)
 
-  object
+  return(object)
 }
 
 #' Constructor for \link{ms.image-class} objects.
@@ -73,7 +74,8 @@ msiDataset <-  function(values, mz, rsize, csize)
 #' library("SPUTNIK")
 #'
 #' ## MS image
-#' matIm <- matrix(rnorm(200), 40, 50)
+#' imShape <- c(40, 50)
+#' matIm <- matrix(rnorm(200), imShape[1], imShape[2])
 #' im <- msImage(values = matIm, name = "random", scale = TRUE)
 #'
 #' @export
@@ -82,20 +84,28 @@ msiDataset <-  function(values, mz, rsize, csize)
 msImage <- function(values, name = character(), scale = TRUE)
 {
   object <- new("ms.image")
-
-  if (scale) {
+  
+  if (any(is.na(values)))
+  {
+    stop('NA values present in the image matrix.')
+  }
+  
+  if (scale)
+  {
     values <- values / max(values)
     object@scaled <- TRUE
-  } else {
+  } else
+  {
     object@scaled <- FALSE
   }
+  
   object@values <- values
   object@name <- name
 
-  object
+  return(object)
 }
 
-#' Genrate a peak filter object.
+#' Generate a peak filter object.
 #'
 #' \link{createPeaksFilter} returns a \code{peak.filter} object.
 #'
@@ -107,8 +117,8 @@ msImage <- function(values, name = character(), scale = TRUE)
 #' @details Function to create a custom peak that can be subsequently applied using
 #' the function \code{\link{applyPeaksFilter-msi.dataset-method}}. Argument of
 #' the function is the index vector of the selected peaks named with their m/z
-#' values. M/Z values are used to check whether the indices correspond to the
-#' matched m/z values in the \code{\link{msi.dataset-class}} object.
+#' values. The m/z values are used to check whether the indices correspond to the
+#' common m/z values in the \code{\link{msi.dataset-class}} object.
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #'
@@ -127,10 +137,12 @@ createPeaksFilter <- function(peaksIndices)
 {
   if (is.null(names(peaksIndices)))
   {
-    warning("Names of peak indices vector elements should match the selected m/z values.")
+    warning("names of 'peakIndices' elements should match the selected m/z values.")
   }
+  
   l <- list(sel.peaks = peaksIndices)
   attr(l, "peak.filter") <- TRUE
   attr(l, "filter") <- "custom"
+  
   return(l)
 }

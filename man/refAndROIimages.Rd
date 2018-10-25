@@ -7,7 +7,8 @@
 refAndROIimages(msiData, refMethod = "sum", roiMethod = "otsu",
   mzQueryRef = numeric(), mzTolerance = numeric(),
   useFullMZRef = TRUE, smoothRef = FALSE, smoothSigma = 2,
-  invertRef = FALSE, verbose = TRUE)
+  invertRef = FALSE, numClusters = 4, sizeKernel = 5, numCores = 1,
+  verbose = TRUE)
 }
 \arguments{
 \item{msiData}{\link[SPUTNIK]{msiDataset} object..}
@@ -26,6 +27,10 @@ binary mask. Valid values are:
 \itemize{
   \item "otsu": the reference image is binarized using Otsu's thresholding
   \item "kmeans": msiData is partitioned in 2 clusters using k-means
+  \item "kmeans2": k-means is applied with a user-defined number of clusters
+  (see Details)
+  \item "supervised": supervised segmentation based on user-defined areas
+  corresponding to off-sample and sample regions.
 }}
 
 \item{mzQueryRef}{numeric. Values of m/z used to calculate the reference image.
@@ -48,6 +53,20 @@ kernel.}
 colors should be inverted. This can be necessary when the signal is more
 intense outside the ROI.}
 
+\item{numClusters}{numeric (default = 4). Only for 'kmeans2' method. Number
+of clusters.}
+
+\item{sizeKernel}{4-D numeric array or numeric (default = 5). Only for 'kmeans2'.
+Each element of the 4-D array represents the size of the corners square kernels
+used to determine the off-tissue clusters. The element order is clockwise:
+top-left, top-right, bottom-left, bottom-right. If negative, the corresponding
+corner is skipped. If only a single value is passed, the same kernel size is
+used for the 4 corners.}
+
+\item{numCores}{numeric (default = 1). Only for 'kmeans2' method. Number of
+CPU cores for parallel k-means. It must be smaller than the number of
+available cores.}
+
 \item{verbose}{logical (default = TRUE). Additional output text.}
 }
 \description{
@@ -60,7 +79,11 @@ Function to extract the reference image from a \code{\link{msi.dataset-class}}
 object. Two references images are returned, a continuous-valued and a binary-valued.
 Multiple methods can be used to extract both the continuous and the binary
 reference images, which afterwards can be used as argument for the \code{\link{globalPeaksFilter}}
-filter.
+filter. When 'kmeans2' is applied, the ROI is obtained by merging the sample-related
+clusters. The user can set a larger number of cluster than 2 (like in 'kmeans'), in
+such a way a finer segmentation of the sample-related area can be generated.
+Currently, the off-sample clusters are identified by looking at the most frequent
+(statistical mode) labels in the corners of the image.
 }
 \examples{
 ## Load package

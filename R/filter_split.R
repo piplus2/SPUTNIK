@@ -1,4 +1,4 @@
-#' Estimate the indices of split peaks.
+#' Test for the presence of split peaks.
 #'
 #' \link{splitPeaksFilter} returns a list of estimated split peak indices. Each
 #' element of the list contains an array of the original peak indices that can
@@ -82,7 +82,7 @@ splitPeaksFilter <- function(msiData,
 
   sparse.accept <- c("gini.index", "scatter.ratio", "spatial.chaos")
   if (!any(sparseness %in% sparse.accept))
-    stop("Accepted values for 'sparseness' are: ",
+    stop("accepted values for 'sparseness' are: ",
          paste0(sparse.accept, collapse = ", "), ".")
 
   # Determine the peaks closest than mzTolerance
@@ -122,6 +122,7 @@ splitPeaksFilter <- function(msiData,
       grouped.peaks_[[k]] <- i
     }
   }
+  rm(i)
 
   # Extract the groups of 2 or more peaks
   sel.groups <- which(unlist(lapply(grouped.peaks_, length)) > 1)
@@ -159,7 +160,9 @@ splitPeaksFilter <- function(msiData,
                            "scatter.ratio" = scatter.ratio(im = im_),
                            "gini.index" = gini.index(x = im_),
                            "spatial.chaos" = spatial.chaos(im = im_))
+      rm(im_)
     }
+    rm(l)
 
     # Depending on the selected measure, different thresholding are applied
     # Scatter ratio: a structured image has a low value
@@ -171,6 +174,7 @@ splitPeaksFilter <- function(msiData,
                              "spatial.chaos" = (any(sc_meas[1:(length(sc_meas)-1)] >= threshold)))
     if (!meas.condition)
       next()
+    
     im_ <- matrix(apply(msiData@matrix[, group.peaks_], 1, sum), msiData@nrow, msiData@ncol)
     im_ <- im_ / max(im_)
     sc_meas[length(sc_meas)] <- switch(sparseness,

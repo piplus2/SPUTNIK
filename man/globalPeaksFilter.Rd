@@ -5,13 +5,13 @@
 \title{Reference similarity based peak selection.}
 \usage{
 globalPeaksFilter(msiData, referenceImage, method = "pearson",
-  threshold = 0, verbose = TRUE)
+  threshold = NULL, verbose = TRUE)
 }
 \arguments{
 \item{msiData}{\link{msi.dataset-class} object. See \link{msiDataset}.}
 
 \item{referenceImage}{\link{ms.image-class} object. Reference image used
-to calculate the correlations.}
+to calculate the similarity values.}
 
 \item{method}{method used to calculate the similariry between the peak
 intensities and the reference image. Accepted values are:
@@ -22,12 +22,12 @@ intensities and the reference image. Accepted values are:
    \item \code{nmi}: normalized mutual information.
 }}
 
-\item{threshold}{numeric (default = 0). The threshold applied to the
-similarity values between the peaks images and the reference image. The
-default value of 0 guarantees that only the ions with a positive similarity with
-the reference image (typically representing the spatial distribution of the
-signal source) are retrieved. For consistency, the SSIM and NMI are scaled
-in [-1, 1] as the correlations.}
+\item{threshold}{numeric (default = 0, default = 0.001 (SSIM)). The threshold
+applied to the similarity values between the peaks images and the reference
+image. The default value of 0 guarantees that only the ions with a positive
+similarity with the reference image (typically representing the spatial
+distribution of the signal source) are retrieved. For consistency, the NMI are
+scaled in [-1, 1] to match the same range of correlations.}
 
 \item{verbose}{logical (default = \code{TRUE}). Additional output text.}
 }
@@ -46,8 +46,7 @@ and binary references can be passed. The filter then calculates the similarity
 between the peaks signal and the reference image and select those with a similarity
 larger than \code{threshold}. Multiple measures are available, correlation,
 structural similarity index measure (SSIM), and normalized mutual information (NMI).
-Since correlation can assume values in [-1, 1], also SSIM and NMI are scaled
-in [-1, 1].
+Since correlation can assume values in [-1, 1], also NMI are scaled in [-1, 1].
 }
 \examples{
 ## Load package

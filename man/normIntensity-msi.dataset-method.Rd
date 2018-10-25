@@ -45,6 +45,7 @@ library("SPUTNIK")
 ## Create the msi.dataset-class object
 sz <- c(5, 4)
 x <- matrix(rnorm(sz[1] * sz[2] * 20), sz[1]*sz[2], 20)
+x[x < 0] <- 0 # MS data is positive
 mz <- sort(sample(100, ncol(x)))
 msiX <- msiDataset(x, mz, sz[1], sz[2])
 
@@ -55,6 +56,7 @@ msiX <- varTransform(msiX, "log")
 ## Create the msi.dataset-class object
 sz <- c(5, 4)
 x <- matrix(rnorm(sz[1] * sz[2]), sz[1]*sz[2], 20)
+x[x < 0] <- 0 # MS data is positive
 mz <- sort(sample(100, ncol(x)))
 msiX <- msiDataset(x, mz, sz[1], sz[2])
 

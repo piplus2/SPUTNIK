@@ -6,9 +6,12 @@
 #' or not.
 #'
 #' @method \code{\link{msImage}} default
-#' @method smoothImage default
 #' @method binOtsu default
 #' @method closeImage default
+#' @method invertImage default
+#' @method plot default
+#' @method removeSmallObjects default
+#' @method smoothImage default
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #'
@@ -48,7 +51,7 @@ setClass(
 
     if (var(object@values) == 0)
     {
-      warning("values constant.")
+      warning("constant values.")
     }
     return(TRUE)
   }

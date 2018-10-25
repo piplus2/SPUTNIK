@@ -2,7 +2,7 @@
 % Please edit documentation in R/construct_funcs.R
 \name{createPeaksFilter}
 \alias{createPeaksFilter}
-\title{Genrate a peak filter object.}
+\title{Generate a peak filter object.}
 \usage{
 createPeaksFilter(peaksIndices)
 }
@@ -20,8 +20,8 @@ to the m/z values.}
 Function to create a custom peak that can be subsequently applied using
 the function \code{\link{applyPeaksFilter-msi.dataset-method}}. Argument of
 the function is the index vector of the selected peaks named with their m/z
-values. M/Z values are used to check whether the indices correspond to the
-matched m/z values in the \code{\link{msi.dataset-class}} object.
+values. The m/z values are used to check whether the indices correspond to the
+common m/z values in the \code{\link{msi.dataset-class}} object.
 }
 \examples{
 library("SPUTNIK")

@@ -20,13 +20,13 @@ used to select a peak.}
 \item{smoothPeakImage}{logical (default = \code{FALSE}). Whether the peak
 images should be smoothed before determining the connected components.}
 
-\item{smoothSigma}{numeric (default = 2). Standard deviation of Gaussian
+\item{smoothSigma}{numeric (default = 2). Standard deviation of the smoothing Gaussian
 kernel.}
 
 \item{closePeakImage}{logical (default = \code{FALSE}). Whether morphological
 closing should be applied to the binary peak images.}
 
-\item{closeKernSize}{numeric (default = 5). Kernel size for morphological
+\item{closeKernSize}{numeric (default = 5). Kernel size for the morphological
 closing operation. Kernel shape is fixed to \code{diamond}.}
 
 \item{aggressive}{integer (default = 0). Defines the level of aggressiveness
@@ -45,14 +45,15 @@ consisting of a minimum number of connected pixels in the ROI.
 Count filter tries to determine and remove peaks which signal is
 scattered in a region unrelated with the expected ROI. A minimum number of
 connected pixels in the ROI is used to trigger the filter. This value should
-be carefully set equal to the geometrical size of the smallest expected sub-region.
-Each peak image is binarized using Otsu's thresholding and the connected components
-are extracted. The filter selects those peaks that show, within the ROI, at least one
-connected component of size larger or equal to \code{minNumPixels}. The level
-of aggressiveness, associated with increasing values of the parameter
-\code{aggressive}, determines whether the size of the connected components
-within the ROI should be compared with that of the connected components
-localized outside the ROI. If \code{aggressive = 1}, the filter checks whether
+be carefully set equal to the geometrical size of the smallest expected
+informative sub-region. Each peak image is binarized using Otsu's thresholding
+and the connected components are extracted. The filter selects those peaks
+that show, within the ROI, at least one connected component of size larger or
+equal to \code{minNumPixels}. The level of aggressiveness, associated with
+increasing values of the parameter \code{aggressive}, determines whether the
+size of the connected components within the ROI should be compared with that
+of the connected components localized outside the ROI. If \code{aggressive = 0},
+no comparison is performed. If \code{aggressive = 1}, the filter checks whether
 the max size of the connected components localized outside the ROI is smaller
 or equal to the maximum size of the connected components inside the ROI.
 If \code{aggressive = 2}, a stricter filter checks whether the maximum size

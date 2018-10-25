@@ -4,20 +4,21 @@
 \name{smoothImage,ms.image-method}
 \alias{smoothImage,ms.image-method}
 \alias{smoothImage}
-\title{Apply Gaussian smoothing to a MS image.}
+\title{Apply Gaussian smoothing to an MS image.}
 \usage{
 \S4method{smoothImage}{ms.image}(object, sigma = 2)
 }
 \arguments{
 \item{object}{\link{ms.image-class} object. See \link{msImage}.}
 
-\item{sigma}{numeric (default = 2). Standard deviation of Gaussian kernel.}
+\item{sigma}{numeric (default = 2). Standard deviation of the smoothing
+Gaussian kernel.}
 }
 \value{
-\link{ms.image-class} object after applying smoothing.
+\link{ms.image-class} smoothed msImage.
 }
 \description{
-Apply Gaussian smoothing to a MS image.
+Apply Gaussian smoothing to an MS image.
 }
 \examples{
 ## Load package

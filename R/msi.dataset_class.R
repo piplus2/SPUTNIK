@@ -57,6 +57,7 @@ setClass(
     {
       return("mz and intensities incompatible dimensions.")
     }
-    TRUE
+    
+    return(TRUE)
   }
 )

@@ -10,11 +10,11 @@
 #' used to select a peak.
 #' @param smoothPeakImage logical (default = \code{FALSE}). Whether the peak
 #' images should be smoothed before determining the connected components.
-#' @param smoothSigma numeric (default = 2). Standard deviation of Gaussian
+#' @param smoothSigma numeric (default = 2). Standard deviation of the smoothing Gaussian
 #' kernel.
 #' @param closePeakImage logical (default = \code{FALSE}). Whether morphological
 #' closing should be applied to the binary peak images.
-#' @param closeKernSize numeric (default = 5). Kernel size for morphological
+#' @param closeKernSize numeric (default = 5). Kernel size for the morphological
 #' closing operation. Kernel shape is fixed to \code{diamond}.
 #' @param aggressive integer (default = 0). Defines the level of aggressiveness
 #' of the filter. See 'Details' section.
@@ -23,14 +23,15 @@
 #' @details Count filter tries to determine and remove peaks which signal is
 #' scattered in a region unrelated with the expected ROI. A minimum number of
 #' connected pixels in the ROI is used to trigger the filter. This value should
-#' be carefully set equal to the geometrical size of the smallest expected sub-region.
-#' Each peak image is binarized using Otsu's thresholding and the connected components
-#' are extracted. The filter selects those peaks that show, within the ROI, at least one
-#' connected component of size larger or equal to \code{minNumPixels}. The level
-#' of aggressiveness, associated with increasing values of the parameter
-#' \code{aggressive}, determines whether the size of the connected components
-#' within the ROI should be compared with that of the connected components
-#' localized outside the ROI. If \code{aggressive = 1}, the filter checks whether
+#' be carefully set equal to the geometrical size of the smallest expected
+#' informative sub-region. Each peak image is binarized using Otsu's thresholding
+#' and the connected components are extracted. The filter selects those peaks
+#' that show, within the ROI, at least one connected component of size larger or
+#' equal to \code{minNumPixels}. The level of aggressiveness, associated with
+#' increasing values of the parameter \code{aggressive}, determines whether the
+#' size of the connected components within the ROI should be compared with that
+#' of the connected components localized outside the ROI. If \code{aggressive = 0},
+#' no comparison is performed. If \code{aggressive = 1}, the filter checks whether
 #' the max size of the connected components localized outside the ROI is smaller
 #' or equal to the maximum size of the connected components inside the ROI.
 #' If \code{aggressive = 2}, a stricter filter checks whether the maximum size
@@ -56,15 +57,19 @@ countPixelsFilter <- function(msiData,
                               closePeakImage = FALSE,
                               closeKernSize = 5,
                               aggressive = 0,
-                              verbose = TRUE) {
-
+                              verbose = TRUE)
+{
+  .stopIfNotValidMSIDataset(msiData)
+  .stopIfNotValidMSImage(roiImage)
+  
   # Count the number of connected pixels within and outside the ROI. In order
   # to accept a peak as informative, there must be at least one group of connected
-  # pixels of minNumPixels size within the ROI, but no groups of pixels outside of
-  # the ROI. This is necessary to discriminate between peaks that are randomly
-  # distributed within the ROI.
+  # pixels of minNumPixels size within the ROI. This is necessary to discriminate
+  # between peaks that are randomly distributed within the ROI.
   if (verbose)
+  {
     cat("Counting connected pixels within signal region...\n")
+  }
 
   filter.results <- array(NA, length(msiData@mz), dimnames = list(msiData@mz))
   max.count.inside <- filter.results
@@ -110,9 +115,16 @@ countPixelsFilter <- function(msiData,
       outside.cond <- TRUE
     } else if (aggressive == 1)
     {
+      # If aggressive = 1, check whether the largest connected component outside
+      # the ROI is smaller than the largest connected component within the ROI.
+      # This is based on the idea that signal associated with the sample should
+      # show more structured patterns inside the ROI. 
       outside.cond <- max(conn.table.outside) <= max(conn.table.inside)
     } else if (aggressive == 2)
     {
+      # If aggressive = 2, check if the largest connected component outside the
+      # is smaller than minNumPixels. In this way, we are stricter about the possible
+      # structuredness of the signal outside the ROI.
       outside.cond <- max(conn.table.outside) < minNumPixels
     }
 
