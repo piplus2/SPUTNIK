@@ -1,3 +1,6 @@
+
+<img src="docs/sputnik.svg" alt="drawing" width="200"/>
+
 ## SPUTNIK: an R package for peak selection of Mass spectrometry imaging data ##
 
 If you find SPUTNIK useful, please consider citing our work :)
