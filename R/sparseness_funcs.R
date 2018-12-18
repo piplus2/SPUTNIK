@@ -32,7 +32,7 @@ scatter.ratio <- function(im)
   {
     im <- im / max(im)
   }
-  bin_ <- threshold(as.cimg(im), thr = 'auto')
+  bin_ <- threshold(as.cimg(im), thr = 'auto', approx = FALSE)
   bin_ <- as.matrix(bin_)
   lbl_ <- unique(c(ConnCompLabel(bin_)))
   return(length(lbl_[lbl_ != 0]) / sum(bin_))
