@@ -11,6 +11,7 @@
   x <- switch(method,
 
               "TIC" = {
+                cat('IMPORTANT!!! Use CLR transformation for proportional data calling varTransform(object, method = "clr")\n')
                 for (i in 1:nrow(x))
                 {
                   x[i, ] <- x[i, ] / sum(x[i, ], na.rm = T)
@@ -125,7 +126,7 @@
     warning("the smallest value is larger than 0.")
   }
   
-  accept.method <- c("log", "log2", "log10", "sqrt")
+  accept.method <- c("log", "log2", "log10", "sqrt", "clr")
   if (!any(method %in% accept.method))
   {
     stop("Valid methods are:", paste0(accept.method, collapse = ", "), ".")
@@ -134,6 +135,8 @@
               "log" = log(x + 1),
               "log2" = log2(x + 1),
               "log10" = log10(x + 1),
-              "sqrt" = sqrt(x))
+              "sqrt" = sqrt(x),
+              "clr" = log(x + 1) - mean(log(x + 1))
+             )
   return(x)
 }
