@@ -25,7 +25,7 @@
                 cat('IMPORTANT!!! Use CLR transformation for proportional data calling varTransform(object, method = "clr")\n')
                 for (i in 1:nrow(x))
                 {
-                  tic.value <- sum(x[i, peak.ind], na.rm = T)
+                  tic.value <- sum(x[i, peak.ind], na.rm = TRUE)
                   if (tic.value == 0) {
                     stop("Error: scaling factor is 0!")
                   }
@@ -37,7 +37,8 @@
               "median" = {
                 for (i in 1:nrow(x))
                 {
-                  med.value <- median(x[i, peak.ind], na.rm = T)
+                  x <- x + zero.offset
+                  med.value <- median(x[i, peak.ind], na.rm = TRUE)
                   if (is.na(med.value)) {
                     stop("Error: scaling factor is 0!")
                   }
@@ -52,7 +53,7 @@
                 }
                 for (i in 1:nrow(x))
                 {
-                  tic.value <- sum(x[i, peak.ind], na.rm = T)
+                  tic.value <- sum(x[i, peak.ind], na.rm = TRUE)
                   if (tic.value == 0) {
                     stop("Error: scaling factor is 0!")
                   }
