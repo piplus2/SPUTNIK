@@ -361,7 +361,7 @@ setMethod(f = "binSupervised",
 #' @return object \link{msi.dataset-class} object, with normalized peaks
 #' intensities.
 #'
-#' @details When using TIC scaling, if zeros are present in the matrix, an offset
+#' When using TIC scaling, if zeros are present in the matrix, an offset
 #' equal to 1 is added to all the peak intensities. This is necessary for applying
 #' the CLR transformation. TIC scaling transforms the spectra into compositional
 #' data; in this case the CLR transformation must be applied through the varTransform function.
@@ -381,9 +381,9 @@ setMethod(f = "binSupervised",
 #'
 setMethod(f = "normIntensity",
           signature = signature(object = "msi.dataset"),
-          definition = function(object, method = "median")
+          definition = function(object, method = "median", peaksInd = NULL, offsetZero = 0)
           {
-            object@matrix <- .normIntensity(object@matrix, method = method)
+            object@matrix <- .normIntensity(object@matrix, method = method, peaks.ind = peaksInd, zero.offset = offsetZero)
             
             return(object)
           }
