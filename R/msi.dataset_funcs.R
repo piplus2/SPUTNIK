@@ -37,6 +37,9 @@
               "median" = {
                 for (i in 1:nrow(x))
                 {
+                  if (zero.offset != 0) {
+                    x[is.na(x)] <- 0
+                  }
                   x <- x + zero.offset
                   med.value <- median(x[i, peak.ind], na.rm = TRUE)
                   if (is.na(med.value)) {
