@@ -11,10 +11,14 @@
   x <- switch(method,
 
               "TIC" = {
+                if (any(x == 0)) {
+                  cat('IMPORTANT!!! An offset equal to 1 is added to take into account of the zeros\n')
+                  x <- x + 1
+                }
                 cat('IMPORTANT!!! Use CLR transformation for proportional data calling varTransform(object, method = "clr")\n')
                 for (i in 1:nrow(x))
                 {
-                  x[i, ] <- x[i, ] / sum(x[i, ], na.rm = T)
+                  x[i, ] <- (x[i, ] + 1) / sum((x[i, ] + 1), na.rm = T)
                 }
                 x
               },
