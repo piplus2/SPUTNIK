@@ -16,6 +16,7 @@ Valid values are:
 \itemize{
   \item "log": log-transformation defined as log(x + 1)
   \item "sqrt": square-root transformation.
+  \item "clr": centered log-transformation. To be used when TIC scaling normalization is applied.
 }}
 }
 \value{

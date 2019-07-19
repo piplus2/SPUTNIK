@@ -37,6 +37,11 @@ The valid values for \code{method} are:
     \item divide all the peak intensities by the median of quotients
   }
 }
+
+When using TIC scaling, if zeros are present in the matrix, an offset
+equal to 1 is added to all the peak intensities. This is necessary for applying
+the CLR transformation. TIC scaling transforms the spectra into compositional
+data; in this case the CLR transformation must be applied through the varTransform function.
 }
 \examples{
 ## Load package

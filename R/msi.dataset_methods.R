@@ -361,6 +361,11 @@ setMethod(f = "binSupervised",
 #' @return object \link{msi.dataset-class} object, with normalized peaks
 #' intensities.
 #'
+#' @details When using TIC scaling, if zeros are present in the matrix, an offset
+#' equal to 1 is added to all the peak intensities. This is necessary for applying
+#' the CLR transformation. TIC scaling transforms the spectra into compositional
+#' data; in this case the CLR transformation must be applied through the varTransform function.
+#'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #'
 #' @references F. Dieterle, A. Ross, G. Schlotterbeck, and Hans Senn. 2006.
@@ -394,6 +399,7 @@ setMethod(f = "normIntensity",
 #' \itemize{
 #'   \item "log": log-transformation defined as log(x + 1)
 #'   \item "sqrt": square-root transformation.
+#'   \item "clr": centered log-transformation. To be used when TIC scaling normalization is applied.
 #' }
 #'
 #' @example R/examples/msiDataset_transform.R
