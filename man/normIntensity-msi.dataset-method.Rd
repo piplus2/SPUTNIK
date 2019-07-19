@@ -13,7 +13,8 @@
 \item{object}{\link{msi.dataset-class} object.}
 
 \item{method}{string (default = \code{"median"}). The normalization method to
-be used. Valid values are: \code{"TIC"}, \code{"median"}, or \code{"PQN"}.
+be used. Valid values are: \code{"median"}, \code{"PQN"}, \code{"TIC"}, or
+\code{"upperQuartile"}.
 See 'Details' section.}
 
 \item{peaksInd}{numeric array (default = NULL). Array of peak indices used to
@@ -37,8 +38,6 @@ Normalize the peaks intensities.
 \details{
 The valid values for \code{method} are:
 \itemize{
-  \item \code{"TIC"}: total ion current normalization assign the sum of the
-  peaks intensities to one.
   \item \code{"median"}: median of spectrum intensities is scaled to one.
   \item \code{"PQN"}:
   \enumerate{
@@ -48,6 +47,9 @@ The valid values for \code{method} are:
     \item calculate the median of quotients for each peak (after removing the zeros)
     \item divide all the peak intensities by the median of quotients
   }
+  \item \code{"TIC"}: total ion current normalization assign the sum of the
+  peaks intensities to one.
+  \item \code{"upperQuartile"}: spectra are scaled by their 3rd quartile.
 }
 }
 \examples{

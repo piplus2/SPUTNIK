@@ -2,7 +2,7 @@
 #' @importFrom stats median
 .normIntensity <- function(x, method = "median", peak.ind = NULL, zero.offset = 0)
 {
-  accept.method <- c("TIC", "median", "PQN")
+  accept.method <- c("median", "PQN", "upperQuartile", "TIC")
   if (!any(method %in% accept.method))
   {
     stop(".normIntensity: Valid methods are: ", paste0(accept.method, collapse = ", "), ".")
@@ -15,6 +15,23 @@
   x[x == 0] <- NA
   x <- switch(method,
 
+              "upperQuartile" = {
+                if (zero.offset != 0) {
+                  x[is.na(x)] <- 0
+                }
+                x <- x + zero.offset
+                for (i in 1:nrow(x))
+                {
+                  quartile <- quantile(x[i, ], probs = 0.75, na.rm = TRUE)
+                  if (is.na(quartile)) {
+                    warning("Upper quartile is 0!")
+                    quartile <- 1
+                  }
+                  x[i, ] <- x[i, ] / quartile
+                }
+                x
+              },
+              
               "TIC" = {
                 x[is.na(x)] <- 0
                 if (any(x == 0)) {
@@ -27,7 +44,7 @@
                 {
                   tic.value <- sum(x[i, peak.ind], na.rm = TRUE)
                   if (tic.value == 0) {
-                    stop("Error: scaling factor is 0!")
+                    stop("TIC is 0!")
                   }
                   x[i, ] <- x[i, ] / tic.value
                 }
@@ -43,7 +60,7 @@
                 {
                   med.value <- median(x[i, peak.ind], na.rm = TRUE)
                   if (is.na(med.value)) {
-                    warning("WARNING: scaling factor is 0!")
+                    warning("Median is 0!")
                     med.value <- 1
                   }
                   x[i, ] <- x[i, ] / med.value
