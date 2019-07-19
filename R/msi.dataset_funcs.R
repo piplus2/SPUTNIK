@@ -148,7 +148,8 @@
   ## will be still summed to 1
   if (min(x) > 0 && method %in% c("log", "log2", "log10"))
   {
-    warning(paste0("The smallest value is ", min(x), ", however still adding 1 before transforming the values."))
+    warning(paste0("The smallest value is ", min(x),
+                   ", however still adding 1 before transforming the values."))
   }
   
   accept.method <- c("log", "log2", "log10", "sqrt", "clr")
