@@ -43,7 +43,8 @@
                   x <- x + zero.offset
                   med.value <- median(x[i, peak.ind], na.rm = TRUE)
                   if (is.na(med.value)) {
-                    stop("Error: scaling factor is 0!")
+                    warning("WARNING: scaling factor is 0!")
+                    med.value <- 1
                   }
                   x[i, ] <- x[i, ] / med.value
                 }
