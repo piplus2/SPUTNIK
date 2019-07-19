@@ -19,7 +19,7 @@
                 cat('IMPORTANT!!! Use CLR transformation for proportional data calling varTransform(object, method = "clr")\n')
                 for (i in 1:nrow(x))
                 {
-                  x[i, ] <- (x[i, ] + 1) / sum((x[i, ] + 1), na.rm = T)
+                  x[i, ] <- x[i, ] / sum(x[i, ], na.rm = T)
                 }
                 x
               },
@@ -125,10 +125,10 @@
     stop("found negative values in the matrix.")
   }
   ## If the smallest intensity is not zero, show a warning saying that the intensities
-  ## will still summed to 1
-  if (min(x) > 0)
+  ## will be still summed to 1
+  if (min(x) > 0 and method %in% c("log", "log2", "log10"))
   {
-    warning("the smallest value is larger than 0.")
+    warning(paste0("The smallest value is ", min(x), ", however still adding 1 before transforming the values."))
   }
   
   accept.method <- c("log", "log2", "log10", "sqrt", "clr")
