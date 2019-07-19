@@ -11,6 +11,7 @@
   x <- switch(method,
 
               "TIC" = {
+                x[is.na(x)] <- 0
                 if (any(x == 0)) {
                   cat('IMPORTANT!!! An offset equal to 1 is added to take into account of the zeros\n')
                   x <- x + 1
