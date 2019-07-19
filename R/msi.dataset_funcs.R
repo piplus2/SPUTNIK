@@ -38,7 +38,7 @@
                 for (i in 1:nrow(x))
                 {
                   med.value <- median(x[i, peak.ind], na.rm = T)
-                  if (med.value == 0) {
+                  if (is.na(med.value)) {
                     stop("Error: scaling factor is 0!")
                   }
                   x[i, ] <- x[i, ] / med.value
