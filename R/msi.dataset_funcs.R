@@ -1,25 +1,35 @@
 ## .normIntensity
 #' @importFrom stats median
-.normIntensity <- function(x, method = "median")
+.normIntensity <- function(x, method = "median", peak.ind = NULL, zero.offset = 0)
 {
   accept.method <- c("TIC", "median", "PQN")
   if (!any(method %in% accept.method))
   {
     stop(".normIntensity: Valid methods are: ", paste0(accept.method, collapse = ", "), ".")
   }
+  
+  if (is.null(peak.ind)) {
+    peak.ind <- c(1:ncol(x))
+  }
+  
   x[x == 0] <- NA
   x <- switch(method,
 
               "TIC" = {
                 x[is.na(x)] <- 0
                 if (any(x == 0)) {
+                  zero.offset <- 1
                   cat('IMPORTANT!!! An offset equal to 1 is added to take into account of the zeros\n')
-                  x <- x + 1
+                  x <- x + zero.offset
                 }
                 cat('IMPORTANT!!! Use CLR transformation for proportional data calling varTransform(object, method = "clr")\n')
                 for (i in 1:nrow(x))
                 {
-                  x[i, ] <- x[i, ] / sum(x[i, ], na.rm = T)
+                  tic.value <- sum(x[i, peak.ind], na.rm = T)
+                  if (tic.value == 0) {
+                    stop("Error: scaling factor is 0!")
+                  }
+                  x[i, ] <- x[i, ] / tic.value
                 }
                 x
               },
@@ -27,16 +37,26 @@
               "median" = {
                 for (i in 1:nrow(x))
                 {
-                  x[i, ] <- x[i, ] / median(x[i, ], na.rm = T)
+                  med.value <- median(x[i, peak.ind], na.rm = T)
+                  if (med.value == 0) {
+                    stop("Error: scaling factor is 0!")
+                  }
+                  x[i, ] <- x[i, ] / med.value
                 }
                 x
               },
 
               "PQN" = {
-
+                if (all(peak.ind == c(1:ncol(x))) {
+                  warning("PQN can be used only using all peaks")
+                }
                 for (i in 1:nrow(x))
                 {
-                  x[i, ] <- x[i, ] / sum(x[i, ], na.rm = T)
+                  tic.value <- sum(x[i, peak.ind], na.rm = T)
+                  if (tic.value == 0) {
+                    stop("Error: scaling factor is 0!")
+                  }
+                  x[i, ] <- x[i, ] / tic.value
                 }
                 x[x == 0] <- NA
 
