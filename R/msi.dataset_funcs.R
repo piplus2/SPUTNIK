@@ -140,7 +140,7 @@
               "log2" = log2(x + 1),
               "log10" = log10(x + 1),
               "sqrt" = sqrt(x),
-              "clr" = log(x + 1) - mean(log(x + 1))
+              "clr" = log(x) - apply(mean, 1, log(x))
              )
   return(x)
 }
