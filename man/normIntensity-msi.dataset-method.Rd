@@ -6,18 +6,30 @@
 \alias{normIntensity}
 \title{Normalize the peaks intensities.}
 \usage{
-\S4method{normIntensity}{msi.dataset}(object, method = "median")
+\S4method{normIntensity}{msi.dataset}(object, method = "median",
+  peaksInd = NULL, offsetZero = 0)
 }
 \arguments{
 \item{object}{\link{msi.dataset-class} object.}
 
-\item{method}{String (default = \code{"median"}). the normalization method to
+\item{method}{string (default = \code{"median"}). The normalization method to
 be used. Valid values are: \code{"TIC"}, \code{"median"}, or \code{"PQN"}.
 See 'Details' section.}
+
+\item{peaksInd}{numeric array (default = NULL). Array of peak indices used to
+calculate the scaling factors (TIC, median). If NULL, all the peaks are used.}
+
+\item{offsetZero}{numeric (default = 0). This value is added to all the peak
+intensities to take into accounts of the zeros.}
 }
 \value{
 object \link{msi.dataset-class} object, with normalized peaks
 intensities.
+
+When using TIC scaling, if zeros are present in the matrix, an offset
+equal to 1 is added to all the peak intensities. This is necessary for applying
+the CLR transformation. TIC scaling transforms the spectra into compositional
+data; in this case the CLR transformation must be applied through the varTransform function.
 }
 \description{
 Normalize the peaks intensities.
@@ -37,11 +49,6 @@ The valid values for \code{method} are:
     \item divide all the peak intensities by the median of quotients
   }
 }
-
-When using TIC scaling, if zeros are present in the matrix, an offset
-equal to 1 is added to all the peak intensities. This is necessary for applying
-the CLR transformation. TIC scaling transforms the spectra into compositional
-data; in this case the CLR transformation must be applied through the varTransform function.
 }
 \examples{
 ## Load package

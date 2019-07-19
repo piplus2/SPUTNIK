@@ -47,7 +47,7 @@
               },
 
               "PQN" = {
-                if (all(peak.ind == c(1:ncol(x))) {
+                if (all(peak.ind == c(1:ncol(x)))) {
                   warning("PQN can be used only using all peaks")
                 }
                 for (i in 1:nrow(x))
@@ -146,7 +146,7 @@
   }
   ## If the smallest intensity is not zero, show a warning saying that the intensities
   ## will be still summed to 1
-  if (min(x) > 0 and method %in% c("log", "log2", "log10"))
+  if (min(x) > 0 && method %in% c("log", "log2", "log10"))
   {
     warning(paste0("The smallest value is ", min(x), ", however still adding 1 before transforming the values."))
   }

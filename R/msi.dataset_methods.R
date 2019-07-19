@@ -339,9 +339,13 @@ setMethod(f = "binSupervised",
 #' Normalize the peaks intensities.
 #'
 #' @param object \link{msi.dataset-class} object.
-#' @param method String (default = \code{"median"}). the normalization method to
+#' @param method string (default = \code{"median"}). The normalization method to
 #' be used. Valid values are: \code{"TIC"}, \code{"median"}, or \code{"PQN"}.
 #' See 'Details' section.
+#' @param peaksInd numeric array (default = NULL). Array of peak indices used to
+#' calculate the scaling factors (TIC, median). If NULL, all the peaks are used.
+#' @param offsetZero numeric (default = 0). This value is added to all the peak
+#' intensities to take into accounts of the zeros.
 #'
 #' @details The valid values for \code{method} are:
 #' \itemize{
@@ -383,7 +387,10 @@ setMethod(f = "normIntensity",
           signature = signature(object = "msi.dataset"),
           definition = function(object, method = "median", peaksInd = NULL, offsetZero = 0)
           {
-            object@matrix <- .normIntensity(object@matrix, method = method, peaks.ind = peaksInd, zero.offset = offsetZero)
+            object@matrix <- .normIntensity(object@matrix,
+                                            method = method,
+                                            peak.ind = peaksInd,
+                                            zero.offset = offsetZero)
             
             return(object)
           }
