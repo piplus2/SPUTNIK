@@ -11,6 +11,11 @@
     peak.ind <- c(1:ncol(x))
   }
 
+  if (zero.offset != 0) {
+    x[is.na(x)] <- 0
+    x <- x + zero.offset
+  }
+  
   x[x == 0] <- NA
   x <- switch(method,
 
@@ -99,10 +104,6 @@
     },
 
     "upperQuartile" = {
-      if (zero.offset != 0) {
-        x[is.na(x)] <- 0
-      }
-      x <- x + zero.offset
       for (i in 1:nrow(x))
       {
         quartile <- quantile(x[i, ], probs = 0.75, na.rm = TRUE)
@@ -116,12 +117,8 @@
     },
 
     "TIC" = {
-      x[is.na(x)] <- 0
-      if (any(x == 0)) {
-        zero.offset <- 1
-        cat("IMPORTANT!!! An offset equal to 1 is added to take into account of the zeros
-")
-        x <- x + zero.offset
+      if (any(is.na(x)) && zero.offset == 0) {
+        stop(paste0("Zero peaks found. Add a positive offset, setting the argument offsetZero.\n"))
       }
       cat('IMPORTANT!!! Use CLR transformation for proportional data calling varTransform(object, method = "clr")\n')
       for (i in 1:nrow(x))
@@ -136,10 +133,6 @@
     },
 
     "median" = {
-      if (zero.offset != 0) {
-        x[is.na(x)] <- 0
-      }
-      x <- x + zero.offset
       for (i in 1:nrow(x))
       {
         med.value <- median(x[i, peak.ind], na.rm = TRUE)
