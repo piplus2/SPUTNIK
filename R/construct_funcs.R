@@ -27,27 +27,24 @@
 #' x <- matrix(rnorm(prod(sz) * numIons), prod(sz), numIons)
 #' mz <- sort(sample(100, numIons))
 #' msiX <- msiDataset(x, mz, sz[1], sz[2])
-#'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #'
 #' @export
 #' @importFrom methods new
-msiDataset <-  function(values, mz, rsize, csize)
-{
-  if (ncol(values) != length(mz))
-  {
+msiDataset <- function(values, mz, rsize, csize) {
+  if (ncol(values) != length(mz)) {
     stop("incompatible dimensions of m/z vector and intensity matrix.")
   }
-  if (nrow(values) != rsize * csize)
-  {
+  if (nrow(values) != rsize * csize) {
     stop("incompatible rsize and csize values for the provided intensity matrix.")
   }
 
   object <- new("msi.dataset")
 
   # Remove attributes and dimnames
-  for (n in names(attributes(values))[names(attributes(values)) != "dim"])
+  for (n in names(attributes(values))[names(attributes(values)) != "dim"]) {
     attr(values, n) <- NULL
+  }
 
   object@matrix <- values
   object@mz <- mz
@@ -77,28 +74,23 @@ msiDataset <-  function(values, mz, rsize, csize)
 #' imShape <- c(40, 50)
 #' matIm <- matrix(rnorm(200), imShape[1], imShape[2])
 #' im <- msImage(values = matIm, name = "random", scale = TRUE)
-#'
 #' @export
 #' @importFrom methods new
 #'
-msImage <- function(values, name = character(), scale = TRUE)
-{
+msImage <- function(values, name = character(), scale = TRUE) {
   object <- new("ms.image")
-  
-  if (any(is.na(values)))
-  {
-    stop('NA values present in the image matrix.')
+
+  if (any(is.na(values))) {
+    stop("NA values present in the image matrix.")
   }
-  
-  if (scale)
-  {
+
+  if (scale) {
     values <- values / max(values)
     object@scaled <- TRUE
-  } else
-  {
+  } else {
     object@scaled <- FALSE
   }
-  
+
   object@values <- values
   object@name <- name
 
@@ -128,21 +120,18 @@ msImage <- function(values, name = character(), scale = TRUE)
 #' mzIdx <- sample(100, 20)
 #' names(mzIdx) <- mz
 #' peaksFilter <- createPeaksFilter(mzIdx)
-#'
 #' @seealso \link{applyPeaksFilter-msi.dataset-method}
 #'
 #' @export
 #'
-createPeaksFilter <- function(peaksIndices)
-{
-  if (is.null(names(peaksIndices)))
-  {
+createPeaksFilter <- function(peaksIndices) {
+  if (is.null(names(peaksIndices))) {
     warning("names of 'peakIndices' elements should match the selected m/z values.")
   }
-  
+
   l <- list(sel.peaks = peaksIndices)
   attr(l, "peak.filter") <- TRUE
   attr(l, "filter") <- "custom"
-  
+
   return(l)
 }

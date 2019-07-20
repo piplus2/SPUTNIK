@@ -1,6 +1,5 @@
 ## .scaleAllVariables
-.scale.all <- function(msi.data)
-{
+.scale.all <- function(msi.data) {
   .stopIfNotValidMSIDataset(msi.data)
 
   x <- msi.data@matrix
@@ -14,8 +13,7 @@
 }
 
 ## Statistical mode
-.mode <- function(x)
-{
+.mode <- function(x) {
   ux <- unique(x)
   return(ux[which.max(tabulate(match(x, ux)))])
 }

@@ -57,17 +57,15 @@ countPixelsFilter <- function(msiData,
                               closePeakImage = FALSE,
                               closeKernSize = 5,
                               aggressive = 0,
-                              verbose = TRUE)
-{
+                              verbose = TRUE) {
   .stopIfNotValidMSIDataset(msiData)
   .stopIfNotValidMSImage(roiImage)
-  
+
   # Count the number of connected pixels within and outside the ROI. In order
   # to accept a peak as informative, there must be at least one group of connected
   # pixels of minNumPixels size within the ROI. This is necessary to discriminate
   # between peaks that are randomly distributed within the ROI.
-  if (verbose)
-  {
+  if (verbose) {
     cat("Counting connected pixels within signal region...\n")
   }
 
@@ -80,15 +78,13 @@ countPixelsFilter <- function(msiData,
     im <- matrix(msiData@matrix[, i], msiData@nrow, msiData@ncol)
     im <- msImage(values = im, name = as.character(msiData@mz[i]), scale = T)
     # Apply smoothing
-    if (smoothPeakImage)
-    {
+    if (smoothPeakImage) {
       im <- smoothImage(im, smoothSigma)
     }
     # Binarize using Otsu's thresholding
     im.bw <- binOtsu(im)
     # Morphological closing
-    if (closePeakImage)
-    {
+    if (closePeakImage) {
       im.bw <- closeImage(im.bw, kern.size = closeKernSize)
     }
     # Count the connected regions inside and outside the ROI
@@ -101,35 +97,29 @@ countPixelsFilter <- function(msiData,
     conn.table.inside <- table(c(conn.comps.within[conn.comps.within != 0]))
     conn.table.outside <- table(c(conn.comps.outside[conn.comps.outside != 0]))
 
-    if (length(conn.table.inside) == 0)
-    {
+    if (length(conn.table.inside) == 0) {
       conn.table.inside <- 0
     }
-    if (length(conn.table.outside) == 0)
-    {
+    if (length(conn.table.outside) == 0) {
       conn.table.outside <- 0
     }
 
-    if (aggressive == 0)
-    {
+    if (aggressive == 0) {
       outside.cond <- TRUE
-    } else if (aggressive == 1)
-    {
+    } else if (aggressive == 1) {
       # If aggressive = 1, check whether the largest connected component outside
       # the ROI is smaller than the largest connected component within the ROI.
       # This is based on the idea that signal associated with the sample should
-      # show more structured patterns inside the ROI. 
+      # show more structured patterns inside the ROI.
       outside.cond <- max(conn.table.outside) <= max(conn.table.inside)
-    } else if (aggressive == 2)
-    {
+    } else if (aggressive == 2) {
       # If aggressive = 2, check if the largest connected component outside the
       # is smaller than minNumPixels. In this way, we are stricter about the possible
       # structuredness of the signal outside the ROI.
       outside.cond <- max(conn.table.outside) < minNumPixels
     }
 
-    if (any(conn.table.inside >= minNumPixels) && outside.cond)
-    {
+    if (any(conn.table.inside >= minNumPixels) && outside.cond) {
       large.conn <- TRUE
     }
 
@@ -138,9 +128,11 @@ countPixelsFilter <- function(msiData,
     filter.results[i] <- large.conn
   }
 
-  out <- list(max.count.inside = max.count.inside,
-              max.count.outside = max.count.outside,
-              sel.peaks = which(filter.results))
+  out <- list(
+    max.count.inside = max.count.inside,
+    max.count.outside = max.count.outside,
+    sel.peaks = which(filter.results)
+  )
   attr(out, "peak.filter") <- TRUE
   attr(out, "filter") <- "countPixels"
 

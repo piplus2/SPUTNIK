@@ -18,7 +18,6 @@
 setClass(
 
   "msi.dataset",
-
   slots = list(
     matrix = "matrix",
     mz = "numeric",
@@ -26,38 +25,31 @@ setClass(
     ncol = "integer"
   ),
 
-  validity = function(object)
-  {
-    if (length(dim(object@matrix)) != 2)
-    {
+  validity = function(object) {
+    if (length(dim(object@matrix)) != 2) {
       return("values must be 2-D numeric matrix.")
     }
 
-    if (any(is.na(object@matrix)))
-    {
+    if (any(is.na(object@matrix))) {
       return("values contain NA")
     }
 
-    if (any(is.infinite(object@matrix)))
-    {
+    if (any(is.infinite(object@matrix))) {
       return("values contains Inf")
     }
 
-    if (min(object@matrix) < 0)
-    {
+    if (min(object@matrix) < 0) {
       return("negative values.")
     }
 
-    if (sum(apply(object@matrix, 2, var) == 0) > 0)
-    {
+    if (sum(apply(object@matrix, 2, var) == 0) > 0) {
       warning("values constant.")
     }
 
-    if (length(object@mz) != ncol(object@matrix))
-    {
+    if (length(object@mz) != ncol(object@matrix)) {
       return("mz and intensities incompatible dimensions.")
     }
-    
+
     return(TRUE)
   }
 )

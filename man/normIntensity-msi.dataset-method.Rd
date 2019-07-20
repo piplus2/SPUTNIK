@@ -13,8 +13,8 @@
 \item{object}{\link{msi.dataset-class} object.}
 
 \item{method}{string (default = \code{"median"}). The normalization method to
-be used. Valid values are: \code{"median"}, \code{"PQN"}, \code{"TIC"}, or
-\code{"upperQuartile"}.
+be used. Valid values are: \code{"median"}, \code{"PQN"}, \code{"TIC"},
+\code{TMM}, or \code{"upperQuartile"}.
 See 'Details' section.}
 
 \item{peaksInd}{numeric array (default = NULL). Array of peak indices used to
@@ -49,6 +49,7 @@ The valid values for \code{method} are:
   }
   \item \code{"TIC"}: total ion current normalization assign the sum of the
   peaks intensities to one.
+  \item \code{TMM}: trimmed mean of M-values. Introduced in edgeR.
   \item \code{"upperQuartile"}: spectra are scaled by their 3rd quartile.
 }
 }
@@ -58,7 +59,7 @@ library("SPUTNIK")
 
 ## Create the msi.dataset-class object
 sz <- c(5, 4)
-x <- matrix(rnorm(sz[1] * sz[2] * 20), sz[1]*sz[2], 20)
+x <- matrix(rnorm(sz[1] * sz[2] * 20), sz[1] * sz[2], 20)
 x[x < 0] <- 0 # MS data is positive
 mz <- sort(sample(100, ncol(x)))
 msiX <- msiDataset(x, mz, sz[1], sz[2])
@@ -69,7 +70,7 @@ msiX <- varTransform(msiX, "log")
 
 ## Create the msi.dataset-class object
 sz <- c(5, 4)
-x <- matrix(rnorm(sz[1] * sz[2]), sz[1]*sz[2], 20)
+x <- matrix(rnorm(sz[1] * sz[2]), sz[1] * sz[2], 20)
 x[x < 0] <- 0 # MS data is positive
 mz <- sort(sample(100, ncol(x)))
 msiX <- msiDataset(x, mz, sz[1], sz[2])
@@ -82,6 +83,9 @@ F. Dieterle, A. Ross, G. Schlotterbeck, and Hans Senn. 2006.
 Probabilistic quotient normalization as robust method to account for dilution
 of complex biological mixtures. Application in 1H NMR metabonomics.
 Analytical Chemistry 78(13): 4281-4290.
+
+Robinson MD, Oshlack A (2010). A scaling normalization method for
+differential expression analysis of RNA-seq data. Genome Biology 11, R25.
 }
 \seealso{
 \link{msi.dataset-class}

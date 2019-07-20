@@ -98,8 +98,10 @@ msiX <- msiDataset(X, mzVector, imSize[1], imSize[2])
 
 ## Calculate the p-values using the Clark Evans test, then apply Benjamini-
 ## Hochberg correction.
-csr <- CSRPeaksFilter(msiData = msiX, method = "ClarkEvans",
-                      calculateCovariate = FALSE, adjMethod = "BH")
+csr <- CSRPeaksFilter(
+  msiData = msiX, method = "ClarkEvans",
+  calculateCovariate = FALSE, adjMethod = "BH"
+)
 
 ## Print selected peaks
 print(csr$q.value)

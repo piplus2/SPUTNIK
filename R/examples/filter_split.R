@@ -17,6 +17,8 @@ imSize <- c(5, 4)
 msiX <- msiDataset(X, mzVector, imSize[1], imSize[2])
 
 ## Determine split peaks
-sp.filter <- splitPeaksFilter(msiData = msiX, mzTolerance = 50,
-                              sharedPixelsRatio = 0,
-                              sparseness = "spatial.chaos", threshold = 0.5)
+sp.filter <- splitPeaksFilter(
+  msiData = msiX, mzTolerance = 50,
+  sharedPixelsRatio = 0,
+  sparseness = "spatial.chaos", threshold = 0.5
+)

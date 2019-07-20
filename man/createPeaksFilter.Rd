@@ -29,7 +29,6 @@ mz <- seq(100, 195, 5)
 mzIdx <- sample(100, 20)
 names(mzIdx) <- mz
 peaksFilter <- createPeaksFilter(mzIdx)
-
 }
 \seealso{
 \link{applyPeaksFilter-msi.dataset-method}

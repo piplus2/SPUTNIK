@@ -70,25 +70,22 @@
 CSRPeaksFilter <- function(msiData,
                            method = "ClarkEvans",
                            covariateImage = NULL,
-                           covMethod = "sum",       # --------------------
-                           mzQueryCov = numeric(),  # Covariate arguments
+                           covMethod = "sum", # --------------------
+                           mzQueryCov = numeric(), # Covariate arguments
                            mzTolerance = numeric(), #
-                           useFullMZCov = TRUE,     #
-                           smoothCov = FALSE,       #
-                           smoothCovSigma = 2,      #
-                           invertCov = FALSE,       #---------------------
+                           useFullMZCov = TRUE, #
+                           smoothCov = FALSE, #
+                           smoothCovSigma = 2, #
+                           invertCov = FALSE, #---------------------
                            adjMethod = "bonferroni",
                            returnQvalues = TRUE,
                            plotCovariate = FALSE,
                            verbose = TRUE,
                            ...) {
-
   .stopIfNotValidMSIDataset(msiData)
-  if (!is.null(covariateImage))
-  {
+  if (!is.null(covariateImage)) {
     .stopIfNotValidMSImage(covariateImage)
-    if (prod(dim(covariateImage@values)) != nrow(msiData@matrix))
-    {
+    if (prod(dim(covariateImage@values)) != nrow(msiData@matrix)) {
       stop("incompatible dimensions between the 'msiData' and the provided
            'covariateImage'")
     }
@@ -97,49 +94,50 @@ CSRPeaksFilter <- function(msiData,
   # Check the statistical method
   accept.methods <- c("KS", "ClarkEvans")
   if (!any(method %in% accept.methods)) {
-    stop("CSRPeaksFilter: valid values for 'method' are: ",
-         paste0(accept.methods, collapse = ", "), ".")
+    stop(
+      "CSRPeaksFilter: valid values for 'method' are: ",
+      paste0(accept.methods, collapse = ", "), "."
+    )
   }
 
   if (!any(adjMethod %in% p.adjust.methods)) {
-    stop("CSRPeaksFilter: accepted values for 'adjMethod' are: ",
-         paste0(p.adjust.methods, collapse = ", "), ".")
+    stop(
+      "CSRPeaksFilter: accepted values for 'adjMethod' are: ",
+      paste0(p.adjust.methods, collapse = ", "), "."
+    )
   }
 
   # Calculate the reference image. This is used as reference for Kolmogorov-
   # Smirnov test.
-  if (method == "KS" && is.null(covariateImage))
-  {
-    if (verbose)
-    {
+  if (method == "KS" && is.null(covariateImage)) {
+    if (verbose) {
       cat("Calculating the reference image. This may take a while...\n")
     }
     # Convert the reference image for the spatstat test
-    covariateImage <- .refImage(msiData = msiData,
-                                method = covMethod,
-                                mzQuery = mzQueryCov,
-                                mzTolerance = mzTolerance,
-                                useFullMZ = useFullMZCov,
-                                smoothIm = smoothCov,
-                                smoothSigma = smoothCovSigma,
-                                invertIm = invertCov,
-                                verbose = TRUE)
+    covariateImage <- .refImage(
+      msiData = msiData,
+      method = covMethod,
+      mzQuery = mzQueryCov,
+      mzTolerance = mzTolerance,
+      useFullMZ = useFullMZCov,
+      smoothIm = smoothCov,
+      smoothSigma = smoothCovSigma,
+      invertIm = invertCov,
+      verbose = TRUE
+    )
     covariateImage@name <- "Covariate"
-    
-    if (plotCovariate)
-    {
+
+    if (plotCovariate) {
       plot(covariateImage)
     }
   }
 
-  if (!is.null(covariateImage))
-  {
+  if (!is.null(covariateImage)) {
     ref.covariate <- as.im(t(covariateImage@values))
   }
-  
+
   # Scale in [0, 1]
-  if (verbose)
-  {
+  if (verbose) {
     cat("Scaling all the peaks intensities in [0, 1]\n")
   }
   msiData <- .scale.all(msiData)
@@ -150,38 +148,40 @@ CSRPeaksFilter <- function(msiData,
   p_ <- array(NA, length(msiData@mz), dimnames = list(msiData@mz))
   for (ion in 1:length(msiData@mz))
   {
-    if (verbose && ion %% 500 == 0)
-    {
+    if (verbose && ion %% 500 == 0) {
       cat(ion, "")
     }
-    
+
     ## Skip constant images
-    if (var(msiData@matrix[, ion]) == 0)
-    {
+    if (var(msiData@matrix[, ion]) == 0) {
       next()
     }
-    
+
     # Transform into a 2D matrix
     im <- msImage(matrix(msiData@matrix[, ion], msiData@nrow, msiData@ncol),
-                  scale = F)
-    
-    p_[ion] <- .csr.test.im(im = im,
-                            method = method,
-                            ref.im = ref.covariate,
-                            ...)
+      scale = F
+    )
+
+    p_[ion] <- .csr.test.im(
+      im = im,
+      method = method,
+      ref.im = ref.covariate,
+      ...
+    )
   }
   cat("\n")
-  
+
   # Multiple testing correction
   q_ <- NULL
-  if (returnQvalues)
-  {
+  if (returnQvalues) {
     q_ <- p.adjust(p = p_, method = adjMethod)
   }
-  
-  out <- list(p.value = p_,
-              q.value = q_)
-  
+
+  out <- list(
+    p.value = p_,
+    q.value = q_
+  )
+
   return(out)
 }
 
@@ -194,30 +194,32 @@ CSRPeaksFilter <- function(msiData,
                          method = "ClarkEvans",
                          ref.im = NULL,
                          win = NULL,
-                         ...)
-{
+                         ...) {
   .stopIfNotValidMSImage(im)
-  
-  if (is.null(win))
-  {
+
+  if (is.null(win)) {
     win <- owin(xrange = c(1, nrow(im@values)), yrange = c(1, ncol(im@values)))
   }
-  
+
   # Transform the image into a point pattern process
   im.bw <- binOtsu(im)
   pix <- which(im.bw@values == 1, arr.ind = T)
-  
+
   p <- switch(
     method,
     "ClarkEvans" = {
-      im.ppp <- ppp(x = pix[, 1], y = pix[, 2],
-                    marks = c(im@values[im.bw@values == 1]), window = win)
+      im.ppp <- ppp(
+        x = pix[, 1], y = pix[, 2],
+        marks = c(im@values[im.bw@values == 1]), window = win
+      )
       return(clarkevans.test(X = im.ppp, ...)$p.value)
     },
     "KS" = {
       im.ppp <- ppp(x = pix[, 1], y = pix[, 2], window = win)
-      return(cdf.test(X = im.ppp, covariate = ref.im,
-                      test = "ks", ...)$p.value)
+      return(cdf.test(
+        X = im.ppp, covariate = ref.im,
+        test = "ks", ...
+      )$p.value)
     }
   )
   return(p)

@@ -40,7 +40,6 @@ numIons <- 20
 x <- matrix(rnorm(prod(sz) * numIons), prod(sz), numIons)
 mz <- sort(sample(100, numIons))
 msiX <- msiDataset(x, mz, sz[1], sz[2])
-
 }
 \author{
 Paolo Inglese \email{p.inglese14@imperial.ac.uk}

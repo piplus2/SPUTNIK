@@ -51,62 +51,59 @@ globalPeaksFilter <- function(msiData,
                               referenceImage,
                               method = "pearson",
                               threshold = NULL,
-                              verbose = TRUE)
-{
+                              verbose = TRUE) {
   .stopIfNotValidMSIDataset(msiData)
   .stopIfNotValidMSImage(referenceImage)
   .stopIfNotValidGlobalMethod(method)
 
-  if (.isBinary(referenceImage) && method == "pearson")
-  {
+  if (.isBinary(referenceImage) && method == "pearson") {
     warning("For binary reference images, it is suggested to use the other available methods.\n")
   }
 
-  if (is.null(threshold))
-  {
+  if (is.null(threshold)) {
     # Default threshold for SSIM is slightly higher
-    if (method == 'ssim')
-    {
+    if (method == "ssim") {
       threshold <- 0.001
-    } else
-    {
+    } else {
       threshold <- 0
     }
   }
-  
+
   # Calculate the similarity between the ion images and the reference image
-  if (verbose)
+  if (verbose) {
     cat("Calculating the similarity values...\n")
+  }
 
   ## Use NMI only if the reference image is binary
-  if (method == 'nmi' && !.isBinary(referenceImage))
-  {
-      stop("globalPeaksFilter: 'nmi' can be only used with binary reference images.")
+  if (method == "nmi" && !.isBinary(referenceImage)) {
+    stop("globalPeaksFilter: 'nmi' can be only used with binary reference images.")
   }
 
   r <- array(NA, ncol(msiData@matrix))
   idx.non.const <- apply(msiData@matrix, 2, var) != 0
-  
+
   r[idx.non.const] <- switch(method,
-              "pearson" = apply(msiData@matrix[, idx.non.const], 2, function(z)
-                cor(z, c(referenceImage@values), method = method)),
-              "spearman" = apply(msiData@matrix[, idx.non.const], 2, function(z)
-                cor(z, c(referenceImage@values), method = method)),
-              "ssim" = apply(msiData@matrix[, idx.non.const], 2, function(z)
-                SSIM(z, referenceImage@values)),
-              "nmi" = apply(msiData@matrix[, idx.non.const], 2, function(z)
-                NMI(z, c(referenceImage@values)))
-              )
-  
-  if (verbose)
-  {
-    cat('Similarity measure quantiles (after removing NAs):\n')
+    "pearson" = apply(msiData@matrix[, idx.non.const], 2, function(z)
+      cor(z, c(referenceImage@values), method = method)),
+    "spearman" = apply(msiData@matrix[, idx.non.const], 2, function(z)
+      cor(z, c(referenceImage@values), method = method)),
+    "ssim" = apply(msiData@matrix[, idx.non.const], 2, function(z)
+      SSIM(z, referenceImage@values)),
+    "nmi" = apply(msiData@matrix[, idx.non.const], 2, function(z)
+      NMI(z, c(referenceImage@values)))
+  )
+
+  if (verbose) {
+    cat("Similarity measure quantiles (after removing NAs):
+")
     print(quantile(r, na.rm = TRUE))
   }
-  
-  if (verbose)
-    cat(paste0('Selecting peaks with similarity larger than ', threshold, '...\n'))
-  
+
+  if (verbose) {
+    cat(paste0("Selecting peaks with similarity larger than ", threshold, "...
+"))
+  }
+
   names(r) <- msiData@mz
   out <- list(sim.values = r, sel.peaks = which(r > threshold))
   attr(out, "peak.filter") <- TRUE

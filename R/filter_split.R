@@ -76,18 +76,21 @@ splitPeaksFilter <- function(msiData,
                              sparseness = "scatter.ratio",
                              threshold = 0.5,
                              returnDetails = TRUE,
-                             verbose = TRUE)
-{
+                             verbose = TRUE) {
   .stopIfNotValidMSIDataset(msiData)
 
   sparse.accept <- c("gini.index", "scatter.ratio", "spatial.chaos")
-  if (!any(sparseness %in% sparse.accept))
-    stop("accepted values for 'sparseness' are: ",
-         paste0(sparse.accept, collapse = ", "), ".")
+  if (!any(sparseness %in% sparse.accept)) {
+    stop(
+      "accepted values for 'sparseness' are: ",
+      paste0(sparse.accept, collapse = ", "), "."
+    )
+  }
 
   # Determine the peaks closest than mzTolerance
-  if (verbose)
+  if (verbose) {
     cat("Determining close peaks. This may take a while...\n")
+  }
 
   grouped.peaks_ <- list()
   k <- 1
@@ -96,29 +99,26 @@ splitPeaksFilter <- function(msiData,
   for (i in 2:length(msiData@mz))
   {
     # Skip the constant signal
-    if (var(msiData@matrix[, i]) == 0)
+    if (var(msiData@matrix[, i]) == 0) {
       next()
+    }
     # Check whether the group of peaks are close enough
     test.peaks_ <- c(grouped.peaks_[[k]], i)
     d[i] <- .distance.ppm.interval(msiData@mz[test.peaks_])
-    if (.distance.ppm.interval(msiData@mz[test.peaks_]) <= mzTolerance)
-    {
+    if (.distance.ppm.interval(msiData@mz[test.peaks_]) <= mzTolerance) {
       # Test whether the peaks signals are not localized in the same spatial
       # regions.
       grouped.bin <- apply(msiData@matrix[, test.peaks_], 2, function(z) z != 0)
       # The sum of the binary images should not contain numbers larger than 1
       grouped.inters <- apply(grouped.bin, 1, sum)
-      if (sum(grouped.inters > 1) / length(grouped.inters) <= sharedPixelsRatio)
-      {
+      if (sum(grouped.inters > 1) / length(grouped.inters) <= sharedPixelsRatio) {
         grouped.peaks_[[k]] <- test.peaks_
-      } else
-      {
-        k <- k+1
+      } else {
+        k <- k + 1
         grouped.peaks_[[k]] <- i
       }
-    } else
-    {
-      k <- k+1
+    } else {
+      k <- k + 1
       grouped.peaks_[[k]] <- i
     }
   }
@@ -126,14 +126,13 @@ splitPeaksFilter <- function(msiData,
 
   # Extract the groups of 2 or more peaks
   sel.groups <- which(unlist(lapply(grouped.peaks_, length)) > 1)
-  if (verbose)
+  if (verbose) {
     cat("Min. distance between peaks (ppm) =", min(d, na.rm = T), "\n")
-  if (length(sel.groups) == 0)
-  {
+  }
+  if (length(sel.groups) == 0) {
     cat("No peak groups to merge found.\n")
     return(NULL)
-  } else
-  {
+  } else {
     cat("Found", length(sel.groups), "groups of peaks to test for scatteredness.\n")
   }
   grouped.peaks_ <- grouped.peaks_[sel.groups]
@@ -141,8 +140,9 @@ splitPeaksFilter <- function(msiData,
   # If the union of the close peaks returns a less scattered image, then merge
   # the peaks into one measure which m/z corresponds to the mean value of the
   # merged m/z values.
-  if (verbose)
+  if (verbose) {
     cat("Testing scatteredness of merged images...\n")
+  }
 
   fin.peaks_ <- list()
   k <- 0
@@ -151,15 +151,16 @@ splitPeaksFilter <- function(msiData,
   {
     # Calculate the scatteredness of the ion images and that of the union
     group.peaks_ <- unique(grouped.peaks_[[j]])
-    sc_meas <- array(NA, length(group.peaks_)+1)
+    sc_meas <- array(NA, length(group.peaks_) + 1)
     for (l in 1:length(group.peaks_))
     {
       im_ <- matrix(msiData@matrix[, group.peaks_[l]], msiData@nrow, msiData@ncol)
       im_ <- im_ / max(im_)
       sc_meas[l] <- switch(sparseness,
-                           "scatter.ratio" = scatter.ratio(im = im_),
-                           "gini.index" = gini.index(x = im_),
-                           "spatial.chaos" = spatial.chaos(im = im_))
+        "scatter.ratio" = scatter.ratio(im = im_),
+        "gini.index" = gini.index(x = im_),
+        "spatial.chaos" = spatial.chaos(im = im_)
+      )
       rm(im_)
     }
     rm(l)
@@ -169,44 +170,47 @@ splitPeaksFilter <- function(msiData,
     # Gini index: a less sparse image has a low value
     # Spatial chaos: a structured image has a high value
     meas.condition <- switch(sparseness,
-                             "scatter.ratio" = (any(sc_meas[1:(length(sc_meas)-1)] <= threshold)),
-                             "gini.index" = (any(sc_meas[1:(length(sc_meas)-1)] <= threshold)),
-                             "spatial.chaos" = (any(sc_meas[1:(length(sc_meas)-1)] >= threshold)))
-    if (!meas.condition)
+      "scatter.ratio" = (any(sc_meas[1:(length(sc_meas) - 1)] <= threshold)),
+      "gini.index" = (any(sc_meas[1:(length(sc_meas) - 1)] <= threshold)),
+      "spatial.chaos" = (any(sc_meas[1:(length(sc_meas) - 1)] >= threshold))
+    )
+    if (!meas.condition) {
       next()
-    
+    }
+
     im_ <- matrix(apply(msiData@matrix[, group.peaks_], 1, sum), msiData@nrow, msiData@ncol)
     im_ <- im_ / max(im_)
     sc_meas[length(sc_meas)] <- switch(sparseness,
-                                       "scatter.ratio" = scatter.ratio(im = im_),
-                                       "gini.index" = gini.index(x = im_),
-                                       "spatial.chaos" = spatial.chaos(im = im_))
+      "scatter.ratio" = scatter.ratio(im = im_),
+      "gini.index" = gini.index(x = im_),
+      "spatial.chaos" = spatial.chaos(im = im_)
+    )
     # Check the regularity after merging
     meas.condition <- switch(sparseness,
-                             "scatter.ratio" = all(sc_meas[1:(length(sc_meas)-1)] >= sc_meas[length(sc_meas)]),
-                             "gini.index" = all(sc_meas[1:(length(sc_meas)-1)] >= sc_meas[length(sc_meas)]),
-                             "spatial.chaos" = (any(sc_meas[1:length(sc_meas)] <= threshold)))
-    if (meas.condition)
-    {
-      k <- k+1
+      "scatter.ratio" = all(sc_meas[1:(length(sc_meas) - 1)] >= sc_meas[length(sc_meas)]),
+      "gini.index" = all(sc_meas[1:(length(sc_meas) - 1)] >= sc_meas[length(sc_meas)]),
+      "spatial.chaos" = (any(sc_meas[1:length(sc_meas)] <= threshold))
+    )
+    if (meas.condition) {
+      k <- k + 1
       fin.peaks_[[k]] <- group.peaks_
       merge.mz[k] <- mean(msiData@mz[group.peaks_])
     }
     names(fin.peaks_) <- merge.mz
   }
-  if (length(fin.peaks_) == 0)
-  {
-    if (verbose)
+  if (length(fin.peaks_) == 0) {
+    if (verbose) {
       cat("No peak groups to merge found.\n")
+    }
     return(NULL)
   }
-  if (verbose)
+  if (verbose) {
     cat(length(unlist(fin.peaks_)), "peaks merged in", length(fin.peaks_), "peaks.\n")
+  }
 
   # Return also the list of the m/z values that were merged
   list.merged.mz <- NA
-  if (returnDetails)
-  {
+  if (returnDetails) {
     list.merged.mz <- vector(mode = "list", length = length(fin.peaks_))
     for (i in 1:length(fin.peaks_))
     {

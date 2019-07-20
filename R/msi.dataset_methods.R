@@ -1,31 +1,40 @@
 ## set generics for msi.dataset-class methods
 
-if (is.null(getGeneric("applyPeaksFilter")))
+if (is.null(getGeneric("applyPeaksFilter"))) {
   setGeneric("applyPeaksFilter", function(object, ...) standardGeneric("applyPeaksFilter"))
+}
 
-if (is.null(getGeneric("binKmeans")))
+if (is.null(getGeneric("binKmeans"))) {
   setGeneric("binKmeans", function(object, ...) standardGeneric("binKmeans"))
+}
 
-if (is.null(getGeneric("binKmeans2")))
+if (is.null(getGeneric("binKmeans2"))) {
   setGeneric("binKmeans2", function(object, ...) standardGeneric("binKmeans2"))
+}
 
-if (is.null(getGeneric("binSupervised")))
+if (is.null(getGeneric("binSupervised"))) {
   setGeneric("binSupervised", function(object, ...) standardGeneric("binSupervised"))
+}
 
-if (is.null(getGeneric("getIntensityMat")))
+if (is.null(getGeneric("getIntensityMat"))) {
   setGeneric("getIntensityMat", function(object, ...) standardGeneric("getIntensityMat"))
+}
 
-if (is.null(getGeneric("getMZ")))
+if (is.null(getGeneric("getMZ"))) {
   setGeneric("getMZ", function(object, ...) standardGeneric("getMZ"))
+}
 
-if (is.null(getGeneric("getShapeMSI")))
+if (is.null(getGeneric("getShapeMSI"))) {
   setGeneric("getShapeMSI", function(object, ...) standardGeneric("getShapeMSI"))
+}
 
-if (is.null(getGeneric("normIntensity")))
+if (is.null(getGeneric("normIntensity"))) {
   setGeneric("normIntensity", function(object, ...) standardGeneric("normIntensity"))
+}
 
-if (is.null(getGeneric("varTransform")))
+if (is.null(getGeneric("varTransform"))) {
   setGeneric("varTransform", function(object, ...) standardGeneric("varTransform"))
+}
 
 ## Methods ---------------------------------------------------------------------
 
@@ -40,12 +49,13 @@ if (is.null(getGeneric("varTransform")))
 #' @export
 #' @aliases getMZ
 #'
-setMethod(f = "getMZ",
-          signature = signature(object = "msi.dataset"),
-          definition = function(object)
-          {
-            return(object@mz)
-          })
+setMethod(
+  f = "getMZ",
+  signature = signature(object = "msi.dataset"),
+  definition = function(object) {
+    return(object@mz)
+  }
+)
 
 #' Return the peaks intensity matrix.
 #'
@@ -59,12 +69,13 @@ setMethod(f = "getMZ",
 #' @export
 #' @aliases getIntensityMat
 #'
-setMethod(f = "getIntensityMat",
-          signature = signature(object = "msi.dataset"),
-          definition = function(object)
-          {
-            return(object@matrix)
-          })
+setMethod(
+  f = "getIntensityMat",
+  signature = signature(object = "msi.dataset"),
+  definition = function(object) {
+    return(object@matrix)
+  }
+)
 
 #' Return a binary mask generated applying k-means clustering
 #' on peaks intensities.
@@ -79,19 +90,19 @@ setMethod(f = "getIntensityMat",
 #' @importFrom stats kmeans
 #' @aliases binKmeans
 #'
-setMethod(f = "binKmeans",
-          signature = signature(object = "msi.dataset"),
-          definition = function(object)
-          {
-            y.clust <- kmeans(object@matrix, centers = 2, iter.max = 1000, nstart = 5)
-            y.clust <- (y.clust$cluster == 2) * 1
+setMethod(
+  f = "binKmeans",
+  signature = signature(object = "msi.dataset"),
+  definition = function(object) {
+    y.clust <- kmeans(object@matrix, centers = 2, iter.max = 1000, nstart = 5)
+    y.clust <- (y.clust$cluster == 2) * 1
 
-            values <- matrix(y.clust, object@nrow, object@ncol)
+    values <- matrix(y.clust, object@nrow, object@ncol)
 
-            bw <- msImage(values, "ROI")
-            
-            return(bw)
-          }
+    bw <- msImage(values, "ROI")
+
+    return(bw)
+  }
 )
 
 #' Return a binary mask generated applying k-means clustering
@@ -119,130 +130,133 @@ setMethod(f = "binKmeans",
 #' @return \link{ms.image-class} object representing the binary mask image.
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
-#' 
+#'
 #' @export
 #' @importFrom stats kmeans
 #' @import imager parallel
 #' @aliases binKmeans2
 #'
-setMethod(f = "binKmeans2",
-          signature = signature(object = "msi.dataset"),
-          definition = function(object,
-                                mzQuery = numeric(),
-                                useFullMZ = TRUE,
-                                mzTolerance = numeric(),
-                                numClusters = 4,
-                                kernelSize = c(3, 3, 3, 3),
-                                numCores = 1,
-                                verbose = TRUE)
-          {
-            if (length(kernelSize) == 1)
-            {
-              kernelSize <- rep(kernelSize, 4)
-            }
-            if (length(kernelSize) != 4)
-            {
-              stop("binKmeans2: 'kernelSize' must be a 4-elements array.")
-            }
-            if (all(kernelSize < 1))
-            {
-              stop("binKmeans2: at least one positive value is required for 'kernelSize'.")
-            }
-            if (length(mzQuery) == 0 && !useFullMZ)
-            {
-              stop("binKmeans2: 'mzQuery' and 'useFullMZ' are not compatible.")
-            }
-            if (length(mzQuery) != 0 && useFullMZ)
-            {
-              stop("binKmeans2: 'mzQuery' and 'useFullMZ' are not compatible.")
-            }
-            if (length(mzQuery) != 0 && length(mzTolerance) == 0)
-            {
-              stop("binKmeans2: 'mzTolerance' missing.")
-            }
-            # Match the peaks indices
-            if (useFullMZ)
-            {
-              mz.indices <- seq(1, length(object@mz))
-            } else
-            {
-              mz.indices <- .mzQueryIndices(mzQuery, object@mz, mzTolerance, verbose)
-            }
-            
-            ## Parallel
-            if (numCores > 1)
-            {
-              closeAllConnections()
-              cl <- makeCluster(numCores)
+setMethod(
+  f = "binKmeans2",
+  signature = signature(object = "msi.dataset"),
+  definition = function(object,
+                          mzQuery = numeric(),
+                          useFullMZ = TRUE,
+                          mzTolerance = numeric(),
+                          numClusters = 4,
+                          kernelSize = c(3, 3, 3, 3),
+                          numCores = 1,
+                          verbose = TRUE) {
+    if (length(kernelSize) == 1) {
+      kernelSize <- rep(kernelSize, 4)
+    }
+    if (length(kernelSize) != 4) {
+      stop("binKmeans2: 'kernelSize' must be a 4-elements array.")
+    }
+    if (all(kernelSize < 1)) {
+      stop("binKmeans2: at least one positive value is required for 'kernelSize'.")
+    }
+    if (length(mzQuery) == 0 && !useFullMZ) {
+      stop("binKmeans2: 'mzQuery' and 'useFullMZ' are not compatible.")
+    }
+    if (length(mzQuery) != 0 && useFullMZ) {
+      stop("binKmeans2: 'mzQuery' and 'useFullMZ' are not compatible.")
+    }
+    if (length(mzQuery) != 0 && length(mzTolerance) == 0) {
+      stop("binKmeans2: 'mzTolerance' missing.")
+    }
+    # Match the peaks indices
+    if (useFullMZ) {
+      mz.indices <- seq(1, length(object@mz))
+    } else {
+      mz.indices <- .mzQueryIndices(mzQuery, object@mz, mzTolerance, verbose)
+    }
 
-              clusterExport(cl = cl, varlist = c('object', 'numClusters', 'mz.indices'),
-                            envir = environment())
-              results <- clusterApply(cl, 1:10,
-                                      function(n, x) {
-                                        set.seed(NULL)
-                                        kmeans(x, numClusters, nstart = 1,
-                                               iter.max = 1000)
-                                      },
-                                      object@matrix[, mz.indices])
-              stopCluster(cl = cl)
-              closeAllConnections()
-              gc()
-              ## Get the clusters with the smallest WSS
-              i <- sapply(results, function(result) result$tot.withinss)
-              y.clust <- results[[which.min(i)]]
-            } else
-            ## Serial
-            {
-              y.clust <- kmeans(object@matrix[, mz.indices], centers = numClusters,
-                                iter.max = 1000, nstart = 5)
-            }
-            
-            ## Merge the sample-related clusters
-            im_clusters <- matrix(factor(y.clust$cluster), object@nrow, object@ncol)
-            
-            roi <- matrix(0, object@nrow, object@ncol)
-            for (k in 1:numClusters)
-            {
-              curr_clust_im <- matrix(0, object@nrow, object@ncol)
-              curr_clust_im[y.clust$cluster == k] <- 1
-              ## Top-left corner
-              if (kernelSize[1] > 0)
-              {
-                if (.mode(curr_clust_im[1:kernelSize[1], 1:kernelSize[1]] == 1))
-                  next()
-              }
-              ## Top-right
-              if (kernelSize[2] > 0)
-              {
-                if (.mode(curr_clust_im[1:kernelSize[2], (object@ncol-kernelSize[2]):object@ncol] == 1))
-                  next()
-              }
-              ## Bottom-right
-              if (kernelSize[3] > 0)
-              {
-                if (.mode(curr_clust_im[(object@nrow-kernelSize[3]):object@nrow,
-                                        (object@ncol-kernelSize[3]):object@ncol] == 1))
-                  next()
-              }
-              ## Bottom-left
-              if (kernelSize[4] > 0)
-              {
-                if (.mode(curr_clust_im[(object@nrow-kernelSize[4]):object@nrow,
-                                        1:kernelSize[4]] == 1))
-                  next()
-              }
-              roi[curr_clust_im == 1] <- roi[curr_clust_im == 1] + 1
-            }
-            
-            bw <- msImage(roi, "ROI")
-            
-            return(bw)
-          }
+    ## Parallel
+    if (numCores > 1) {
+      closeAllConnections()
+      cl <- makeCluster(numCores)
+
+      clusterExport(
+        cl = cl, varlist = c("object", "numClusters", "mz.indices"),
+        envir = environment()
+      )
+      results <- clusterApply(
+        cl, 1:10,
+        function(n, x) {
+          set.seed(NULL)
+          kmeans(x, numClusters,
+            nstart = 1,
+            iter.max = 1000
+          )
+        },
+        object@matrix[, mz.indices]
+      )
+      stopCluster(cl = cl)
+      closeAllConnections()
+      gc()
+      ## Get the clusters with the smallest WSS
+      i <- sapply(results, function(result) result$tot.withinss)
+      y.clust <- results[[which.min(i)]]
+    } else
+    ## Serial
+    {
+      y.clust <- kmeans(object@matrix[, mz.indices],
+        centers = numClusters,
+        iter.max = 1000, nstart = 5
+      )
+    }
+
+    ## Merge the sample-related clusters
+    im_clusters <- matrix(factor(y.clust$cluster), object@nrow, object@ncol)
+
+    roi <- matrix(0, object@nrow, object@ncol)
+    for (k in 1:numClusters)
+    {
+      curr_clust_im <- matrix(0, object@nrow, object@ncol)
+      curr_clust_im[y.clust$cluster == k] <- 1
+      ## Top-left corner
+      if (kernelSize[1] > 0) {
+        if (.mode(curr_clust_im[1:kernelSize[1], 1:kernelSize[1]] == 1)) {
+          next()
+        }
+      }
+      ## Top-right
+      if (kernelSize[2] > 0) {
+        if (.mode(curr_clust_im[1:kernelSize[2], (object@ncol - kernelSize[2]):object@ncol] == 1)) {
+          next()
+        }
+      }
+      ## Bottom-right
+      if (kernelSize[3] > 0) {
+        if (.mode(curr_clust_im[
+          (object@nrow - kernelSize[3]):object@nrow,
+          (object@ncol - kernelSize[3]):object@ncol
+        ] == 1)) {
+          next()
+        }
+      }
+      ## Bottom-left
+      if (kernelSize[4] > 0) {
+        if (.mode(curr_clust_im[
+          (object@nrow - kernelSize[4]):object@nrow,
+          1:kernelSize[4]
+        ] == 1)) {
+          next()
+        }
+      }
+      roi[curr_clust_im == 1] <- roi[curr_clust_im == 1] + 1
+    }
+
+    bw <- msImage(roi, "ROI")
+
+    return(bw)
+  }
 )
 
 #' Return a binary mask generated applying a supervised classifier
 #' on peaks intensities using manually selected regions corresponding to off-sample
-#' and sample-related areas. 
+#' and sample-related areas.
 #'
 #' @param object \link{msi.dataset-class} object
 #' @param refImage \link{ms.image-class} object. Image used as reference to
@@ -260,88 +274,92 @@ setMethod(f = "binKmeans2",
 #' @return \link{ms.image-class} object representing the binary mask image.
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
-#' 
+#'
 #' @export
 #' @import imager e1071
 #' @importFrom stats predict quantile
 #' @aliases binSupervised
 #'
-setMethod(f = "binSupervised",
-          signature = signature(object = "msi.dataset"),
-          definition = function(object,
-                                refImage,
-                                mzQuery = numeric(),     # Filter m/z values
-                                useFullMZ = T,           #
-                                mzTolerance = numeric(), #
-                                method = 'svm')
-          {
-            accept.methods <- c('svm')
-            
-            .stopIfNotValidMSIDataset(object)
-            .stopIfNotValidMSImage(refImage)
-            stopifnot(is.numeric(mzQuery))
-            stopifnot(is.logical(useFullMZ))
-            stopifnot(is.numeric(mzTolerance))
-            stopifnot(method %in% accept.methods)
-            
-            # Match the peaks indices
-            if (useFullMZ)
-            {
-              mz.indices <- seq(1, length(object@mz))
-            } else
-            {
-              mz.indices <- .mzQueryIndices(mzQuery, object@mz, mzTolerance, T)
-            }
-            
-            # User-defined pixels
-            userCoords <- vector(mode = 'list', length = 2)
-            names(userCoords) <- c('off-sample', 'sample')
-            
-            for (i in 1:2)
-            {
-              cat(paste0('Select the ', names(userCoords)[i], ' area...\n'))
-              
-              userCoords[[i]] <- grabRect(as.cimg(refImage@values), output = 'coord')
-            }
-            
-            # Define the mask corresponding to the user-defined pixels
-            mask = matrix(0, object@nrow, object@ncol)
-            mask[seq(userCoords[[1]][1], userCoords[[1]][3]),
-                 seq(userCoords[[1]][2], userCoords[[1]][4])] <- 1
-            mask[seq(userCoords[[2]][1], userCoords[[2]][3]),
-                 seq(userCoords[[2]][2], userCoords[[2]][4])] <- 2
-            
-            # Classify the pixels
-            idx.train <- which(mask != 0)
-            idx.test <- which(mask == 0)
-            
-            y = factor(mask[idx.train])
-            stopifnot(all(sort(unique(y)) == c(1, 2)))
-            
-            cat('Segmentation...\n')
-            mdl <- switch(method,
-                          'svm' = svm(object@matrix[idx.train, ], y, kernel = 'linear')
-            )
-            
-            ypred <- as.character(c(mask))
-            ypred[idx.test] <- as.character(predict(mdl, object@matrix[idx.test, ]))
-            
-            ypred <- as.numeric(ypred)
-            stopifnot(all(sort(unique(ypred)) == c(1, 2)))
-            
-            binRoi <- (ypred == 2) * 1
-            binRoi <- matrix(binRoi, object@nrow, object@ncol)
-            
-            return(msImage(values = binRoi, name = 'ROI', scale = F))
-          }
+setMethod(
+  f = "binSupervised",
+  signature = signature(object = "msi.dataset"),
+  definition = function(object,
+                          refImage,
+                          mzQuery = numeric(), # Filter m/z values
+                          useFullMZ = T, #
+                          mzTolerance = numeric(), #
+                          method = "svm") {
+    accept.methods <- c("svm")
+
+    .stopIfNotValidMSIDataset(object)
+    .stopIfNotValidMSImage(refImage)
+    stopifnot(is.numeric(mzQuery))
+    stopifnot(is.logical(useFullMZ))
+    stopifnot(is.numeric(mzTolerance))
+    stopifnot(method %in% accept.methods)
+
+    # Match the peaks indices
+    if (useFullMZ) {
+      mz.indices <- seq(1, length(object@mz))
+    } else {
+      mz.indices <- .mzQueryIndices(mzQuery, object@mz, mzTolerance, T)
+    }
+
+    # User-defined pixels
+    userCoords <- vector(mode = "list", length = 2)
+    names(userCoords) <- c("off-sample", "sample")
+
+    for (i in 1:2)
+    {
+      cat(paste0("Select the ", names(userCoords)[i], " area...
+"))
+
+      userCoords[[i]] <- grabRect(as.cimg(refImage@values), output = "coord")
+    }
+
+    # Define the mask corresponding to the user-defined pixels
+    mask <- matrix(0, object@nrow, object@ncol)
+    mask[
+      seq(userCoords[[1]][1], userCoords[[1]][3]),
+      seq(userCoords[[1]][2], userCoords[[1]][4])
+    ] <- 1
+    mask[
+      seq(userCoords[[2]][1], userCoords[[2]][3]),
+      seq(userCoords[[2]][2], userCoords[[2]][4])
+    ] <- 2
+
+    # Classify the pixels
+    idx.train <- which(mask != 0)
+    idx.test <- which(mask == 0)
+
+    y <- factor(mask[idx.train])
+    stopifnot(all(sort(unique(y)) == c(1, 2)))
+
+    cat("Segmentation...
+")
+    mdl <- switch(method,
+      "svm" = svm(object@matrix[idx.train, ], y, kernel = "linear")
+    )
+
+    ypred <- as.character(c(mask))
+    ypred[idx.test] <- as.character(predict(mdl, object@matrix[idx.test, ]))
+
+    ypred <- as.numeric(ypred)
+    stopifnot(all(sort(unique(ypred)) == c(1, 2)))
+
+    binRoi <- (ypred == 2) * 1
+    binRoi <- matrix(binRoi, object@nrow, object@ncol)
+
+    return(msImage(values = binRoi, name = "ROI", scale = F))
+  }
 )
 
 #' Normalize the peaks intensities.
 #'
 #' @param object \link{msi.dataset-class} object.
 #' @param method string (default = \code{"median"}). The normalization method to
-#' be used. Valid values are: \code{"median"}, \code{"PQN"}, \code{"TIC"}, or
-#' \code{"upperQuartile"}.
+#' be used. Valid values are: \code{"median"}, \code{"PQN"}, \code{"TIC"},
+#' \code{TMM}, or \code{"upperQuartile"}.
 #' See 'Details' section.
 #' @param peaksInd numeric array (default = NULL). Array of peak indices used to
 #' calculate the scaling factors (TIC, median). If NULL, all the peaks are used.
@@ -361,6 +379,7 @@ setMethod(f = "binSupervised",
 #'   }
 #'   \item \code{"TIC"}: total ion current normalization assign the sum of the
 #'   peaks intensities to one.
+#'   \item \code{TMM}: trimmed mean of M-values. Introduced in edgeR.
 #'   \item \code{"upperQuartile"}: spectra are scaled by their 3rd quartile.
 #' }
 #'
@@ -378,6 +397,8 @@ setMethod(f = "binSupervised",
 #' Probabilistic quotient normalization as robust method to account for dilution
 #' of complex biological mixtures. Application in 1H NMR metabonomics.
 #' Analytical Chemistry 78(13): 4281-4290.
+#' @references Robinson MD, Oshlack A (2010). A scaling normalization method for
+#' differential expression analysis of RNA-seq data. Genome Biology 11, R25.
 #'
 #' @example R/examples/msiDataset_transform.R
 #'
@@ -385,17 +406,18 @@ setMethod(f = "binSupervised",
 #' @export
 #' @aliases normIntensity
 #'
-setMethod(f = "normIntensity",
-          signature = signature(object = "msi.dataset"),
-          definition = function(object, method = "median", peaksInd = NULL, offsetZero = 0)
-          {
-            object@matrix <- .normIntensity(object@matrix,
-                                            method = method,
-                                            peak.ind = peaksInd,
-                                            zero.offset = offsetZero)
-            
-            return(object)
-          }
+setMethod(
+  f = "normIntensity",
+  signature = signature(object = "msi.dataset"),
+  definition = function(object, method = "median", peaksInd = NULL, offsetZero = 0) {
+    object@matrix <- .normIntensity(object@matrix,
+      method = method,
+      peak.ind = peaksInd,
+      zero.offset = offsetZero
+    )
+
+    return(object)
+  }
 )
 
 #' Variance stabilizing transformation.
@@ -417,14 +439,15 @@ setMethod(f = "normIntensity",
 #' @export
 #' @aliases varTransform
 #'
-setMethod(f = "varTransform",
-          signature = signature(object = "msi.dataset"),
-          definition = function(object, method = "log")
-          {
-            object@matrix <- .varTransf(object@matrix, method)
-            
-            return(object)
-          })
+setMethod(
+  f = "varTransform",
+  signature = signature(object = "msi.dataset"),
+  definition = function(object, method = "log") {
+    object@matrix <- .varTransf(object@matrix, method)
+
+    return(object)
+  }
+)
 
 #' Apply the results of a peaks filter.
 #'
@@ -444,49 +467,46 @@ setMethod(f = "varTransform",
 #' @export
 #' @aliases applyPeaksFilter
 #'
-setMethod(f = "applyPeaksFilter",
-          signature = signature(object = "msi.dataset"),
-          definition = function(object, peakFilter)
-          {
-            .stopIfNotValidPeakFilter(peakFilter)
+setMethod(
+  f = "applyPeaksFilter",
+  signature = signature(object = "msi.dataset"),
+  definition = function(object, peakFilter) {
+    .stopIfNotValidPeakFilter(peakFilter)
 
-            # Check that the peak filter m/z values correspond to the same
-            # of the dataset
-            if (attr(peakFilter, "filter") == "splitPeaks")
-            {
-              tmp.matrix <- object@matrix
-              x.merged <- matrix(NA, nrow(object@matrix), length(peakFilter$merged.peaks))
+    # Check that the peak filter m/z values correspond to the same
+    # of the dataset
+    if (attr(peakFilter, "filter") == "splitPeaks") {
+      tmp.matrix <- object@matrix
+      x.merged <- matrix(NA, nrow(object@matrix), length(peakFilter$merged.peaks))
 
-              for (i in 1:length(peakFilter$merged.peaks))
-              {
-                x.merged[, i] <- apply(object@matrix[, peakFilter$merged.peaks[[i]]], 1, sum)
-              }
-              mz.merged <- names(peakFilter$merged.peaks)
-              tmp.matrix <- tmp.matrix[, -unique(unlist(peakFilter$merged.peaks, use.names = F))]
-              tmp.mz <- object@mz[-unique(unlist(peakFilter$merged.peaks, use.names = F))]
+      for (i in 1:length(peakFilter$merged.peaks))
+      {
+        x.merged[, i] <- apply(object@matrix[, peakFilter$merged.peaks[[i]]], 1, sum)
+      }
+      mz.merged <- names(peakFilter$merged.peaks)
+      tmp.matrix <- tmp.matrix[, -unique(unlist(peakFilter$merged.peaks, use.names = F))]
+      tmp.mz <- object@mz[-unique(unlist(peakFilter$merged.peaks, use.names = F))]
 
-              # Update with the merged values
-              tmp.matrix <- cbind(tmp.matrix, x.merged)
-              tmp.mz <- c(tmp.mz, mz.merged)
+      # Update with the merged values
+      tmp.matrix <- cbind(tmp.matrix, x.merged)
+      tmp.mz <- c(tmp.mz, mz.merged)
 
-              # Sort the m/z values
-              tmp.mz <- sort(tmp.mz, index.return = T)
-              tmp.matrix <- tmp.matrix[, tmp.mz$ix]
+      # Sort the m/z values
+      tmp.mz <- sort(tmp.mz, index.return = T)
+      tmp.matrix <- tmp.matrix[, tmp.mz$ix]
 
-              object@matrix <- tmp.matrix
-              object@mz <- as.numeric(tmp.mz$x)
-            } else
-            {
-              if (!any(object@mz[peakFilter$sel.peaks] %in% names(peakFilter$sel.peaks)))
-              {
-                stop("peakFilter not compatible with the MSI dataset.")
-              }
-              object@matrix <- object@matrix[, peakFilter$sel.peaks]
-              object@mz <- object@mz[peakFilter$sel.peaks]
-            }
+      object@matrix <- tmp.matrix
+      object@mz <- as.numeric(tmp.mz$x)
+    } else {
+      if (!any(object@mz[peakFilter$sel.peaks] %in% names(peakFilter$sel.peaks))) {
+        stop("peakFilter not compatible with the MSI dataset.")
+      }
+      object@matrix <- object@matrix[, peakFilter$sel.peaks]
+      object@mz <- object@mz[peakFilter$sel.peaks]
+    }
 
-            return(object)
-          }
+    return(object)
+  }
 )
 
 #' Returns the geometrical shape of MS image
@@ -500,10 +520,10 @@ setMethod(f = "applyPeaksFilter",
 #' @export
 #' @aliases getShapeMSI
 #'
-setMethod(f = "getShapeMSI",
-          signature = signature(object = "msi.dataset"),
-          definition = function(object)
-          {
-            return(c(object@nrow, object@ncol))
-          }
+setMethod(
+  f = "getShapeMSI",
+  signature = signature(object = "msi.dataset"),
+  definition = function(object) {
+    return(c(object@nrow, object@ncol))
+  }
 )

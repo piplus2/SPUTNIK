@@ -76,50 +76,54 @@ refAndROIimages <- function(msiData,
                             smoothRef = FALSE,
                             smoothSigma = 2,
                             invertRef = FALSE,
-                                             ## Parameters for kmeans2 ##
+                            ## Parameters for kmeans2 ##
                             numClusters = 4, # number of clusters
-                            sizeKernel = 5,  # number of corners pixels used to
-                                             # identify the off-sample clusters
+                            sizeKernel = 5, # number of corners pixels used to
+                            # identify the off-sample clusters
                             numCores = 1, # parallel computation for k-means2
-                            verbose = TRUE)
-{
+                            verbose = TRUE) {
   .stopIfNotValidMSIDataset(msiData)
-  
+
   accept.method.roi <- c("otsu", "kmeans", "kmeans2", "supervised")
-  if (!any(roiMethod %in% accept.method.roi))
-  {
-    stop("valid roiMethod values are: ",
-         paste0(accept.method.roi, collapse = ", "), ".")
+  if (!any(roiMethod %in% accept.method.roi)) {
+    stop(
+      "valid roiMethod values are: ",
+      paste0(accept.method.roi, collapse = ", "), "."
+    )
   }
 
   # Reference image
-  ref.image <- .refImage(msiData = msiData,
-                         method = refMethod,
-                         mzQuery = mzQueryRef,
-                         mzTolerance = mzTolerance,
-                         useFullMZ = useFullMZRef,
-                         smoothIm = smoothRef,
-                         smoothSigma = smoothSigma,
-                         invertIm = invertRef)
+  ref.image <- .refImage(
+    msiData = msiData,
+    method = refMethod,
+    mzQuery = mzQueryRef,
+    mzTolerance = mzTolerance,
+    useFullMZ = useFullMZRef,
+    smoothIm = smoothRef,
+    smoothSigma = smoothSigma,
+    invertIm = invertRef
+  )
   # ROI
   roi.im <- switch(
     roiMethod,
     "otsu" = binOtsu(ref.image),
     "kmeans" = binKmeans(msiData),
     "kmeans2" = binKmeans2(msiData,
-                           mzQuery = mzQueryRef,
-                           mzTolerance = mzTolerance,
-                           useFullMZ = useFullMZRef,
-                           numClusters = numClusters,
-                           numCores = numCores,
-                           kernelSize = sizeKernel,
-                           verbose = verbose),
+      mzQuery = mzQueryRef,
+      mzTolerance = mzTolerance,
+      useFullMZ = useFullMZRef,
+      numClusters = numClusters,
+      numCores = numCores,
+      kernelSize = sizeKernel,
+      verbose = verbose
+    ),
     "supervised" = binSupervised(msiData,
-                                 refImage = ref.image,
-                                 mzQuery = mzQueryRef,      # Filter m/z values
-                                 useFullMZ = useFullMZRef,  #
-                                 mzTolerance = mzTolerance, #
-                                 method = 'svm') # Currently only 'svm' available
+      refImage = ref.image,
+      mzQuery = mzQueryRef, # Filter m/z values
+      useFullMZ = useFullMZRef, #
+      mzTolerance = mzTolerance, #
+      method = "svm"
+    ) # Currently only 'svm' available
   )
 
   return(list(Reference = ref.image, ROI = roi.im))
@@ -135,44 +139,35 @@ refAndROIimages <- function(msiData,
                       smoothIm = FALSE,
                       smoothSigma = 2,
                       invertIm = FALSE,
-                      verbose = TRUE)
-{
+                      verbose = TRUE) {
   accept.method.ref <- c("sum", "median", "mean", "pca")
-  if (!any(method %in% accept.method.ref))
-  {
+  if (!any(method %in% accept.method.ref)) {
     stop("valid method values are: ", paste0(accept.method.ref, collapse = ", "), ".")
   }
 
   .stopIfNotValidMSIDataset(msiData)
 
-  if (length(mzQuery) == 0 && !useFullMZ)
-  {
+  if (length(mzQuery) == 0 && !useFullMZ) {
     stop("'mzQuery' and 'useFullMZ' are not compatible.")
   }
-  if (length(mzQuery) != 0 && useFullMZ)
-  {
+  if (length(mzQuery) != 0 && useFullMZ) {
     stop("'mzQuery' and 'useFullMZ' are not compatible.")
   }
-  if (length(mzQuery) != 0 && length(mzTolerance) == 0)
-  {
+  if (length(mzQuery) != 0 && length(mzTolerance) == 0) {
     stop("'mzTolerance' missing.")
   }
 
   # Match the peaks indices
-  if (useFullMZ)
-  {
+  if (useFullMZ) {
     mz.indices <- seq(1, length(msiData@mz))
-  } else
-  {
+  } else {
     mz.indices <- .mzQueryIndices(mzQuery, msiData@mz, mzTolerance, verbose)
   }
 
   # Calculate the reference values
-  if (length(mz.indices) == 1)
-  {
+  if (length(mz.indices) == 1) {
     ref.values <- msiData@matrix[, mz.indices]
-  } else
-  {
+  } else {
     msiData@matrix[msiData@matrix == 0] <- NA
     ref.values <- switch(
       method,
@@ -206,12 +201,10 @@ refAndROIimages <- function(msiData,
   ref.image <- msImage(ref.values, name = paste0("Ref: ", method), scale = T)
   rm(ref.values)
 
-  if (smoothIm)
-  {
+  if (smoothIm) {
     ref.image <- smoothImage(ref.image, smoothSigma)
   }
-  if (invertIm)
-  {
+  if (invertIm) {
     ref.image <- invertImage(ref.image)
   }
 
@@ -242,8 +235,7 @@ refAndROIimages <- function(msiData,
 #' @importFrom stats sd cov
 #' @export
 #'
-SSIM <- function(x, y, numBreaks = 256)
-{
+SSIM <- function(x, y, numBreaks = 256) {
   x <- c(x)
   y <- c(y)
 
@@ -252,19 +244,19 @@ SSIM <- function(x, y, numBreaks = 256)
   x.dig <- cut(as.numeric(x), numBreaks, labels = F) - 1
   y.dig <- cut(as.numeric(y), numBreaks, labels = F) - 1
   rm(x, y)
-  
-  C1 <- (0.01 * (numBreaks - 1)) ^ 2
-  C2 <- (0.03 * (numBreaks - 1)) ^ 2
+
+  C1 <- (0.01 * (numBreaks - 1))^2
+  C2 <- (0.03 * (numBreaks - 1))^2
 
   mux <- mean(x.dig)
   muy <- mean(y.dig)
   sigxy <- cov(x.dig, y.dig)
   sigx <- var(x.dig)
   sigy <- var(y.dig)
-  
-  ssim <- ( (2*mux*muy+C1) * (2*sigxy+C2) ) / ( (mux**2+muy**2+C1) * (sigx+sigy+C2) )
+
+  ssim <- ((2 * mux * muy + C1) * (2 * sigxy + C2)) / ((mux**2 + muy**2 + C1) * (sigx + sigy + C2))
   stopifnot(ssim >= -1 && ssim <= 1)
-  
+
   return(ssim)
 }
 
@@ -289,8 +281,7 @@ SSIM <- function(x, y, numBreaks = 256)
 #' @importFrom infotheo mutinformation entropy
 #' @export
 #'
-NMI <- function(x, y, numBins = 256)
-{
+NMI <- function(x, y, numBins = 256) {
   x.dig <- cut(as.numeric(c(x)), breaks = numBins, labels = F) - 1
   y.dig <- cut(as.numeric(c(y)), breaks = 2, labels = F) - 1
   rm(x, y)
@@ -298,12 +289,12 @@ NMI <- function(x, y, numBins = 256)
   mi <- mutinformation(x.dig, y.dig, method = "emp")
   ## Add the sign to the mutual information
   mi <- mi * sign(mean(x.dig[y.dig == 1]) - mean(x.dig[y.dig == 0]))
-  
+
   h1 <- entropy(x.dig, method = "emp")
   h2 <- entropy(y.dig, method = "emp")
 
   I <- mi / sqrt(h1 * h2)
   stopifnot(I >= -1 && I <= 1)
-  
+
   return(I)
 }

@@ -71,8 +71,10 @@ msiX <- msiDataset(X, mzVector, imSize[1], imSize[2])
 ref.roi <- refAndROIimages(msiX, refMethod = "sum", roiMethod = "otsu")
 
 ## Perform global peaks filter
-glob.peaks <- globalPeaksFilter(msiData = msiX, referenceImage = ref.roi$Reference,
-                                method = "pearson", threshold = 0)
+glob.peaks <- globalPeaksFilter(
+  msiData = msiX, referenceImage = ref.roi$Reference,
+  method = "pearson", threshold = 0
+)
 
 ## Apply the filter
 msiX <- applyPeaksFilter(msiX, glob.peaks)
