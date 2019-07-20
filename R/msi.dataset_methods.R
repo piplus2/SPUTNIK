@@ -379,7 +379,7 @@ setMethod(
 #'   }
 #'   \item \code{"TIC"}: total ion current normalization assign the sum of the
 #'   peaks intensities to one.
-#'   \item \code{TMM}: trimmed mean of M-values (TMM with zero pairing).
+#'   \item \code{"TMM"}: trimmed mean of M-values (TMM with zero pairing).
 #'   Called TMMwzp in edgeR.
 #'   \item \code{"upperQuartile"}: spectra are scaled by their 3rd quartile.
 #' }
