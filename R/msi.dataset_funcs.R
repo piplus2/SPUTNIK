@@ -24,6 +24,16 @@
       Acutoff <- -1e10
 
       x[is.na(x)] <- 0
+      
+      # Remove empty pixels
+      empty.pixel <- .rowSums(x) == 0
+      if (sum(empty.pixel)) {
+        warning(cat(sum(empty.pixel), " empty pixels found.\n"))
+        # Save the original number of pixels for final reconstruction
+        orig.num.pixels <- nrow(x)
+        x <- x[!empty.pixel, ]
+      }
+      
       x <- t(x) # TMM requires samples along columns
       nsamples <- ncol(x)
 
@@ -74,7 +84,18 @@
       names(f) <- colnames(x)
 
       x <- x / f
-      t(x) # Restore the original order (rows = samples)
+      x <- t(x) # Restore the original order (rows = samples)
+      
+      # If empty pixels, restore the original dimensions
+      if (sum(empty.pixel) > 0) {
+        X <- matrix(0, orig.num.pixels, ncol(x))
+        X[!empty.pixel, ] <- x
+        x <- X
+        rm(X)
+        gc()
+      }
+      
+      x
     },
 
     "upperQuartile" = {
@@ -307,8 +328,8 @@
 }
 
 .calcFactorQuantile <- function(data, lib.size, p = 0.75)
-                                # 	Generalized version of upper-quartile normalization
-                                # 	Mark Robinson
+# 	Generalized version of upper-quartile normalization
+# 	Mark Robinson
 # 	Created 16 Aug 2010
 {
   # 	i <- apply(data<=0,1,all)
