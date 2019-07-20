@@ -26,7 +26,7 @@
       x[is.na(x)] <- 0
       
       # Remove empty pixels
-      empty.pixel <- .rowSums(x) == 0
+      empty.pixel <- rowSums(x) == 0
       if (sum(empty.pixel)) {
         warning(cat(sum(empty.pixel), " empty pixels found.\n"))
         # Save the original number of pixels for final reconstruction
