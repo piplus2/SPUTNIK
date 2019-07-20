@@ -62,7 +62,7 @@
       if (length(refColumn) == 0L | refColumn < 1 | refColumn > nsamples) refColumn <- 1L
       f <- rep(NA, nsamples)
       for (i in 1:nsamples) {
-        f[i] <- .calcFactorTMM(
+        f[i] <- .calcFactorTMMwsp(
           obs = x[, i], ref = x[, refColumn], libsize.obs = lib.size[i],
           libsize.ref = lib.size[refColumn], logratioTrim = logratioTrim,
           sumTrim = sumTrim, doWeighting = doWeighting, Acutoff = Acutoff
@@ -317,4 +317,100 @@
   f <- apply(y, 2, function(x) quantile(x, p = p))
   return(f)
   # 	f/exp(mean(log(f)))
+}
+
+.calcFactorTMMwsp <- function(obs, ref, libsize.obs = NULL, libsize.ref = NULL, logratioTrim = .3, sumTrim = 0.05, doWeighting = TRUE, Acutoff = -1e10)
+                              # 	TMM with pairing of singleton positive counts between the obs and ref libraries
+                              # 	Gordon Smyth
+# 	Created 19 Sep 2018. Last modified 23 April 2019.
+{
+  obs <- as.numeric(obs)
+  ref <- as.numeric(ref)
+
+  # 	epsilon serves as floating-point zero
+  eps <- 1e-14
+
+  # 	Identify zero counts
+  pos.obs <- (obs > eps)
+  pos.ref <- (ref > eps)
+  npos <- 2L * pos.obs + pos.ref
+
+  # 	Remove double zeros and NAs
+  i <- which(npos == 0L | is.na(npos))
+  if (length(i)) {
+    obs <- obs[-i]
+    ref <- ref[-i]
+    npos <- npos[-i]
+  }
+
+  # 	Check library sizes
+  if (is.null(libsize.obs)) libsize.obs <- sum(obs)
+  if (is.null(libsize.ref)) libsize.ref <- sum(ref)
+
+  # 	Pair up as many singleton positives as possible
+  # 	The unpaired singleton positives are discarded so that no zeros remain
+  zero.obs <- (npos == 1L)
+  zero.ref <- (npos == 2L)
+  k <- (zero.obs | zero.ref)
+  n.eligible.singles <- min(sum(zero.obs), sum(zero.ref))
+  if (n.eligible.singles > 0L) {
+    refk <- sort(ref[k], decreasing = TRUE)[1:n.eligible.singles]
+    obsk <- sort(obs[k], decreasing = TRUE)[1:n.eligible.singles]
+    obs <- c(obs[!k], obsk)
+    ref <- c(ref[!k], refk)
+  } else {
+    obs <- obs[!k]
+    ref <- ref[!k]
+  }
+
+  # 	Any left?
+  n <- length(obs)
+  if (n == 0L) {
+    return(1)
+  }
+
+  # 	Compute M and A values
+  obs.p <- obs / libsize.obs
+  ref.p <- ref / libsize.ref
+  M <- log2(obs.p / ref.p)
+  A <- 0.5 * log2(obs.p * ref.p)
+
+  # 	If M all zero, return 1
+  if (max(abs(M)) < 1e-6) {
+    return(1)
+  }
+
+  # 	M order, breaking ties by shrunk M
+  obs.p.shrunk <- (obs + 0.5) / (libsize.obs + 0.5)
+  ref.p.shrunk <- (ref + 0.5) / (libsize.ref + 0.5)
+  M.shrunk <- log2(obs.p.shrunk / ref.p.shrunk)
+  o.M <- order(M, M.shrunk)
+
+  # 	A order
+  o.A <- order(A)
+
+  # 	Trim
+  loM <- as.integer(n * logratioTrim) + 1L
+  hiM <- n + 1L - loM
+  keep.M <- rep.int(FALSE, n)
+  keep.M[o.M[loM:hiM]] <- TRUE
+  loA <- as.integer(n * sumTrim) + 1L
+  hiA <- n + 1L - loA
+  keep.A <- rep.int(FALSE, n)
+  keep.A[o.A[loA:hiA]] <- TRUE
+  keep <- keep.M & keep.A
+  M <- M[keep]
+
+  # 	Average the M values
+  if (doWeighting) {
+    obs.p <- obs.p[keep]
+    ref.p <- ref.p[keep]
+    v <- (1 - obs.p) / obs.p / libsize.obs + (1 - ref.p) / ref.p / libsize.ref
+    w <- (1 + 1e-6) / (v + 1e-6)
+    TMM <- sum(w * M) / sum(w)
+  } else {
+    TMM <- mean(M)
+  }
+
+  2^TMM
 }

@@ -27,10 +27,11 @@ intensities to take into accounts of the zeros.}
 object \link{msi.dataset-class} object, with normalized peaks
 intensities.
 
-When using TIC scaling, if zeros are present in the matrix, an offset
-equal to 1 is added to all the peak intensities. This is necessary for applying
-the CLR transformation. TIC scaling transforms the spectra into compositional
-data; in this case the CLR transformation must be applied through the varTransform function.
+When using TIC scaling, if zeros are present in the matrix, a positive offset
+must be added to all the peak intensities through the parameter \code{offsetZero}.
+This is necessary for applying the CLR transformation. TIC scaling transforms the
+spectra into compositional data; in this case the CLR transformation must be
+applied through the varTransform function.
 }
 \description{
 Normalize the peaks intensities.
@@ -49,7 +50,8 @@ The valid values for \code{method} are:
   }
   \item \code{"TIC"}: total ion current normalization assign the sum of the
   peaks intensities to one.
-  \item \code{TMM}: trimmed mean of M-values. Introduced in edgeR.
+  \item \code{TMM}: trimmed mean of M-values (TMM with zero pairing).
+  Called TMMwzp in edgeR.
   \item \code{"upperQuartile"}: spectra are scaled by their 3rd quartile.
 }
 }
