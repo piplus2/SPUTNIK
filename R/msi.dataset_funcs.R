@@ -116,8 +116,7 @@
 
     "TIC" = {
       if (any(is.na(x)) && zero.offset == 0) {
-        warning("Found peaks with zero intensity. Remember to add a numeric offset
-                to the variance stabilizing transformation.")
+        warning("Found peaks with zero intensity. Remember to add a numeric offset to the variance stabilizing transformation.")
       }
       cat('IMPORTANT!!! Use CLR transformation for proportional data calling varTransform(object, method = "clr")\n')
       for (i in 1:nrow(x))
@@ -136,8 +135,7 @@
       {
         med.value <- median(x[i, peak.ind], na.rm = TRUE)
         if (is.na(med.value)) {
-          warning(paste0("Pixel ", i, " has median intensiy equal to 0.
-                         The spectrum will not be scaled."))
+          warning(paste0("Pixel ", i, " has median intensiy equal to 0. The spectrum will not be scaled."))
           med.value <- 1
         }
         x[i, ] <- x[i, ] / med.value
@@ -177,8 +175,7 @@
       ## Quotients
       quotients <- tryCatch(x / rep(ref.spectrum, each = nrow(x)),
         error = function(e) {
-          warning("Low memory. Using the slower
-                                                method to calculate the quotients.")
+          warning("Low memory. Using the slower method to calculate the quotients.")
           z <- matrix(NA, nrow(x), ncol(x))
           for (j in 1:nrow(x))
           {
@@ -191,8 +188,7 @@
       ## Scaling factors
       sc.factor <- tryCatch(apply(quotients, 1, median, na.rm = T),
         error = function(e) {
-          warning("Low memory. Using the slower
-                                                method to calculate the scaling factors.")
+          warning("Low memory. Using the slower method to calculate the scaling factors.")
           z <- array(NA, nrow(quotients))
           for (j in 1:nrow(quotients))
           {
@@ -208,8 +204,7 @@
         x / t(sc.factor.mat)
       },
       error = function(e) {
-        warning("Low memory. Using the slower method to calculate the
-                          normalized intensities.")
+        warning("Low memory. Using the slower method to calculate the normalized intensities.")
         for (j in 1:nrow(x))
         {
           x[j, ] <- x[j, ] / sc.factor[j]
@@ -251,8 +246,7 @@
   ## If the smallest intensity is not zero, show a warning saying that the intensities
   ## will be still summed to 1
   if (min(x) == 0 && method %in% c("log", "log2", "log10", "clr")) {
-    stop("Method ", method, " cannot be applied if zeros are present. Add an
-         numeric offset.")
+    stop("Method ", method, " cannot be applied if zeros are present. Add an numeric offset.")
   }
   
   # CLR must be used for TIC normalization

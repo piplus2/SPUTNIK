@@ -475,7 +475,7 @@ setMethod(
            different transformation method.")
     }
     object@matrix <- .varTransf(object@matrix,
-                                method,
+                                method = method,
                                 zero.offset = offsetZero,
                                 norm.method = object@norm)
     object@vartr <- method
