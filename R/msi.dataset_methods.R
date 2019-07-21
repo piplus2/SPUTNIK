@@ -311,9 +311,7 @@ setMethod(
 
     for (i in 1:2)
     {
-      cat(paste0("Select the ", names(userCoords)[i], " area...
-"))
-
+      cat(paste0("Select the ", names(userCoords)[i], " area..."))
       userCoords[[i]] <- grabRect(as.cimg(refImage@values), output = "coord")
     }
 
@@ -335,8 +333,7 @@ setMethod(
     y <- factor(mask[idx.train])
     stopifnot(all(sort(unique(y)) == c(1, 2)))
 
-    cat("Segmentation...
-")
+    cat("Segmentation...")
     mdl <- switch(method,
       "svm" = svm(object@matrix[idx.train, ], y, kernel = "linear")
     )
@@ -471,8 +468,7 @@ setMethod(
       stop("offsetZero must positive.")
     }
     if (object@vartr != "none") {
-      stop("MSI already transformed. Create a new msiDataset object to use a
-           different transformation method.")
+      stop("MSI already transformed. Create a new msiDataset object to use a different transformation method.")
     }
     object@matrix <- .varTransf(object@matrix,
                                 method = method,

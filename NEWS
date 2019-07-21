@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2] - 2019-7-19
 ### Added
-- Centered log-transformation (CLR). When TIC scaling is used for normalizing the
-  peak intensities, a CLR transformation must be applied to take into account of
-  the compositional nature of the data.
+- New fields in the msiDataset object save the applied normalization and variance
+  stabilizing transformation.
+- New normalization methods:
+  - Trimmed mean M-values (TMM). Pixel-wise scaling normalization introduced for
+    RNA-seq in edgeR.
+  - UpperQuartile. Pixel-wise scaling normalization (introduced in edgeR).
+- New variance stabilizing transformation (VST):
+  - Centered log-transformation (CLR). When TIC scaling is used for normalizing the
+    peak intensities, a CLR transformation must be applied to take into account of
+    the compositional nature of the data.
+- Custom offset for zero intensity peaks in normalization and VST methods.
+
+### Various improvements.
 
 ## [1.1.1] - 2018-10-25
 ### Fixed
