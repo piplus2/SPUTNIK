@@ -413,7 +413,7 @@ setMethod(
   signature = signature(object = "msi.dataset"),
   definition = function(object, method = "median", peaksInd = NULL, offsetZero = 0) {
     
-    if (object@method != "none") {
+    if (object@norm != "none") {
       stop("MSI already normalized. Create a new msiDataset object to use a
            different normalization method.")
     }
@@ -447,7 +447,7 @@ setMethod(
 #' @param method string (default = \code{log}). Transformation method.
 #' Valid values are:
 #' \itemize{
-#'   \item "log": log-transformation defined as \code{log(x + offsetZero)}.
+#'   \item "log", "log2", "log10": log-transformation defined as \code{log(x + offsetZero)}.
 #'   \item "sqrt": square-root transformation.
 #'   \item "clr": centered log-transformation. To be used when TIC scaling
 #'   normalization is applied.

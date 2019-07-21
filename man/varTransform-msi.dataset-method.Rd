@@ -15,7 +15,7 @@
 \item{method}{string (default = \code{log}). Transformation method.
 Valid values are:
 \itemize{
-  \item "log": log-transformation defined as \code{log(x + offsetZero)}.
+  \item "log", "log2", "log10": log-transformation defined as \code{log(x + offsetZero)}.
   \item "sqrt": square-root transformation.
   \item "clr": centered log-transformation. To be used when TIC scaling
   normalization is applied.
