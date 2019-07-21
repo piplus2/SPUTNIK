@@ -6,7 +6,8 @@
 \alias{varTransform}
 \title{Variance stabilizing transformation.}
 \usage{
-\S4method{varTransform}{msi.dataset}(object, method = "log")
+\S4method{varTransform}{msi.dataset}(object, method = "log",
+  offsetZero = 0)
 }
 \arguments{
 \item{object}{\link{msi.dataset-class} object. See \link{msiDataset}.}
@@ -14,10 +15,14 @@
 \item{method}{string (default = \code{log}). Transformation method.
 Valid values are:
 \itemize{
-  \item "log": log-transformation defined as log(x + 1)
+  \item "log": log-transformation defined as \code{log(x + offsetZero)}.
   \item "sqrt": square-root transformation.
-  \item "clr": centered log-transformation. To be used when TIC scaling normalization is applied.
+  \item "clr": centered log-transformation. To be used when TIC scaling
+  normalization is applied.
 }}
+
+\item{offsetZero}{numeric (default = 0). This value is added to all the peak
+intensities to take into accounts of the zeros. It must be positive.}
 }
 \value{
 \link{msi.dataset-class} object with transformed peaks intensities.

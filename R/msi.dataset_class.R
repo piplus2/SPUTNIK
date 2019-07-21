@@ -6,6 +6,10 @@
 #' @slot mz vector of matched m/z values.
 #' @slot nrow geometrical shape (number of rows) of image.
 #' @slot ncol geometrical shape (number of columns) of image.
+#' @slot norm normalization method
+#' @slot normoffset numeric offset used for the normalization
+#' @slot vartr variance stabilizing transformation
+#' @slot vartroffset numeric offset used for the variance stabilizing transformation
 #'
 #' @name msi.dataset-class
 #' @rdname msi.dataset-class
@@ -22,32 +26,36 @@ setClass(
     matrix = "matrix",
     mz = "numeric",
     nrow = "integer",
-    ncol = "integer"
+    ncol = "integer",
+    norm = "character",
+    vartr = "character",
+    normoffset = "numeric",
+    vartroffset = "numeric"
   ),
 
   validity = function(object) {
     if (length(dim(object@matrix)) != 2) {
-      return("values must be 2-D numeric matrix.")
+      return("Intensity matrix must be 2-dimensional.")
     }
 
     if (any(is.na(object@matrix))) {
-      return("values contain NA")
+      return("Intensity matrix contains NAs.")
     }
 
     if (any(is.infinite(object@matrix))) {
-      return("values contains Inf")
+      return("Intensity matrix contains infinites.")
     }
 
     if (min(object@matrix) < 0) {
-      return("negative values.")
+      return("Intensity matrix contains negative values.")
     }
 
     if (sum(apply(object@matrix, 2, var) == 0) > 0) {
-      warning("values constant.")
+      warning("Some variables are constant.")
     }
 
     if (length(object@mz) != ncol(object@matrix)) {
-      return("mz and intensities incompatible dimensions.")
+      return("M/Z and intensity matrix have incompatible dimensions.")
     }
 
     return(TRUE)

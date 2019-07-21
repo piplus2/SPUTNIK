@@ -20,8 +20,6 @@
   x <- switch(method,
 
     "TMM" = {
-      cat('IMPORTANT!!! TMM requires log2 transformation through varTransform(object, method = "log2").\n')
-
       # Using the default parameters from edgeR
       logratioTrim <- 0.3
       sumTrim <- 0.05
@@ -118,14 +116,15 @@
 
     "TIC" = {
       if (any(is.na(x)) && zero.offset == 0) {
-        stop(paste0("Zero peaks found. Add a positive offset, setting the argument offsetZero.\n"))
+        warning("Found peaks with zero intensity. Remember to add a numeric offset
+                to the variance stabilizing transformation.")
       }
       cat('IMPORTANT!!! Use CLR transformation for proportional data calling varTransform(object, method = "clr")\n')
       for (i in 1:nrow(x))
       {
         tic.value <- sum(x[i, peak.ind], na.rm = TRUE)
         if (tic.value == 0) {
-          stop("TIC is 0!")
+          warning(paste0("Pixel ", i, "has TIC = 0. The spectrum will not be scaled"))
         }
         x[i, ] <- x[i, ] / tic.value
       }
@@ -137,7 +136,8 @@
       {
         med.value <- median(x[i, peak.ind], na.rm = TRUE)
         if (is.na(med.value)) {
-          warning("Median is 0!")
+          warning(paste0("Pixel ", i, " has median intensiy equal to 0.
+                         The spectrum will not be scaled."))
           med.value <- 1
         }
         x[i, ] <- x[i, ] / med.value
@@ -147,7 +147,7 @@
 
     "PQN" = {
       if (all(peak.ind == c(1:ncol(x)))) {
-        warning("PQN can be used only using all peaks")
+        stop("PQN can be used only using all peaks")
       }
       for (i in 1:nrow(x))
       {
@@ -165,8 +165,7 @@
       ## Reference spectrum = non-zero median peaks
       ref.spectrum <- tryCatch(apply(x, 2, median, na.rm = T),
         error = function(e) {
-          warning("Low memory. Using the slower
-                                                   method to calculate the reference spectrum.")
+          warning("Low memory. Using the slower method to calculate the reference spectrum.")
           z <- array(NA, ncol(x))
           for (j in 1:ncol(x))
           {
@@ -225,13 +224,14 @@
     }
   )
 
+  # Setting all missing values to 0
   x[is.na(x)] <- 0
 
   return(x)
 }
 
 ## Reduce heteroscedasticity
-.varTransf <- function(x, method = "log") {
+.varTransf <- function(x, method = "log", zero.offset = 0, norm.method) {
   ## Check if NAs are present
   if (any(is.na(x))) {
     stop("NAs values found in the matrix.")
@@ -240,23 +240,30 @@
   if (min(x) < 0) {
     stop("found negative values in the matrix.")
   }
-  ## If the smallest intensity is not zero, show a warning saying that the intensities
-  ## will be still summed to 1
-  if (min(x) > 0 && method %in% c("log", "log2", "log10")) {
-    warning(paste0(
-      "The smallest value is ", min(x),
-      ", however still adding 1 before transforming the values."
-    ))
-  }
-
+  # Check the selected method
   accept.method <- c("log", "log2", "log10", "sqrt", "clr")
   if (!any(method %in% accept.method)) {
     stop("Valid methods are:", paste0(accept.method, collapse = ", "), ".")
   }
+  
+  x <- x + zero.offset
+  
+  ## If the smallest intensity is not zero, show a warning saying that the intensities
+  ## will be still summed to 1
+  if (min(x) == 0 && method %in% c("log", "log2", "log10", "clr")) {
+    stop("Method ", method, " cannot be applied if zeros are present. Add an
+         numeric offset.")
+  }
+  
+  # CLR must be used for TIC normalization
+  if (norm.method == "TIC" && method != "clr") {
+    stop("'clr' must be used with TIC scaling normalized data!!!")
+  }
+  
   x <- switch(method,
-    "log" = log(x + 1),
-    "log2" = log2(x + 1),
-    "log10" = log10(x + 1),
+    "log" = log(x),
+    "log2" = log2(x),
+    "log10" = log10(x),
     "sqrt" = sqrt(x),
     "clr" = log(x) - apply(log(x), 1, mean)
   )

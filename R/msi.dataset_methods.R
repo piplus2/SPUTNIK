@@ -412,11 +412,26 @@ setMethod(
   f = "normIntensity",
   signature = signature(object = "msi.dataset"),
   definition = function(object, method = "median", peaksInd = NULL, offsetZero = 0) {
+    
+    if (object@method != "none") {
+      stop("MSI already normalized. Create a new msiDataset object to use a
+           different normalization method.")
+    }
+    
+    if (length(offsetZero) > 1 || !is.numeric(offsetZero)) {
+      stop("offsetZero must be a number.")
+    }
+    if (offsetZero < 0) {
+      stop("offsetZero must positive.")
+    }
+    
     object@matrix <- .normIntensity(object@matrix,
       method = method,
       peak.ind = peaksInd,
       zero.offset = offsetZero
     )
+    object@norm <- method
+    object@normoffset <- offsetZero
 
     return(object)
   }
@@ -427,12 +442,15 @@ setMethod(
 #' \code{varTransform} transforms the MS intensities in order to reduce heteroscedasticity.
 #'
 #' @param object \link{msi.dataset-class} object. See \link{msiDataset}.
+#' @param offsetZero numeric (default = 0). This value is added to all the peak
+#' intensities to take into accounts of the zeros. It must be positive.
 #' @param method string (default = \code{log}). Transformation method.
 #' Valid values are:
 #' \itemize{
-#'   \item "log": log-transformation defined as log(x + 1)
+#'   \item "log": log-transformation defined as \code{log(x + offsetZero)}.
 #'   \item "sqrt": square-root transformation.
-#'   \item "clr": centered log-transformation. To be used when TIC scaling normalization is applied.
+#'   \item "clr": centered log-transformation. To be used when TIC scaling
+#'   normalization is applied.
 #' }
 #'
 #' @example R/examples/msiDataset_transform.R
@@ -444,9 +462,25 @@ setMethod(
 setMethod(
   f = "varTransform",
   signature = signature(object = "msi.dataset"),
-  definition = function(object, method = "log") {
-    object@matrix <- .varTransf(object@matrix, method)
-
+  definition = function(object, method = "log", offsetZero = 0) {
+    
+    if (length(offsetZero) > 1 || !is.numeric(offsetZero)) {
+      stop("offsetZero must be a number.")
+    }
+    if (offsetZero < 0) {
+      stop("offsetZero must positive.")
+    }
+    if (object@vartr != "none") {
+      stop("MSI already transformed. Create a new msiDataset object to use a
+           different transformation method.")
+    }
+    object@matrix <- .varTransf(object@matrix,
+                                method,
+                                zero.offset = offsetZero,
+                                norm.method = object@norm)
+    object@vartr <- method
+    object@vartroffset <- offsetZero
+    
     return(object)
   }
 )

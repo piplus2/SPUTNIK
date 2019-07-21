@@ -50,6 +50,8 @@ msiDataset <- function(values, mz, rsize, csize) {
   object@mz <- mz
   object@nrow <- as.integer(rsize)
   object@ncol <- as.integer(csize)
+  object@norm <- "none"
+  object@vartr <- "none"
 
   return(object)
 }

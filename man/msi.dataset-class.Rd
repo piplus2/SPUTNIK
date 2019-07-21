@@ -20,6 +20,14 @@ represent peaks.}
 \item{\code{nrow}}{geometrical shape (number of rows) of image.}
 
 \item{\code{ncol}}{geometrical shape (number of columns) of image.}
+
+\item{\code{norm}}{normalization method}
+
+\item{\code{normoffset}}{numeric offset used for the normalization}
+
+\item{\code{vartr}}{variance stabilizing transformation}
+
+\item{\code{vartroffset}}{numeric offset used for the variance stabilizing transformation}
 }}
 
 \author{
