@@ -94,14 +94,12 @@ globalPeaksFilter <- function(msiData,
   )
 
   if (verbose) {
-    cat("Similarity measure quantiles (after removing NAs):
-")
+    cat("Similarity measure quantiles (after removing NAs):\n")
     print(quantile(r, na.rm = TRUE))
   }
 
   if (verbose) {
-    cat(paste0("Selecting peaks with similarity larger than ", threshold, "...
-"))
+    cat(paste0("Selecting peaks with similarity larger than ", threshold, "...\n"))
   }
 
   names(r) <- msiData@mz
