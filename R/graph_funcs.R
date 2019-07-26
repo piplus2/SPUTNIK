@@ -25,9 +25,9 @@
 #' }
 #' @param mzQueryRef numeric. Values of m/z used to calculate the reference image.
 #' 2 values are interpreted as interval, multiple or single values are searched
-#' in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.
-#' @param mzTolerance numeric. Tolerance in PPM to match the \code{mzQueryRef}
-#' values in the m/z vector. Only valid when \code{useFullMZ = FALSE}.
+#' in the m/z vector. It overrides the param \code{useFullMZRef}.
+#' @param mzTolerance numeric (default = Inf). Tolerance in PPM to match the
+#' \code{mzQueryRef} values in the m/z vector.
 #' @param useFullMZRef logical (default = TRUE). Whether all the peaks should be
 #' used to calculate the reference image.
 #' @param smoothRef logical (default = FALSE). Whether the reference image
@@ -71,7 +71,7 @@ refAndROIimages <- function(msiData,
                             refMethod = "sum",
                             roiMethod = "otsu",
                             mzQueryRef = numeric(),
-                            mzTolerance = numeric(),
+                            mzTolerance = Inf,
                             useFullMZRef = TRUE,
                             smoothRef = FALSE,
                             smoothSigma = 2,
@@ -134,7 +134,7 @@ refAndROIimages <- function(msiData,
 .refImage <- function(msiData,
                       method = "sum",
                       mzQuery = numeric(),
-                      mzTolerance = numeric(),
+                      mzTolerance = Inf,
                       useFullMZ = TRUE,
                       smoothIm = FALSE,
                       smoothSigma = 2,
@@ -147,21 +147,23 @@ refAndROIimages <- function(msiData,
 
   .stopIfNotValidMSIDataset(msiData)
 
-  if (length(mzQuery) == 0 && !useFullMZ) {
-    stop("'mzQuery' and 'useFullMZ' are not compatible.")
+  use.mz.query <- FALSE
+  if (length(mzQuery) != 0 && any(is.finite(mzQuery))) {
+    use.mz.query <- TRUE
   }
-  if (length(mzQuery) != 0 && useFullMZ) {
-    stop("'mzQuery' and 'useFullMZ' are not compatible.")
+  
+  if (use.mz.query && !useFullMZ) {
+    stop("Set either mzQuery of useFullMZ = TRUE.")
   }
-  if (length(mzQuery) != 0 && length(mzTolerance) == 0) {
-    stop("'mzTolerance' missing.")
+  if (use.mz.query && length(mzTolerance) == 0) {
+    stop("mzTolerance missing.")
   }
 
   # Match the peaks indices
-  if (useFullMZ) {
-    mz.indices <- seq(1, length(msiData@mz))
-  } else {
+  if (use.mz.query) {
     mz.indices <- .mzQueryIndices(mzQuery, msiData@mz, mzTolerance, verbose)
+  } else if (useFullMZ) {
+    mz.indices <- seq(1, length(msiData@mz))
   }
 
   # Calculate the reference values
