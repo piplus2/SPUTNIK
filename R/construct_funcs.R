@@ -9,6 +9,7 @@
 #' @param mz array of m/z peaks values.
 #' @param rsize geometric shape (number of rows) of image.
 #' @param csize geometric shape (number of columns) of image.
+#' @param verbose boolean (default = TRUE). Additional output.
 #'
 #' @return \link{msi.dataset-class} object.
 #'
@@ -31,28 +32,20 @@
 #'
 #' @export
 #' @importFrom methods new
-msiDataset <- function(values, mz, rsize, csize) {
-  if (ncol(values) != length(mz)) {
-    stop("incompatible dimensions of m/z vector and intensity matrix.")
+msiDataset <- function(values, mz, rsize, csize, verbose = TRUE) {
+
+  if (verbose) {
+    cat("Creating msiDataset object...\n")
   }
-  if (nrow(values) != rsize * csize) {
-    stop("incompatible rsize and csize values for the provided intensity matrix.")
+  object <- new("msi.dataset", matrix = values, mz = mz, nrow = rsize,
+                ncol = csize, norm = "none", vartr = "none",
+                normoffset = 0, vartroffset = 0)
+  # Remove
+  if (verbose) {
+    cat("Detecting constant peaks...\n")
   }
-
-  object <- new("msi.dataset")
-
-  # Remove attributes and dimnames
-  for (n in names(attributes(values))[names(attributes(values)) != "dim"]) {
-    attr(values, n) <- NULL
-  }
-
-  object@matrix <- values
-  object@mz <- mz
-  object@nrow <- as.integer(rsize)
-  object@ncol <- as.integer(csize)
-  object@norm <- "none"
-  object@vartr <- "none"
-
+  object <- .remove.const.peaks(object)
+  
   return(object)
 }
 
@@ -80,22 +73,15 @@ msiDataset <- function(values, mz, rsize, csize) {
 #' @importFrom methods new
 #'
 msImage <- function(values, name = character(), scale = TRUE) {
-  object <- new("ms.image")
-
-  if (any(is.na(values))) {
-    stop("NA values present in the image matrix.")
-  }
 
   if (scale) {
     values <- values / max(values)
-    object@scaled <- TRUE
+    scaled <- TRUE
   } else {
-    object@scaled <- FALSE
+    scaled <- FALSE
   }
 
-  object@values <- values
-  object@name <- name
-
+  object <- new("ms.image", values = values, name = name, scaled = scaled)
   return(object)
 }
 
@@ -128,12 +114,12 @@ msImage <- function(values, name = character(), scale = TRUE) {
 #'
 createPeaksFilter <- function(peaksIndices) {
   if (is.null(names(peaksIndices))) {
-    warning("names of 'peakIndices' elements should match the selected m/z values.")
+    stop("Names of 'peakIndices' elements should correspond to the M/Z values.")
   }
 
   l <- list(sel.peaks = peaksIndices)
   attr(l, "peak.filter") <- TRUE
-  attr(l, "filter") <- "custom"
+  attr(l, "filter") <- "custom"  # define this as a custom filter
 
   return(l)
 }

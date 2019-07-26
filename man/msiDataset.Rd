@@ -4,7 +4,7 @@
 \alias{msiDataset}
 \title{Constructor for \link{msi.dataset-class} objects.}
 \usage{
-msiDataset(values, mz, rsize, csize)
+msiDataset(values, mz, rsize, csize, verbose = TRUE)
 }
 \arguments{
 \item{values}{numeric matrix containing the peaks intensities. Rows represent
@@ -15,6 +15,8 @@ pixels and columns represent peaks.}
 \item{rsize}{geometric shape (number of rows) of image.}
 
 \item{csize}{geometric shape (number of columns) of image.}
+
+\item{verbose}{boolean (default = TRUE). Additional output.}
 }
 \value{
 \link{msi.dataset-class} object.

@@ -4,7 +4,7 @@
 \name{getShapeMSI,msi.dataset-method}
 \alias{getShapeMSI,msi.dataset-method}
 \alias{getShapeMSI}
-\title{Returns the geometrical shape of MS image}
+\title{Returns the geometrical shape of MSI dataset}
 \usage{
 \S4method{getShapeMSI}{msi.dataset}(object)
 }
@@ -15,7 +15,7 @@
 number of rows ans number of columns of the MS image.
 }
 \description{
-Returns the geometrical shape of MS image
+Returns the geometrical shape of MSI dataset
 }
 \examples{
 ## Load package

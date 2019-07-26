@@ -1,13 +1,13 @@
 ## .isMSImageObject
 #' @importFrom methods is
 .isMSImageObject <- function(x) {
-  is(object = x, class2 = "ms.image")
+  return(is(object = x, class2 = "ms.image"))
 }
 
 ## .isMSIDatasetObject
 #' @importFrom methods is
 .isMSIDatasetObject <- function(x) {
-  is(object = x, class2 = "msi.dataset")
+  return(is(object = x, class2 = "msi.dataset"))
 }
 
 ## .isBinary
@@ -34,22 +34,25 @@
 ## .stopIfNotValidMSImage
 .stopIfNotValidMSImage <- function(x) {
   if (!.isMSImageObject(x)) {
-    stop("no SPUTNIK::ms.image object!")
+    stop("Not a SPUTNIK::ms.image object.")
   }
+  return(invisible(NULL))
 }
 
 ## .stopIfNotValidMSIDataset
 .stopIfNotValidMSIDataset <- function(x) {
   if (!.isMSIDatasetObject(x)) {
-    stop("no SPUTNIK::msi.dataset object!")
+    stop("Not a SPUTNIK::msi.dataset object.")
   }
+  return(invisible(NULL))
 }
 
 ## .stopIfNotValidPeakFilter
 .stopIfNotValidPeakFilter <- function(x) {
   if (!.isPeakFilter(x)) {
-    stop("not a valid peak.filter result.")
+    stop("Not a valid peak.filter result.")
   }
+  return(invisible(NULL))
 }
 
 ## .stopIfNotValidGlobalMethod
@@ -61,4 +64,63 @@
       paste0(accept.values, collapse = ", "), "."
     )
   }
+  return(invisible(NULL))
+}
+
+## Validity function for m/z vector
+.checkValidMZ <- function(mz) {
+  if (!is.numeric(mz) || !is.array(mz)) {
+    cat("M/Z must be a numeric array.\n")
+    return(FALSE)
+  }
+  if (length(mz) != length(unique(mz))) {
+    cat("M/Z contains duplicated values.\n")
+    return(FALSE)
+  }
+  if (any(diff(mz) <= 0)) {
+    cat("M/Z values must be sorted.\n")
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
+## Validity function for intensity matrix
+.checkValidIntensityMatrix <- function(intensityMatrix, showWarnings = FALSE) {
+  if (!is.matrix(intensityMatrix) || !is.numeric(intensityMatrix)) {
+    cat("Intensity matrix must be a numeric matrix.\n")
+    return(FALSE)
+  }
+  if (length(dim(intensityMatrix)) != 2) {
+    cat("Intensity matrix must be 2-dimensional.\n")
+    return(FALSE)
+  }
+  if (any(is.infinite(intensityMatrix)) || any(is.na(intensityMatrix))) {
+    cat("Intensity matrix must contain finite/not-NA values.\n")
+    return(FALSE)
+  }
+  if (any(intensityMatrix < 0)) {
+    if (showWarnings) {
+      cat("WARNING: Intensity matrix contains negative values.\n")
+    }
+  }
+  if (any(intensityMatrix) == 0) {
+    if (showWarnings) {
+      cat("WARNING: Zeros present in the intensity matrix. A positive offset 
+          may be necessary for normalization or variance stabilizing transformation.\n")
+    }
+  }
+  return(TRUE)
+}
+
+## Validity function for image shape
+.checkValidImageShape <- function(x) {
+  if (!is.numeric(x) || length(x) != 1) {
+    cat("Shape must be a numeric value.\n")
+    return(FALSE)
+  }
+  if (x <= 0) {
+    cat("Shape must be a positive number.\n")
+    return(FALSE)
+  }
+  return(TRUE)
 }

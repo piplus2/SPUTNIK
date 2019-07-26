@@ -11,7 +11,7 @@ most frequent labels in the image corners. The lookup areas are defined by
 the kernel size.}
 \usage{
 \S4method{binKmeans2}{msi.dataset}(object, mzQuery = numeric(),
-  useFullMZ = TRUE, mzTolerance = numeric(), numClusters = 4,
+  useFullMZ = TRUE, mzTolerance = Inf, numClusters = 4,
   kernelSize = c(3, 3, 3, 3), numCores = 1, verbose = TRUE)
 }
 \arguments{
@@ -21,20 +21,22 @@ the kernel size.}
 2 values are interpreted as interval, multiple or single values are searched
 in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.}
 
-\item{useFullMZ}{logical (default = TRUE). Whether all the peaks should be
+\item{useFullMZ}{logical (default = `TRUE``). Whether all the peaks should be
 used to calculate the reference image.}
 
-\item{mzTolerance}{numeric. Tolerance in PPM to match the \code{mzQueryRef}
-values in the m/z vector. Only valid when \code{useFullMZ = FALSE}.}
+\item{mzTolerance}{numeric (default = Inf). Tolerance in PPM to match the
+\code{mzQueryRef}. values in the m/z vector. It overrides \code{useFullMZ}.}
 
 \item{numClusters}{numeric (default = 4). Number of k-means clusters.}
 
-\item{kernelSize}{4D array (default = c(3, 3, 3, 3)). Array of sizes in pixels of the corner
-kernels used to identify the off-sample clusters. The elements represent the
-size of the top-left, top-right, bottom-right and bottom-left corners. A negative
-value can be used to skip the corresponding corner.}
+\item{kernelSize}{4D array (default = c(3, 3, 3, 3)). Array of sizes in pixels
+of the corner kernels used to identify the off-sample clusters. The elements
+represent the size of the top-left, top-right, bottom-right and bottom-left
+corners. A negative value can be used to skip the corresponding corner.}
 
-\item{numCores}{(default = 1). Multi-core parallel computation of k-means clusters.}
+\item{numCores}{(default = 1). Multi-core parallel computation of k-means.
+Each core corresponds to a repetition of k-means. If \code{numCores = 1}, a
+serial k-means with 5 repetitions is performed.}
 
 \item{verbose}{logical (default = `TRUE``). Show additional output.}
 }

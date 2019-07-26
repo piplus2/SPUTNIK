@@ -9,8 +9,8 @@ on peaks intensities using manually selected regions corresponding to off-sample
 and sample-related areas.}
 \usage{
 \S4method{binSupervised}{msi.dataset}(object, refImage,
-  mzQuery = numeric(), useFullMZ = T, mzTolerance = numeric(),
-  method = "svm")
+  mzQuery = numeric(), mzTolerance = Inf, useFullMZ = TRUE,
+  method = "svm", verbose = TRUE)
 }
 \arguments{
 \item{object}{\link{msi.dataset-class} object}
@@ -20,16 +20,18 @@ manually select the ROI pixels.}
 
 \item{mzQuery}{numeric. Values of m/z used to calculate the reference image.
 2 values are interpreted as interval, multiple or single values are searched
-in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.}
+in the m/z vector. It overrides \code{useFullMZ}.}
 
-\item{useFullMZ}{logical (default = TRUE). Whether all the peaks should be
-used to calculate the reference image.}
+\item{mzTolerance}{numeric (default = Inf). Tolerance in PPM to match the
+\code{mzQueryRef}. values in the m/z vector. It overrides \code{useFullMZ}.}
 
-\item{mzTolerance}{numeric. Tolerance in PPM to match the \code{mzQueryRef}
-values in the m/z vector. Only valid when \code{useFullMZ = FALSE}.}
+\item{useFullMZ}{logical (default = `TRUE``). Whether all the peaks should be
+used to perform the supervised segmentation.}
 
 \item{method}{string (default = 'svm'). Supervised classifier used to segment
 the ROI.}
+
+\item{verbose}{boolean (default = `TRUE`). Additional output.}
 }
 \value{
 \link{ms.image-class} object representing the binary mask image.

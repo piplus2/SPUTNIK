@@ -38,6 +38,8 @@ if (is.null(getGeneric("varTransform"))) {
 
 ## Methods ---------------------------------------------------------------------
 
+## getMZ ----
+
 #' Return the m/z vector.
 #'
 #' @param object \link{msi.dataset-class} object.
@@ -57,6 +59,8 @@ setMethod(
   }
 )
 
+## getIntensityMat ----
+
 #' Return the peaks intensity matrix.
 #'
 #' @param object \link{msi.dataset-class} object.
@@ -73,9 +77,16 @@ setMethod(
   f = "getIntensityMat",
   signature = signature(object = "msi.dataset"),
   definition = function(object) {
-    return(object@matrix)
+    x <- object@matrix
+    # Remove attributes and dimnames
+    for (n in names(attributes(x))[names(attributes(x)) != "dim"]) {
+      attr(x, n) <- NULL
+    }
+    return(x)
   }
 )
+
+## binKmeans ----
 
 #' Return a binary mask generated applying k-means clustering
 #' on peaks intensities.
@@ -99,11 +110,11 @@ setMethod(
 
     values <- matrix(y.clust, object@nrow, object@ncol)
 
-    bw <- msImage(values, "ROI")
-
-    return(bw)
+    return(msImage(values = values, name = "ROI", scale = FALSE))
   }
 )
+
+## binKmeans2 ----
 
 #' Return a binary mask generated applying k-means clustering
 #' on peaks intensities. A finer segmentation is obtained by using a larger
@@ -115,16 +126,18 @@ setMethod(
 #' @param mzQuery numeric. Values of m/z used to calculate the reference image.
 #' 2 values are interpreted as interval, multiple or single values are searched
 #' in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.
-#' @param mzTolerance numeric. Tolerance in PPM to match the \code{mzQueryRef}
-#' values in the m/z vector. Only valid when \code{useFullMZ = FALSE}.
-#' @param useFullMZ logical (default = TRUE). Whether all the peaks should be
+#' @param mzTolerance numeric (default = Inf). Tolerance in PPM to match the
+#' \code{mzQueryRef}. values in the m/z vector. It overrides \code{useFullMZ}.
+#' @param useFullMZ logical (default = `TRUE``). Whether all the peaks should be
 #' used to calculate the reference image.
 #' @param numClusters numeric (default = 4). Number of k-means clusters.
-#' @param kernelSize 4D array (default = c(3, 3, 3, 3)). Array of sizes in pixels of the corner
-#' kernels used to identify the off-sample clusters. The elements represent the
-#' size of the top-left, top-right, bottom-right and bottom-left corners. A negative
-#' value can be used to skip the corresponding corner.
-#' @param numCores (default = 1). Multi-core parallel computation of k-means clusters.
+#' @param kernelSize 4D array (default = c(3, 3, 3, 3)). Array of sizes in pixels
+#' of the corner kernels used to identify the off-sample clusters. The elements
+#' represent the size of the top-left, top-right, bottom-right and bottom-left
+#' corners. A negative value can be used to skip the corresponding corner.
+#' @param numCores (default = 1). Multi-core parallel computation of k-means.
+#' Each core corresponds to a repetition of k-means. If \code{numCores = 1}, a
+#' serial k-means with 5 repetitions is performed.
 #' @param verbose logical (default = `TRUE``). Show additional output.
 #'
 #' @return \link{ms.image-class} object representing the binary mask image.
@@ -140,41 +153,47 @@ setMethod(
   f = "binKmeans2",
   signature = signature(object = "msi.dataset"),
   definition = function(object,
-                          mzQuery = numeric(),
-                          useFullMZ = TRUE,
-                          mzTolerance = numeric(),
-                          numClusters = 4,
-                          kernelSize = c(3, 3, 3, 3),
-                          numCores = 1,
-                          verbose = TRUE) {
+                        mzQuery = numeric(),
+                        useFullMZ = TRUE,
+                        mzTolerance = Inf,
+                        numClusters = 4,
+                        kernelSize = c(3, 3, 3, 3),
+                        numCores = 1,
+                        verbose = TRUE) {
     if (length(kernelSize) == 1) {
       kernelSize <- rep(kernelSize, 4)
     }
     if (length(kernelSize) != 4) {
       stop("binKmeans2: 'kernelSize' must be a 4-elements array.")
     }
+    if (any(kernelSize >= object@nrow) || any(kernelSize >= object@ncol)) {
+      stop("Kernel size must be smaller than MSI shape.")
+    }
     if (all(kernelSize < 1)) {
       stop("binKmeans2: at least one positive value is required for 'kernelSize'.")
-    }
-    if (length(mzQuery) == 0 && !useFullMZ) {
-      stop("binKmeans2: 'mzQuery' and 'useFullMZ' are not compatible.")
-    }
-    if (length(mzQuery) != 0 && useFullMZ) {
-      stop("binKmeans2: 'mzQuery' and 'useFullMZ' are not compatible.")
     }
     if (length(mzQuery) != 0 && length(mzTolerance) == 0) {
       stop("binKmeans2: 'mzTolerance' missing.")
     }
+    if (length(mzQuery) != 0 && useFullMZ) {
+      stop("mzQuery and useFullMZ are incompatible.")
+    }
+    
     # Match the peaks indices
-    if (useFullMZ) {
+    if (length(mzQuery) != 0) {
+      cat("Matching the query M/Z values...\n")
+      mz.indices <- .mzQueryIndices(mzQuery, object@mz, mzTolerance,
+                                    verbose = verbose)
+    } else if (useFullMZ) {
       mz.indices <- seq(1, length(object@mz))
     } else {
-      mz.indices <- .mzQueryIndices(mzQuery, object@mz, mzTolerance, verbose)
+      stop("Must provide mzQuery or set useFullMZ = TRUE")
     }
 
-    ## Parallel
+    # Parallel
     if (numCores > 1) {
       closeAllConnections()
+      gc(reset = TRUE)
       cl <- makeCluster(numCores)
 
       clusterExport(
@@ -195,11 +214,11 @@ setMethod(
       stopCluster(cl = cl)
       closeAllConnections()
       gc()
-      ## Get the clusters with the smallest WSS
+      # Get the clusters with the smallest WSS
       i <- sapply(results, function(result) result$tot.withinss)
       y.clust <- results[[which.min(i)]]
     } else
-    ## Serial
+    # Serial
     {
       y.clust <- kmeans(object@matrix[, mz.indices],
         centers = numClusters,
@@ -207,27 +226,29 @@ setMethod(
       )
     }
 
-    ## Merge the sample-related clusters
-    im_clusters <- matrix(factor(y.clust$cluster), object@nrow, object@ncol)
-
+    # Merge the sample-related clusters
+    
     roi <- matrix(0, object@nrow, object@ncol)
     for (k in 1:numClusters)
     {
       curr_clust_im <- matrix(0, object@nrow, object@ncol)
       curr_clust_im[y.clust$cluster == k] <- 1
-      ## Top-left corner
+      # Top-left corner
       if (kernelSize[1] > 0) {
         if (.mode(curr_clust_im[1:kernelSize[1], 1:kernelSize[1]] == 1)) {
           next()
         }
       }
-      ## Top-right
+      # Top-right
       if (kernelSize[2] > 0) {
-        if (.mode(curr_clust_im[1:kernelSize[2], (object@ncol - kernelSize[2]):object@ncol] == 1)) {
+        if (.mode(curr_clust_im[
+          1:kernelSize[2],
+          (object@ncol - kernelSize[2]):object@ncol
+          ] == 1)) {
           next()
         }
       }
-      ## Bottom-right
+      # Bottom-right
       if (kernelSize[3] > 0) {
         if (.mode(curr_clust_im[
           (object@nrow - kernelSize[3]):object@nrow,
@@ -236,7 +257,7 @@ setMethod(
           next()
         }
       }
-      ## Bottom-left
+      # Bottom-left
       if (kernelSize[4] > 0) {
         if (.mode(curr_clust_im[
           (object@nrow - kernelSize[4]):object@nrow,
@@ -248,11 +269,11 @@ setMethod(
       roi[curr_clust_im == 1] <- roi[curr_clust_im == 1] + 1
     }
 
-    bw <- msImage(roi, "ROI")
-
-    return(bw)
+    return(msImage(values = roi, name = "ROI", scale = FALSE))
   }
 )
+
+## binSupervised ----
 
 #' Return a binary mask generated applying a supervised classifier
 #' on peaks intensities using manually selected regions corresponding to off-sample
@@ -263,13 +284,14 @@ setMethod(
 #' manually select the ROI pixels.
 #' @param mzQuery numeric. Values of m/z used to calculate the reference image.
 #' 2 values are interpreted as interval, multiple or single values are searched
-#' in the m/z vector. It should be left unset when using \code{useFullMZRef = TRUE}.
-#' @param mzTolerance numeric. Tolerance in PPM to match the \code{mzQueryRef}
-#' values in the m/z vector. Only valid when \code{useFullMZ = FALSE}.
-#' @param useFullMZ logical (default = TRUE). Whether all the peaks should be
-#' used to calculate the reference image.
+#' in the m/z vector. It overrides \code{useFullMZ}.
+#' @param mzTolerance numeric (default = Inf). Tolerance in PPM to match the
+#' \code{mzQueryRef}. values in the m/z vector. It overrides \code{useFullMZ}.
+#' @param useFullMZ logical (default = `TRUE``). Whether all the peaks should be
+#' used to perform the supervised segmentation.
 #' @param method string (default = 'svm'). Supervised classifier used to segment
 #' the ROI.
+#' @param verbose boolean (default = `TRUE`). Additional output.
 #'
 #' @return \link{ms.image-class} object representing the binary mask image.
 #'
@@ -284,11 +306,12 @@ setMethod(
   f = "binSupervised",
   signature = signature(object = "msi.dataset"),
   definition = function(object,
-                          refImage,
-                          mzQuery = numeric(), # Filter m/z values
-                          useFullMZ = T, #
-                          mzTolerance = numeric(), #
-                          method = "svm") {
+                        refImage,
+                        mzQuery = numeric(), # Filter m/z values
+                        mzTolerance = Inf, #
+                        useFullMZ = TRUE, #
+                        method = "svm",
+                        verbose = TRUE) {
     accept.methods <- c("svm")
 
     .stopIfNotValidMSIDataset(object)
@@ -298,18 +321,25 @@ setMethod(
     stopifnot(is.numeric(mzTolerance))
     stopifnot(method %in% accept.methods)
 
+    if (length(mzQuery) != 0 && useFullMZ) {
+      stop("mzQuery and useFullMZ are incompatible.")
+    }
+    
     # Match the peaks indices
-    if (useFullMZ) {
+    if (length(mzQuery) != 0) {
+      cat("Matching the query M/Z values...\n")
+      mz.indices <- .mzQueryIndices(mzQuery, object@mz, mzTolerance, verbose = verbose)
+    } else if (useFullMZ) {
       mz.indices <- seq(1, length(object@mz))
     } else {
-      mz.indices <- .mzQueryIndices(mzQuery, object@mz, mzTolerance, T)
+      stop("Must provide mzQuery or set useFullMZ = TRUE")
     }
 
     # User-defined pixels
     userCoords <- vector(mode = "list", length = 2)
     names(userCoords) <- c("off-sample", "sample")
 
-    for (i in 1:2)
+    for (i in 1:length(userCoords))
     {
       cat(paste0("Select the ", names(userCoords)[i], " area..."))
       userCoords[[i]] <- grabRect(as.cimg(refImage@values), output = "coord")
@@ -332,7 +362,7 @@ setMethod(
 
     y <- factor(mask[idx.train])
     stopifnot(all(sort(unique(y)) == c(1, 2)))
-
+    
     cat("Segmentation...")
     mdl <- switch(method,
       "svm" = svm(object@matrix[idx.train, ], y, kernel = "linear")
@@ -347,9 +377,11 @@ setMethod(
     binRoi <- (ypred == 2) * 1
     binRoi <- matrix(binRoi, object@nrow, object@ncol)
 
-    return(msImage(values = binRoi, name = "ROI", scale = F))
+    return(msImage(values = binRoi, name = "ROI", scale = FALSE))
   }
 )
+
+## normIntensity ----
 
 #' Normalize the peaks intensities.
 #'
@@ -414,12 +446,11 @@ setMethod(
       stop("MSI already normalized. Create a new msiDataset object to use a
            different normalization method.")
     }
-    
     if (length(offsetZero) > 1 || !is.numeric(offsetZero)) {
-      stop("offsetZero must be a number.")
+      stop("offsetZero must be a numeric value.")
     }
-    if (offsetZero < 0) {
-      stop("offsetZero must positive.")
+    if (is.na(offsetZero) || is.infinite(offsetZero)) {
+      stop("offsetZero must be finite.")
     }
     
     object@matrix <- .normIntensity(object@matrix,
@@ -429,10 +460,13 @@ setMethod(
     )
     object@norm <- method
     object@normoffset <- offsetZero
+    validObject(object)
 
     return(object)
   }
 )
+
+## varTransform ----
 
 #' Variance stabilizing transformation.
 #'
@@ -464,11 +498,13 @@ setMethod(
     if (length(offsetZero) > 1 || !is.numeric(offsetZero)) {
       stop("offsetZero must be a number.")
     }
-    if (offsetZero < 0) {
-      stop("offsetZero must positive.")
+    if (is.na(offsetZero) || is.infinite(offsetZero)) {
+      stop("offsetZero must be finite.")
     }
+    
     if (object@vartr != "none") {
-      stop("MSI already transformed. Create a new msiDataset object to use a different transformation method.")
+      stop("MSI already transformed. Create a new msiDataset object to use a 
+           different transformation method.")
     }
     object@matrix <- .varTransf(object@matrix,
                                 method = method,
@@ -476,10 +512,13 @@ setMethod(
                                 norm.method = object@norm)
     object@vartr <- method
     object@vartroffset <- offsetZero
+    validObject(object)
     
     return(object)
   }
 )
+
+## applyPeaksFilter ----
 
 #' Apply the results of a peaks filter.
 #'
@@ -531,17 +570,20 @@ setMethod(
       object@mz <- as.numeric(tmp.mz$x)
     } else {
       if (!any(object@mz[peakFilter$sel.peaks] %in% names(peakFilter$sel.peaks))) {
-        stop("peakFilter not compatible with the MSI dataset.")
+        stop("peakFilter is not compatible with the MSI dataset.")
       }
       object@matrix <- object@matrix[, peakFilter$sel.peaks]
       object@mz <- object@mz[peakFilter$sel.peaks]
     }
 
+    validObject(object)
     return(object)
   }
 )
 
-#' Returns the geometrical shape of MS image
+## getShapeMSI ----
+
+#' Returns the geometrical shape of MSI dataset
 #'
 #' @param object \link{msi.dataset-class} object.
 #'
@@ -556,6 +598,8 @@ setMethod(
   f = "getShapeMSI",
   signature = signature(object = "msi.dataset"),
   definition = function(object) {
-    return(c(object@nrow, object@ncol))
+    image.shape <- c(object@nrow, object@ncol)
+    names(image.shape) <- c("nrow", "ncol")
+    return(image.shape)
   }
 )

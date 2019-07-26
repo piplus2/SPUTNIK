@@ -34,28 +34,39 @@ setClass(
   ),
 
   validity = function(object) {
-    if (length(dim(object@matrix)) != 2) {
-      return("Intensity matrix must be 2-dimensional.")
+    
+    res <- .checkValidMZ(object@mz)
+    if (!res) {
+      return(res)
+    }
+    res <- .checkValidIntensityMatrix(object@matrix)
+    if (!res) {
+      return(res)
+    }
+    res <- .checkValidImageShape(object@nrow)
+    if (!res) {
+      return(res)
+    }
+    res <- .checkValidImageShape(object@ncol)
+    if (!res) {
+      return(res)
+    }
+    
+    if (nrow(object@matrix) != object@nrow * object@ncol) {
+      return("Intensity matrix and image shape have incompatible dimensions.")
+    }
+    
+    if (length(object@mz) != ncol(object@matrix)) {
+      return("M/Z and intensity matrix have incompatible dimensions.")
     }
 
-    if (any(is.na(object@matrix))) {
-      return("Intensity matrix contains NAs.")
-    }
-
-    if (any(is.infinite(object@matrix))) {
-      return("Intensity matrix contains infinites.")
-    }
-
-    if (min(object@matrix) < 0) {
-      return("Intensity matrix contains negative values.")
-    }
+    # Negative values can result from variance stabilizing transformations
+    # if (min(object@matrix) < 0) {
+    #   return("Intensity matrix contains negative values.")
+    # }
 
     if (sum(apply(object@matrix, 2, var) == 0) > 0) {
       warning("Some variables are constant.")
-    }
-
-    if (length(object@mz) != ncol(object@matrix)) {
-      return("M/Z and intensity matrix have incompatible dimensions.")
     }
 
     return(TRUE)
