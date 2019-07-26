@@ -31,12 +31,8 @@ setClass(
       return("Values must be 2-D numeric matrix.")
     }
 
-    if (any(is.na(object@values))) {
-      return("Values contain NA")
-    }
-
-    if (any(is.infinite(object@values))) {
-      return("Values contains Inf")
+    if (any(!is.finite(object@values))) {
+      return("Values must be finite")
     }
 
     if (min(object@values) < 0 || max(object@values) > 1) {

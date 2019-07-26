@@ -60,6 +60,23 @@ countPixelsFilter <- function(msiData,
                               verbose = TRUE) {
   .stopIfNotValidMSIDataset(msiData)
   .stopIfNotValidMSImage(roiImage)
+  
+  accept.aggr.values <- c(0, 1, 2)
+  if (!aggressive %in% accept.aggr.values) {
+    stop(paste0("aggressive can be equal to ", paste0(accept.aggr.values, collapse = ", "), ".\n"))
+  }
+  if (minNumPixels >= prod(getShapeMSI(msiData))) {
+    stop("minNumPixels must be smaller than number of MSI pixels.")
+  }
+  if (smoothSigma >= getShapeMSI(msiData)[1] || smoothSigma >= getShapeMSI(msiData)[2]) {
+    stop("smoothSigma must be smaller than MSI shape.")
+  }
+  if (closeKernSize >= min(getShapeMSI(msiData))) {
+    stop("closeKernSize must be smaller than MSI shape.")
+  }
+  if (!is.logical(verbose)) {
+    stop("verbose must be logical value.")
+  }
 
   # Count the number of connected pixels within and outside the ROI. In order
   # to accept a peak as informative, there must be at least one group of connected

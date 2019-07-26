@@ -94,8 +94,8 @@
     cat("Intensity matrix must be 2-dimensional.\n")
     return(FALSE)
   }
-  if (any(is.infinite(intensityMatrix)) || any(is.na(intensityMatrix))) {
-    cat("Intensity matrix must contain finite/not-NA values.\n")
+  if (any(!is.finite(intensityMatrix))) {
+    cat("Intensity matrix must contain finite values.\n")
     return(FALSE)
   }
   if (any(intensityMatrix < 0)) {
@@ -114,6 +114,10 @@
 
 ## Validity function for image shape
 .checkValidImageShape <- function(x) {
+  if (!is.finite(x)) {
+    cat("Shape must be finite.\n")
+    return(FALSE)
+  }
   if (!is.numeric(x) || length(x) != 1) {
     cat("Shape must be a numeric value.\n")
     return(FALSE)

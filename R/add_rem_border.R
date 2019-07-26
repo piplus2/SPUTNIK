@@ -3,11 +3,17 @@ addBorderImage <- function(imMat, border = 2) {
   if (!is.matrix(imMat)) {
     stop("input must be a numeric matrix.")
   }
+  if (!is.finite(imMat)) {
+    stop("input must be finite.")
+  }
+  if (!is.finite(border)) {
+    stop("border must be finite.")
+  }
   if (border == 0) {
     return(imMat)
   }
   if (border < 0) {
-    stop("addBorderImage: border must be positive.")
+    stop("border must be positive.")
   }
 
   imMat <- rbind(
@@ -27,6 +33,12 @@ addBorderImage <- function(imMat, border = 2) {
 remBorderImage <- function(imMat, border = 2) {
   if (!is.matrix(imMat)) {
     stop("input must be a numeric matrix.")
+  }
+  if (!is.finite(imMat)) {
+    stop("input must be finite.")
+  }
+  if (!is.finite(border)) {
+    stop("border must be finite.")
   }
   if (border == 0) {
     return(imMat)
