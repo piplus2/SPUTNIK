@@ -56,6 +56,10 @@ globalPeaksFilter <- function(msiData,
   .stopIfNotValidMSImage(referenceImage)
   .stopIfNotValidGlobalMethod(method)
 
+  if (threshold < -1 || threshold > 1) {
+    stop("threshold must be in [-1, 1].")
+  }
+  
   if (.isBinary(referenceImage) && method == "pearson") {
     warning("For binary reference images, it is suggested to use the other available methods.\n")
   }
