@@ -3,8 +3,8 @@ Type: Package
 Title: SPatially aUTomatic deNoising for Ims toolKit
 Version: 1.3
 Author: Paolo Inglese [aut, cre], Goncalo Correia [aut, ctb]
-Maintainer: Paolo Inglese <p.inglese14@imperial.ac.uk>
-Authors@R: c(person("Paolo", "Inglese", email = "p.inglese14@imperial.ac.uk", role = c("aut", "cre")),
+Maintainer: Paolo Inglese <p.inglese@outlook.com>
+Authors@R: c(person("Paolo", "Inglese", email = "p.inglese@outlook.com", role = c("aut", "cre")),
         person("Goncalo", "Correia", role = c("aut", "ctb")))
 Description: A set of tools for the peak filtering of mass spectrometry
   imaging data (MSI or IMS) based on spatial distribution of signal. Given a 
@@ -20,6 +20,7 @@ Encoding: UTF-8
 LazyData: no
 Imports:
     e1071,
+    edgeR,
     spatstat,
     viridis,
     imager,
