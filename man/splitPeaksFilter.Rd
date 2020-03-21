@@ -4,9 +4,15 @@
 \alias{splitPeaksFilter}
 \title{Test for the presence of split peaks.}
 \usage{
-splitPeaksFilter(msiData, mzTolerance = 5, sharedPixelsRatio = 0,
-  sparseness = "scatter.ratio", threshold = 0.5,
-  returnDetails = TRUE, verbose = TRUE)
+splitPeaksFilter(
+  msiData,
+  mzTolerance = 5,
+  sharedPixelsRatio = 0,
+  sparseness = "scatter.ratio",
+  threshold = 0.5,
+  returnDetails = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{msiData}{\link{msi.dataset-class} object. See \link{msiDataset}.}

@@ -217,7 +217,7 @@ setMethod(
 #' @example R/examples/msImage_removeSmallObjects.R
 #'
 #' @export
-#' @importFrom SDMTools ConnCompLabel
+#' @import imager
 #' @aliases removeSmallObjects
 #'
 setMethod(
@@ -243,7 +243,9 @@ setMethod(
     roiMat[roiMat == 0] <- NA
 
     # Identify the connected components
-    CC <- ConnCompLabel(roiMat)
+    roiMat <- as.cimg(roiMat)
+    CC <- label(roiMat)
+    CC <- as.matrix(CC)
 
     # Remove the border
     if (border > 0) {

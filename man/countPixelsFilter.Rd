@@ -4,9 +4,17 @@
 \alias{countPixelsFilter}
 \title{Filter based on the minimum number of connected pixels in the ROI.}
 \usage{
-countPixelsFilter(msiData, roiImage, minNumPixels = 9,
-  smoothPeakImage = FALSE, smoothSigma = 2, closePeakImage = FALSE,
-  closeKernSize = 5, aggressive = 0, verbose = TRUE)
+countPixelsFilter(
+  msiData,
+  roiImage,
+  minNumPixels = 9,
+  smoothPeakImage = FALSE,
+  smoothSigma = 2,
+  closePeakImage = FALSE,
+  closeKernSize = 5,
+  aggressive = 0,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{msiData}{\link{msi.dataset-class} object. See \link{msiDataset}.}

@@ -17,7 +17,6 @@
 #' @example R/examples/sparseness.R
 #'
 #' @export
-#' @importFrom SDMTools ConnCompLabel
 #' @import imager
 #'
 scatter.ratio <- function(im) {
@@ -30,8 +29,9 @@ scatter.ratio <- function(im) {
     im <- im / max(im)
   }
   bin_ <- threshold(as.cimg(im), thr = "auto", approx = FALSE)
-  bin_ <- as.matrix(bin_)
-  lbl_ <- unique(c(ConnCompLabel(bin_)))
+  lbl_ <- label(bin_)
+  lbl_ <- as.matrix(lbl_)
+  lbl_ <- unique(c(lbl_))
   return(length(lbl_[lbl_ != 0]) / sum(bin_))
 }
 
@@ -99,8 +99,7 @@ gini.index <- function(x, levels = 256) {
 #'
 #' @seealso \link{gini.index} \link{scatter.ratio}
 #' @export
-#' @importFrom imager mclosing_square as.cimg
-#' @importFrom SDMTools ConnCompLabel
+#' @import imager
 #'
 spatial.chaos <- function(im, levels = 30, morph = TRUE) {
   stopifnot(length(dim(im)) == 2)
@@ -118,9 +117,10 @@ spatial.chaos <- function(im, levels = 30, morph = TRUE) {
     th <- n / levels
     bw <- (im > th) * 1
     if (morph) {
-      bw <- as.matrix(mclosing_square(as.cimg(bw), 3))
+      bw <- mclosing_square(as.cimg(bw), 3)
     }
-    lbl <- ConnCompLabel(bw)
+    lbl <- label(bw)
+    lbl <- as.matrix(lbl)
     num.obj[n] <- length(unique(lbl[lbl != 0]))
   }
   return(1 - sum(num.obj) / (num.pix * levels))

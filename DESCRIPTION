@@ -1,7 +1,7 @@
 Package: SPUTNIK
 Type: Package
 Title: SPatially aUTomatic deNoising for Ims toolKit
-Version: 1.2
+Version: 1.3
 Author: Paolo Inglese [aut, cre], Goncalo Correia [aut, ctb]
 Maintainer: Paolo Inglese <p.inglese14@imperial.ac.uk>
 Authors@R: c(person("Paolo", "Inglese", email = "p.inglese14@imperial.ac.uk", role = c("aut", "cre")),
@@ -22,13 +22,13 @@ Imports:
     e1071,
     spatstat,
     viridis,
-    SDMTools,
+    imager,
     ggplot2,
     reshape,
     imager,
     methods,
     infotheo,
     parallel
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
 URL: https://github.com/paoloinglese/SPUTNIK
 BugReports: https://github.com/paoloinglese/SPUTNIK/issues

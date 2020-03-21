@@ -4,11 +4,23 @@
 \alias{CSRPeaksFilter}
 \title{Performs the peak selection based on complete spatial randomness test.}
 \usage{
-CSRPeaksFilter(msiData, method = "ClarkEvans", covariateImage = NULL,
-  covMethod = "sum", mzQueryCov = numeric(), mzTolerance = numeric(),
-  useFullMZCov = TRUE, smoothCov = FALSE, smoothCovSigma = 2,
-  invertCov = FALSE, adjMethod = "bonferroni", returnQvalues = TRUE,
-  plotCovariate = FALSE, verbose = TRUE, ...)
+CSRPeaksFilter(
+  msiData,
+  method = "ClarkEvans",
+  covariateImage = NULL,
+  covMethod = "sum",
+  mzQueryCov = numeric(),
+  mzTolerance = numeric(),
+  useFullMZCov = TRUE,
+  smoothCov = FALSE,
+  smoothCovSigma = 2,
+  invertCov = FALSE,
+  adjMethod = "bonferroni",
+  returnQvalues = TRUE,
+  plotCovariate = FALSE,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{msiData}{\link{msi.dataset-class} object. See \link{msiDataset}.}

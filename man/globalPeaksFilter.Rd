@@ -4,8 +4,13 @@
 \alias{globalPeaksFilter}
 \title{Reference similarity based peak selection.}
 \usage{
-globalPeaksFilter(msiData, referenceImage, method = "pearson",
-  threshold = NULL, verbose = TRUE)
+globalPeaksFilter(
+  msiData,
+  referenceImage,
+  method = "pearson",
+  threshold = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{msiData}{\link{msi.dataset-class} object. See \link{msiDataset}.}

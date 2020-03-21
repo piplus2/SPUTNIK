@@ -47,7 +47,7 @@
 #'
 #' @seealso applyPeaksFilter
 #' @export
-#' @importFrom SDMTools ConnCompLabel
+#' @import imager
 #'
 countPixelsFilter <- function(msiData,
                               roiImage,
@@ -105,8 +105,10 @@ countPixelsFilter <- function(msiData,
       im.bw <- closeImage(im.bw, kern.size = closeKernSize)
     }
     # Count the connected regions inside and outside the ROI
-    conn.comps.within <- ConnCompLabel(im.bw@values * (roiImage@values == 1))
-    conn.comps.outside <- ConnCompLabel(im.bw@values * (roiImage@values != 1))
+    conn.comps.within <- label(as.cimg(im.bw@values * (roiImage@values == 1)))
+    conn.comps.within <- as.matrix(conn.comps.within)
+    conn.comps.outside <- label(as.cimg(im.bw@values * (roiImage@values != 1)))
+    conn.comps.outside <- as.matrix(conn.comps.outside)
 
     large.conn <- FALSE
 
