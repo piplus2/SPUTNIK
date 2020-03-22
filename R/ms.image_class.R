@@ -31,11 +31,11 @@ setClass(
       return("Values must be 2-D numeric matrix.")
     }
 
-    if (any(!is.finite(object@values))) {
+    if (any(!is.finite(c(object@values)))) {
       return("Values must be finite")
     }
 
-    if (min(object@values) < 0 || max(object@values) > 1) {
+    if (min(c(object@values)) < 0 || max(c(object@values)) > 1) {
       return("Values are not between 0 and 1.")
     }
 

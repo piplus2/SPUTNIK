@@ -3,7 +3,7 @@ addBorderImage <- function(imMat, border = 2) {
   if (!is.matrix(imMat)) {
     stop("input must be a numeric matrix.")
   }
-  if (!is.finite(imMat)) {
+  if (any(!is.finite(c(imMat)))) {
     stop("input must be finite.")
   }
   if (!is.finite(border)) {
@@ -34,7 +34,7 @@ remBorderImage <- function(imMat, border = 2) {
   if (!is.matrix(imMat)) {
     stop("input must be a numeric matrix.")
   }
-  if (!is.finite(imMat)) {
+  if (!all(is.finite(c(imMat)))) {
     stop("input must be finite.")
   }
   if (!is.finite(border)) {
