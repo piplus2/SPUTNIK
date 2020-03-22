@@ -5,7 +5,7 @@
 \alias{varTransform}
 \title{Variance stabilizing transformation.}
 \usage{
-\S4method{varTransform}{msi.dataset}(object, method = "log", offsetZero = 0)
+\S4method{varTransform}{msi.dataset}(object, method = "log", offsetZero = 1)
 }
 \arguments{
 \item{object}{\link{msi.dataset-class} object. See \link{msiDataset}.}
@@ -19,7 +19,7 @@ Valid values are:
   normalization is applied.
 }}
 
-\item{offsetZero}{numeric (default = 0). This value is added to all the peak
+\item{offsetZero}{numeric (default = 1). This value is added to all the peak
 intensities to take into accounts of the zeros. It must be positive.}
 }
 \value{
@@ -33,8 +33,8 @@ intensities to take into accounts of the zeros. It must be positive.}
 library("SPUTNIK")
 
 ## Create the msi.dataset-class object
-sz <- c(5, 4)
-x <- matrix(rnorm(sz[1] * sz[2] * 20), sz[1] * sz[2], 20)
+sz <- c(40, 40)
+x <- matrix(rnorm(sz[1] * sz[2] * 20) * 1000, sz[1] * sz[2], 20)
 x[x < 0] <- 0 # MS data is positive
 mz <- sort(sample(100, ncol(x)))
 msiX <- msiDataset(x, mz, sz[1], sz[2])
@@ -44,8 +44,8 @@ msiX <- normIntensity(msiX, "median")
 msiX <- varTransform(msiX, "log")
 
 ## Create the msi.dataset-class object
-sz <- c(5, 4)
-x <- matrix(rnorm(sz[1] * sz[2]), sz[1] * sz[2], 20)
+sz <- c(40, 40)
+x <- matrix(rnorm(sz[1] * sz[2] * 20) * 1000, sz[1] * sz[2], 20)
 x[x < 0] <- 0 # MS data is positive
 mz <- sort(sample(100, ncol(x)))
 msiX <- msiDataset(x, mz, sz[1], sz[2])

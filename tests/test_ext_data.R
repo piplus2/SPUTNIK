@@ -1,5 +1,8 @@
 # Test external data
 
+library(testthat)
+library(SPUTNIK)
+
 # MALDI-MSI example
 
 test_that("bladder MALDI-MSI", {

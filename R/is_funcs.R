@@ -69,8 +69,8 @@
 
 ## Validity function for m/z vector
 .checkValidMZ <- function(mz) {
-  if (!is.numeric(mz) || !is.array(mz)) {
-    cat("M/Z must be a numeric array.\n")
+  if (!is.numeric(mz)) {
+    cat("M/Z must be numeric\n")
     return(FALSE)
   }
   if (length(mz) != length(unique(mz))) {
@@ -103,7 +103,7 @@
       cat("WARNING: Intensity matrix contains negative values.\n")
     }
   }
-  if (any(intensityMatrix) == 0) {
+  if (any(intensityMatrix == 0)) {
     if (showWarnings) {
       cat("WARNING: Zeros present in the intensity matrix. A positive offset 
           may be necessary for normalization or variance stabilizing transformation.\n")

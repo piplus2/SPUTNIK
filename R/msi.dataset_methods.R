@@ -460,7 +460,6 @@ setMethod(
     )
     object@norm <- method
     object@normoffset <- offsetZero
-    validObject(object)
 
     return(object)
   }
@@ -473,7 +472,7 @@ setMethod(
 #' \code{varTransform} transforms the MS intensities in order to reduce heteroscedasticity.
 #'
 #' @param object \link{msi.dataset-class} object. See \link{msiDataset}.
-#' @param offsetZero numeric (default = 0). This value is added to all the peak
+#' @param offsetZero numeric (default = 1). This value is added to all the peak
 #' intensities to take into accounts of the zeros. It must be positive.
 #' @param method string (default = \code{log}). Transformation method.
 #' Valid values are:
@@ -493,13 +492,16 @@ setMethod(
 setMethod(
   f = "varTransform",
   signature = signature(object = "msi.dataset"),
-  definition = function(object, method = "log", offsetZero = 0) {
+  definition = function(object, method = "log", offsetZero = 1) {
     
     if (length(offsetZero) > 1 || !is.numeric(offsetZero)) {
       stop("offsetZero must be a number.")
     }
     if (is.na(offsetZero) || is.infinite(offsetZero)) {
       stop("offsetZero must be finite.")
+    }
+    if (offsetZero < 0) {
+      stop("offsetZero must be positive.")
     }
     
     if (object@vartr != "none") {
@@ -512,8 +514,7 @@ setMethod(
                                 norm.method = object@norm)
     object@vartr <- method
     object@vartroffset <- offsetZero
-    validObject(object)
-    
+
     return(object)
   }
 )
@@ -576,7 +577,6 @@ setMethod(
       object@mz <- object@mz[peakFilter$sel.peaks]
     }
 
-    validObject(object)
     return(object)
   }
 )

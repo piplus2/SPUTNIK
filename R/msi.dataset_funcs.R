@@ -10,6 +10,7 @@
   if (is.null(peak.ind)) {
     peak.ind <- c(1:ncol(x))
   }
+  peak.ind <- sort(unique(peak.ind))
 
   if (zero.offset != 0) {
     x[is.na(x)] <- 0
@@ -144,12 +145,12 @@
     },
 
     "PQN" = {
-      if (all(peak.ind == c(1:ncol(x)))) {
-        stop("PQN can be used only using all peaks")
+      if (!all(peak.ind == c(1:ncol(x)))) {
+        warning("PQN can be only applied on all peaks")
       }
       for (i in 1:nrow(x))
       {
-        tic.value <- sum(x[i, peak.ind], na.rm = TRUE)
+        tic.value <- sum(x[i, ], na.rm = TRUE)
         if (tic.value == 0) {
           stop("Error: scaling factor is 0!")
         }

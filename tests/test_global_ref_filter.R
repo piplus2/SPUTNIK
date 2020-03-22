@@ -1,12 +1,15 @@
 # Test global reference filter
 
+library(testthat)
+library(SPUTNIK)
+
 test_that("global reference filter", {
   x <- bladderMALDIRompp2010(verbose = TRUE)
   mz <- attr(x, "mass")
   shape <- attr(x, "size")
 
   msX <- msiDataset(values = x, mz = mz, rsize = shape[1], csize = shape[2])
-  msX <- normIntensity(msX, "PQN")
+  msX <- normIntensity(msX, "median")
   msX <- varTransform(msX, "log2")
   refRoi <- refAndROIimages(msX, refMethod = "sum", roiMethod = "otsu")
 
@@ -26,7 +29,8 @@ test_that("global reference filter", {
 ")
   gpfSSIM <- globalPeaksFilter(
     msiData = msX, referenceImage = refRoi$Reference,
-    method = "ssim"
+    method = "ssim",
+    threshold = 0
   )
   cat("similarity: nmi
 ")

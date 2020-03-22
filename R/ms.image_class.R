@@ -39,7 +39,7 @@ setClass(
       return("Values are not between 0 and 1.")
     }
 
-    if (var(object@values) == 0) {
+    if (var(c(object@values)) == 0) {
       return("Constant image.")
     }
     return(TRUE)

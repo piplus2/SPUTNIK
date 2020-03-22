@@ -1,6 +1,9 @@
 # Test cmplete spatial randomness
 
-test_that("CRS filter", {
+library(testthat)
+library(SPUTNIK)
+
+test_that("CSR filter", {
   x <- bladderMALDIRompp2010(verbose = TRUE)
   mz <- attr(x, "mass")
   shape <- attr(x, "size")
@@ -75,7 +78,7 @@ test_that("CRS filter", {
   csrFiltKS <- createPeaksFilter(which(csrKS$q.value < 0.05))
   csrFiltKS2 <- createPeaksFilter(which(csrKS2$q.value < 0.05))
 
-  expect_equal(length(csrFiltCE$sel.peaks), 369)
-  expect_equal(length(csrFiltKS$sel.peaks), 543)
-  expect_equal(length(csrFiltKS$sel.peaks), 442)
+  expect_equal(length(csrFiltCE$sel.peaks), 370)
+  expect_equal(length(csrFiltKS$sel.peaks), 542)
+  expect_equal(length(csrFiltKS$sel.peaks), 542)
 })

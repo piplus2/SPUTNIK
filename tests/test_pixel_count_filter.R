@@ -1,5 +1,8 @@
 # Test pixel count filter
 
+library(testthat)
+library(SPUTNIK)
+
 test_that("pixel count filter", {
   MIN_NUM_PIXELS <- 9
 
@@ -38,7 +41,7 @@ test_that("pixel count filter", {
   expect_true((length(cpfAggr0$sel.peaks) >= length(cpfAggr1$sel.peaks)) &&
     (length(cpfAggr0$sel.peaks) >= length(cpfAggr2$sel.peaks)) &&
     (length(cpfAggr1$sel.peaks) >= length(cpfAggr2$sel.peaks)))
-  expect_equal(length(cpfAggr0$sel.peaks), 201)
-  expect_equal(length(cpfAggr1$sel.peaks), 181)
-  expect_equal(length(cpfAggr2$sel.peaks), 85)
+  expect_equal(length(cpfAggr0$sel.peaks), 174)
+  expect_equal(length(cpfAggr1$sel.peaks), 152)
+  expect_equal(length(cpfAggr2$sel.peaks), 86)
 })

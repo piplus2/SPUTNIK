@@ -25,8 +25,8 @@ setClass(
   slots = list(
     matrix = "matrix",
     mz = "numeric",
-    nrow = "integer",
-    ncol = "integer",
+    nrow = "numeric",
+    ncol = "numeric",
     norm = "character",
     vartr = "character",
     normoffset = "numeric",

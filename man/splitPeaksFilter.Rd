@@ -86,6 +86,7 @@ library("SPUTNIK")
 
 ## Mass spectrometry intensity matrix
 X <- matrix(rnorm(200), 20, 40)
+X[X < 0] <- 0
 
 ## Print original dimensions
 print(dim(X))

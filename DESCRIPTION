@@ -23,13 +23,13 @@ Imports:
     edgeR,
     spatstat,
     viridis,
-    imager,
     ggplot2,
     reshape,
     imager,
     methods,
     infotheo,
-    parallel
+    parallel,
+    irlba
 RoxygenNote: 7.1.0
 URL: https://github.com/paoloinglese/SPUTNIK
 BugReports: https://github.com/paoloinglese/SPUTNIK/issues

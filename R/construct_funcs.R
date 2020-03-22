@@ -75,7 +75,12 @@ msiDataset <- function(values, mz, rsize, csize, verbose = TRUE) {
 msImage <- function(values, name = character(), scale = TRUE) {
 
   if (scale) {
-    values <- values / max(values)
+    if (min(values) < 0) {
+      warnings("Some pixels have negative intensity. Applying minmax scaling\n")
+      values <- (values - min(values)) / (max(values) - min(values))
+    } else {
+      values <- values / max(values)
+    }
     scaled <- TRUE
   } else {
     scaled <- FALSE

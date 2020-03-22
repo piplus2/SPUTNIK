@@ -1,11 +1,16 @@
 # Test constructors
 
+library(testthat)
+library(SPUTNIK)
+
 # msiDataset
 
 imageShape <- c(100, 100)
 numPixels <- prod(imageShape)
 numPeaks <- 500
 mzVector <- sort(sample(seq(150, 1000), numPeaks))
+print(is.numeric(mzVector))
+print(is.array(mzVector))
 randIntensity <- matrix(rnorm(numPixels * numPeaks), numPixels, numPeaks)
 
 test_that("msi.dataset constructor", {

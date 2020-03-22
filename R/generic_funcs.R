@@ -26,7 +26,6 @@
     cat(paste0("Found ", sum(const.filter), " constant peaks.\n"))
     object@matrix <- object@matrix[, !const.filter]
     object@mz <- object@mz[!const.filter]
-    validObject(object)
   }
   return(object)
 }

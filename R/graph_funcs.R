@@ -131,6 +131,7 @@ refAndROIimages <- function(msiData,
 
 ## .refImage
 #' @importFrom stats median prcomp
+#' @import irlba
 .refImage <- function(msiData,
                       method = "sum",
                       mzQuery = numeric(),
@@ -188,7 +189,8 @@ refAndROIimages <- function(msiData,
 
       "pca" = {
         msiData@matrix[is.na(msiData@matrix)] <- 0
-        pca <- prcomp(msiData@matrix[, mz.indices])
+        message("Calculating first principal component...\n")
+        pca <- prcomp_irlba(msiData@matrix[, mz.indices], 1)
         out <- (pca$x[, 1] - min(pca$x[, 1])) / (max(pca$x[, 1]) - min(pca$x[, 1]))
         out
       }
