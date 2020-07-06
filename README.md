@@ -18,7 +18,7 @@ Inglese, P., Correia, G., Takats, Z., Nicholson, J. K. & Glen, R. C. (2018). SPU
 
 - issues and bug reports: https://github.com/paoloinglese/SPUTNIK/issues
 - pull requests: https://github.com/paoloinglese/SPUTNIK/pulls
-- email contact: p.inglese14 at imperial.ac.uk
+- email contact: p.inglese at outlook.com
 
 ## Install from CRAN ##
 
