@@ -89,7 +89,7 @@ setMethod(
 ## binKmeans ----
 
 #' Return a binary mask generated applying k-means clustering
-#' on peaks intensities.
+#' on first 10 principal components of peaks intensities.
 #'
 #' @param object \link{msi.dataset-class} object
 #'
@@ -98,19 +98,30 @@ setMethod(
 #' @example R/examples/msiDataset_binKmeans.R
 #'
 #' @export
-#' @importFrom stats kmeans
+#' @importFrom stats kmeans cor
+#' @importFrom irlba prcomp_irlba
 #' @aliases binKmeans
 #'
 setMethod(
   f = "binKmeans",
   signature = signature(object = "msi.dataset"),
   definition = function(object) {
-    y.clust <- kmeans(object@matrix, centers = 2, iter.max = 1000, nstart = 5)
+    object@matrix[is.na(object@matrix)] <- 0
+    mean.sig <- apply(object@matrix, 1, mean)
+    n.comps <- min(dim(object@matrix) - 1, 10)
+    pca <- prcomp_irlba(msiData@matrix[, mz.indices], n=n.comps)
+    if (cor(pca$x[, 1], mean.sig) < 0) {
+      pca$x <- (-1) * pca$x
+    }
+    y.clust <- kmeans(pca$x, centers = 2, iter.max = 1000, nstart = 5)
     y.clust <- (y.clust$cluster == 2) * 1
-
+    
     values <- matrix(y.clust, object@nrow, object@ncol)
-
-    return(msImage(values = values, name = "ROI", scale = FALSE))
+    bw.img <- msImage(values = values, name = "ROI", scale = FALSE)
+    if (cor(y.clust, mean.sig) < 0) {
+      bw.img <- invertImage(bw.img)
+    }
+    return(bw.img)
   }
 )
 
