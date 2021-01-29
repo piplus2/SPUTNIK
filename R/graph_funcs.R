@@ -190,7 +190,10 @@ refAndROIimages <- function(msiData,
       "pca" = {
         msiData@matrix[is.na(msiData@matrix)] <- 0
         message("Calculating first principal component...\n")
-        pca <- prcomp_irlba(msiData@matrix[, mz.indices], 1)
+        pca <- prcomp_irlba(msiData@matrix[, mz.indices], 1, center=T, scale.=T)
+        if (cor(pca$x[, 1], apply(msiData@matrix, 1, mean)) < 0) {
+          pca$x[, 1] <- (-1) * pca$x[, 1]
+        }
         out <- (pca$x[, 1] - min(pca$x[, 1])) / (max(pca$x[, 1]) - min(pca$x[, 1]))
         out
       }

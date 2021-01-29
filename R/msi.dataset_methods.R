@@ -109,7 +109,7 @@ setMethod(
     object@matrix[is.na(object@matrix)] <- 0
     mean.sig <- apply(object@matrix, 1, mean)
     n.comps <- min(dim(object@matrix) - 1, 10)
-    pca <- prcomp_irlba(object@matrix[, mz.indices], n=n.comps)
+    pca <- prcomp_irlba(object@matrix, n=n.comps)
     if (cor(pca$x[, 1], mean.sig) < 0) {
       pca$x <- (-1) * pca$x
     }
