@@ -8,7 +8,7 @@
 
 If you find SPUTNIK useful, please consider citing our work :)
 
-Inglese, P., Correia, G., Takats, Z., Nicholson, J. K. & Glen, R. C. (2018). SPUTNIK: an R package for filtering of spatially related peaks in mass spectrometry imaging data. Bioinformatics (Oxford, England).
+[Inglese, P., Correia, G., Takats, Z., Nicholson, J. K. & Glen, R. C. (2018). SPUTNIK: an R package for filtering of spatially related peaks in mass spectrometry imaging data. Bioinformatics (Oxford, England)](https://academic.oup.com/bioinformatics/article/35/1/178/5053317)
 
 ### Description ###
 
