@@ -74,11 +74,11 @@ q-values should be returned together with the p-values.}
 \item{plotCovariate}{logical (default = \code{FALSE}). Whether the covariate image
 should be visualized. Read only when \code{method = "KS"}.}
 
-\item{verbose}{logical (defaul = \code{TRUE}). Additional output texts are
+\item{verbose}{logical (default = \code{TRUE}). Additional output texts are
 generated.}
 
-\item{...}{additional parameters compatible with the \code{statspat} functions.
-See \link[spatstat]{cdf.test} for "KS" and \link[spatstat]{clarkevans.test}.
+\item{...}{additional parameters compatible with the \code{statspat.core} functions.
+See \link[spatstat.core]{cdf.test} for "KS" and \link[spatstat.core]{clarkevans.test}.
 for "ClarkEvans"}
 }
 \description{

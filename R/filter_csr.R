@@ -47,10 +47,10 @@
 #' q-values should be returned together with the p-values.
 #' @param plotCovariate logical (default = \code{FALSE}). Whether the covariate image
 #' should be visualized. Read only when \code{method = "KS"}.
-#' @param verbose logical (defaul = \code{TRUE}). Additional output texts are
+#' @param verbose logical (default = \code{TRUE}). Additional output texts are
 #' generated.
-#' @param ... additional parameters compatible with the \code{statspat} functions.
-#' See \link[spatstat]{cdf.test} for "KS" and \link[spatstat]{clarkevans.test}.
+#' @param ... additional parameters compatible with the \code{statspat.core} functions.
+#' See \link[spatstat.core]{cdf.test} for "KS" and \link[spatstat.core]{clarkevans.test}.
 #' for "ClarkEvans"
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
@@ -65,7 +65,7 @@
 #' @example R/examples/filter_csr.R
 #' @export
 #' @importFrom stats p.adjust.methods p.adjust cor
-#' @importFrom spatstat as.im
+#' @importFrom spatstat.geom as.im
 #'
 CSRPeaksFilter <- function(msiData,
                            method = "ClarkEvans",
@@ -186,10 +186,10 @@ CSRPeaksFilter <- function(msiData,
 }
 
 ## .csr.test.im
-#' @importFrom spatstat owin
-#' @importFrom spatstat ppp
-#' @importFrom spatstat clarkevans.test
-#' @importFrom spatstat cdf.test
+#' @importFrom spatstat.geom owin
+#' @importFrom spatstat.geom ppp
+#' @importFrom spatstat.core clarkevans.test
+#' @importFrom spatstat.core cdf.test
 .csr.test.im <- function(im,
                          method = "ClarkEvans",
                          ref.im = NULL,

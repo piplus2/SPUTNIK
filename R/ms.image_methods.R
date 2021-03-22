@@ -24,6 +24,30 @@ if (is.null(getGeneric("smoothImage"))) {
   setGeneric("smoothImage", function(object, ...) standardGeneric("smoothImage"))
 }
 
+#' Invert the colors of an MS image.
+#'
+#' @param object \link{ms.image-class} object. See \link{msImage}.
+#'
+#' @return \link{ms.image-class} object after inverting colors.
+#'
+#' @example R/examples/msImage_invertImage.R
+#'
+#' @export
+#' @aliases invertImage
+#'
+setMethod(
+  f = "invertImage",
+  signature = signature(object = "ms.image"),
+  definition = function(object) {
+    if (.isBinary(object)) {
+      object@values <- (object@values == 0) * 1
+    } else {
+      object@values <- max(object@values) - object@values
+    }
+    return(object)
+  }
+)
+
 #' Visualize an MS image.
 #' \code{plot} extends the generic function to \link{ms.image-class} objects.
 #'
@@ -83,30 +107,6 @@ setMethod("plot",
   }
 )
 
-#' Invert the colors of an MS image.
-#'
-#' @param object \link{ms.image-class} object. See \link{msImage}.
-#'
-#' @return \link{ms.image-class} object after inverting colors.
-#'
-#' @example R/examples/msImage_invertImage.R
-#'
-#' @export
-#' @aliases invertImage
-#'
-setMethod(
-  f = "invertImage",
-  signature = signature(object = "ms.image"),
-  definition = function(object) {
-    if (.isBinary(object)) {
-      object@values <- (object@values == 0) * 1
-    } else {
-      object@values <- max(object@values) - object@values
-    }
-    object
-  }
-)
-
 #' Apply Gaussian smoothing to an MS image.
 #'
 #' @param object \link{ms.image-class} object. See \link{msImage}.
@@ -115,8 +115,8 @@ setMethod(
 #'
 #' @return \link{ms.image-class} smoothed msImage.
 #'
-#' @importFrom spatstat blur
-#' @importFrom spatstat as.im
+#' @importFrom spatstat.core blur
+#' @importFrom spatstat.geom as.im
 #'
 #' @example R/examples/msImage_smoothImage.R
 #'

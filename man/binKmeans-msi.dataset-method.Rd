@@ -4,7 +4,7 @@
 \alias{binKmeans,msi.dataset-method}
 \alias{binKmeans}
 \title{Return a binary mask generated applying k-means clustering
-on peaks intensities.}
+on first 10 principal components of peaks intensities.}
 \usage{
 \S4method{binKmeans}{msi.dataset}(object)
 }
@@ -16,7 +16,7 @@ on peaks intensities.}
 }
 \description{
 Return a binary mask generated applying k-means clustering
-on peaks intensities.
+on first 10 principal components of peaks intensities.
 }
 \examples{
 ## Load package

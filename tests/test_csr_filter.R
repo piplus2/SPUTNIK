@@ -12,6 +12,11 @@ test_that("CSR filter", {
   msX <- normIntensity(msX, "PQN")
   msX <- varTransform(msX, "log2")
   refRoi <- refAndROIimages(msX, refMethod = "sum", roiMethod = "otsu")
+  
+  # Reduce M/Z list for quick test
+  mz.mask <- msX@mz >= 800
+  msX@matrix <- msX@matrix[, mz.mask]
+  msX@mz <- msX@mz[mz.mask]
 
   cat("Clark-Evans test...
 ")
@@ -78,7 +83,7 @@ test_that("CSR filter", {
   csrFiltKS <- createPeaksFilter(which(csrKS$q.value < 0.05))
   csrFiltKS2 <- createPeaksFilter(which(csrKS2$q.value < 0.05))
 
-  expect_equal(length(csrFiltCE$sel.peaks), 370)
-  expect_equal(length(csrFiltKS$sel.peaks), 542)
-  expect_equal(length(csrFiltKS$sel.peaks), 542)
+  expect_equal(length(csrFiltCE$sel.peaks), 83)
+  expect_equal(length(csrFiltKS$sel.peaks), 169)
+  expect_equal(length(csrFiltKS$sel.peaks), 169)
 })
