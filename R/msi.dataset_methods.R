@@ -203,8 +203,6 @@ setMethod(
 
     # Parallel
     if (numCores > 1) {
-      closeAllConnections()
-      gc(reset = TRUE)
       cl <- makeCluster(numCores)
 
       clusterExport(
@@ -223,8 +221,6 @@ setMethod(
         object@matrix[, mz.indices]
       )
       stopCluster(cl = cl)
-      closeAllConnections()
-      gc()
       # Get the clusters with the smallest WSS
       i <- sapply(results, function(result) result$tot.withinss)
       y.clust <- results[[which.min(i)]]
