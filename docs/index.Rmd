@@ -122,7 +122,7 @@ normalized mutual information (NMI) with the ROI
 
 ```{r gpf}
 gpf <- globalPeaksFilter(msiData = msiX, referenceImage = ref_roi$ROI,
-                         method = 'nmi')
+                         method = 'nmi', threshold = 0)
 ```
 
 Then, we can apply the filter to remove the uninformative peaks.
