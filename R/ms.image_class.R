@@ -35,9 +35,9 @@ setClass(
       return("Values must be finite")
     }
 
-    if (min(c(object@values)) < 0 || max(c(object@values)) > 1) {
-      return("Values are not between 0 and 1.")
-    }
+    # if (min(c(object@values)) < 0 || max(c(object@values)) > 1) {
+    #   return("Values are not between 0 and 1.")
+    # }
 
     if (var(c(object@values)) == 0) {
       return("Constant image.")

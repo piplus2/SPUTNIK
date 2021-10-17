@@ -104,7 +104,7 @@ globalPeaksFilter <- function(msiData,
 
     cl <- makeCluster(cores)
     registerDoSNOW(cl)
-    r <- foreach(i = 1:niter, .combine = c) %dopar% {  # , .options.snow = opts
+    r <- foreach(i = 1:niter, .combine = c, .options.snow = opts) %dopar% {
       method.func(msiData@matrix[, i], ref.values)
     }
     close(pb)

@@ -13,7 +13,7 @@ refAndROIimages(
   useFullMZRef = TRUE,
   smoothRef = FALSE,
   smoothSigma = 2,
-  invertRef = FALSE,
+  alignToDetected = TRUE,
   numClusters = 4,
   sizeKernel = 5,
   numCores = 1,
@@ -59,9 +59,9 @@ should be smoothed before binarizing. Only valid for \code{roiMethod = "otsu"}.}
 \item{smoothSigma}{numeric (default = 2). Standard deviation of Gaussian
 kernel.}
 
-\item{invertRef}{logical (default = FALSE). Whether the reference image
-colors should be inverted. This can be necessary when the signal is more
-intense outside the ROI.}
+\item{alignToDetected}{logical (default = TRUE). Whether the reference image
+colors should correlate with the number of detected ions. In case the number
+of detected ions is larger outside of the sample, set it to FALSE.}
 
 \item{numClusters}{numeric (default = 4). Only for 'kmeans2' method. Number
 of clusters.}

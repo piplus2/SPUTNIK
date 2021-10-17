@@ -62,28 +62,52 @@ dataset are calculated as follows.
 library(SPUTNIK)
 ```
 
-First load the example MALDI-MSI data
+First let's load the example MALDI-MSI data
+
 ```{r load Rompp}
 bladderMALDI <- bladderMALDIRompp2010() 
 ```
 
-Then, create the msiDataset object using the `msiDataset` command, and apply the
-normalization and log2-transformation
+Then, we create the dataset object using the `msiDataset` command:
+
 ```{r create msiDataset}
 msiX <- msiDataset(values = bladderMALDI,
                    mz = attr(bladderMALDI, 'mass'),
                    rsize = attr(bladderMALDI, 'size')[1],
                    csize = attr(bladderMALDI, 'size')[2])
+```
+
+The first thing to do is to plot the image of the number of detected peaks and total ion count (TIC). These
+image are useful to capture the spatial location of the sample, as we expect its spectra
+to contain more ions or more intense signals:
+
+```{r TIC}
+plot(msiX@totalioncount)
+```
+
+```{r numDetected}
+plot(msiX@numdetected)
+```
+Unfortunately, in this case, it seems that more ions with higher TIC are detected _outside_ of the tissue,
+***we will need to remember this in the following steps***.
+
+Now we can normalize and apply the variable stabilizing transformation:
+
+```{r norm}
 msiX <- normIntensity(msiX, 'PQN')
 msiX <- varTransform(msiX, 'log2')
 ```
 
+## Generating reference image and sample region-of-interest (ROI)
+
 The `refAndRoiImages` command generates the continuous reference and ROI
+
 ```{r ref and roi}
 ref_roi <- refAndROIimages(msiData = msiX, refMethod = "sum", roiMethod = "otsu")
 ```
 
 Both the continuous reference and ROI can be plotted using the `plot` command
+
 ```{r plot ref}
 plot(ref_roi$Reference)
 ```
@@ -122,7 +146,7 @@ normalized mutual information (NMI) with the ROI
 
 ```{r gpf}
 gpf <- globalPeaksFilter(msiData = msiX, referenceImage = ref_roi$ROI,
-                         method = 'nmi', threshold = 0)
+                         method = 'nmi', threshold = 0, cores = 4)
 ```
 
 Then, we can apply the filter to remove the uninformative peaks.

@@ -6,10 +6,11 @@
 #' @slot mz vector of matched m/z values.
 #' @slot nrow geometrical shape (number of rows) of image.
 #' @slot ncol geometrical shape (number of columns) of image.
-#' @slot norm normalization method
-#' @slot normoffset numeric offset used for the normalization
-#' @slot vartr variance stabilizing transformation
-#' @slot vartroffset numeric offset used for the variance stabilizing transformation
+#' @slot norm normalization method.
+#' @slot normoffset numeric offset used for the normalization.
+#' @slot vartr variance stabilizing transformation.
+#' @slot vartroffset numeric offset used for the variance stabilizing transformation.
+#' @slot numdetected msImage of number of detected peaks.
 #'
 #' @name msi.dataset-class
 #' @rdname msi.dataset-class
@@ -30,7 +31,9 @@ setClass(
     norm = "character",
     vartr = "character",
     normoffset = "numeric",
-    vartroffset = "numeric"
+    vartroffset = "numeric",
+    numdetected = "ms.image",
+    totalioncount = "ms.image"
   ),
 
   validity = function(object) {

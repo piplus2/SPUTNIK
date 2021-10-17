@@ -21,13 +21,15 @@ represent peaks.}
 
 \item{\code{ncol}}{geometrical shape (number of columns) of image.}
 
-\item{\code{norm}}{normalization method}
+\item{\code{norm}}{normalization method.}
 
-\item{\code{normoffset}}{numeric offset used for the normalization}
+\item{\code{normoffset}}{numeric offset used for the normalization.}
 
-\item{\code{vartr}}{variance stabilizing transformation}
+\item{\code{vartr}}{variance stabilizing transformation.}
 
-\item{\code{vartroffset}}{numeric offset used for the variance stabilizing transformation}
+\item{\code{vartroffset}}{numeric offset used for the variance stabilizing transformation.}
+
+\item{\code{numdetected}}{msImage of number of detected peaks.}
 }}
 
 \author{

@@ -9,6 +9,7 @@ globalPeaksFilter(
   referenceImage,
   method = "pearson",
   threshold = NULL,
+  cores = 1,
   verbose = TRUE
 )
 }
@@ -33,6 +34,8 @@ image. The default value of 0 guarantees that only the ions with a positive
 similarity with the reference image (typically representing the spatial
 distribution of the signal source) are retrieved. For consistency, the NMI are
 scaled in [-1, 1] to match the same range of correlations.}
+
+\item{cores}{integer (default = 1). Number of cores for parallel computing.}
 
 \item{verbose}{logical (default = \code{TRUE}). Additional output text.}
 }

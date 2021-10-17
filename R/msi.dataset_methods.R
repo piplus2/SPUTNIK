@@ -36,7 +36,33 @@ if (is.null(getGeneric("varTransform"))) {
   setGeneric("varTransform", function(object, ...) standardGeneric("varTransform"))
 }
 
+if (is.null(getGeneric("numDetected"))) {
+  setGeneric("numDetected", function(object, ...) standardGeneric("numDetected"))
+}
+
 ## Methods ---------------------------------------------------------------------
+
+
+## numDetected ----
+
+#' @param object \link{msi.dataset-class} object.
+#' 
+#' @return \link{msi.image-class} object representing the detected ions per pixel.
+#' 
+#' @export
+#' @aliases numDetected
+#' 
+setMethod(
+  f = "numDetected",
+  signature = signature(object = "msi.dataset"),
+  definition = function(object) {
+    ndet = apply(object@matrix, 1, function(x) sum(x != 0, na.rm = TRUE))
+    im = msImage(values = matrix(ndet, object@nrow, object@ncol),
+                 name = "Num. detected ions", scale = FALSE)
+    return(im)
+  }
+)
+
 
 ## getMZ ----
 
@@ -104,13 +130,12 @@ setMethod(
 #'
 setMethod(
   f = "binKmeans",
-  signature = signature(object = "msi.dataset"),
+  signature = signature(object = "msi.dataset", ref = "tic", align = FALSE),
   definition = function(object) {
     object@matrix[is.na(object@matrix)] <- 0
-    mean.sig <- apply(object@matrix, 1, mean)
     n.comps <- min(dim(object@matrix) - 1, 10)
     pca <- prcomp_irlba(object@matrix, n=n.comps)
-    if (cor(pca$x[, 1], mean.sig) < 0) {
+    if (cor(pca$x[, 1], c(object@numdetected@values)) < 0) {
       pca$x <- (-1) * pca$x
     }
     y.clust <- kmeans(pca$x, centers = 2, iter.max = 1000, nstart = 5)
