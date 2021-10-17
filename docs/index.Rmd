@@ -183,23 +183,15 @@ msiX <- normIntensity(msiX, 'PQN')
 msiX <- varTransform(msiX, 'log2')
 ```
 
-We extract the sample-related ROI, as done in the previous section
+We use the binary reference generated in the previous section.
 
-The `refAndRoiImages` command generates the continuous reference and ROI, and we
-remove the connected objects smaller than 5 pixels
-```{r ref and roi cpf}
-ref_roi <- refAndROIimages(msiData = msiX, refMethod = "sum", roiMethod = "kmeans2")
-ref_roi$ROI <- removeSmallObjects(ref_roi$ROI, threshold = 5)
-plot(ref_roi$ROI)
-```
-
-and we define the filter, requesting the smallest number of connected signal pixels
+Now we define the filter, requesting the smallest number of connected signal pixels
 to be larger than 9. Also, we set the aggressiveness to 1, through the parameter
 `agressive = 1`. In this way, we request that the largest connected object outside
 the ROI is smaller than the largest one within the ROI
 
 ```{r cpf}
-cpf <- countPixelsFilter(msiData = msiX, roiImage = ref_roi$ROI, minNumPixels = 9,
+cpf <- countPixelsFilter(msiData = msiX, roiImage = ref.bin, minNumPixels = 9,
                          aggressive = 1)
 ```
 
@@ -210,21 +202,18 @@ components scores
 msiX <- applyPeaksFilter(msiX, cpf)
 print(dim(getIntensityMat(msiX)))
 ```
+We can then plot the RGB image representing the first 3 principal components. The
+contrast between the sample and off-sample regions is now much stronger:
 
 ```{r pca image cpf}
-pca <- prcomp(getIntensityMat(msiX), center = TRUE, scale. = TRUE)
-pcaRGB <- matrix(NA, prod(getShapeMSI(msiX)), 3)
-for (i in 1:3)
-  pcaRGB[, i] <- (pca$x[, i] - min(pca$x[, i])) / (max(pca$x[, i]) - min(pca$x[, i]))
-pcaRGB <- rgb(pcaRGB)
-plot(as.raster(matrix(pcaRGB, getShapeMSI(msiX)[1], getShapeMSI(msiX)[2])),
-     interpolate = F)
+pca.img <- PCAImage(msiX)
+plot(pca.img)
 ```
 
 # Complete spatial randomness
 
 The third class of filters use the complete spatial randomness tests to determine
-whether the - binarized - peak signal images represent a random point pattern.
+whether the ***binarized*** peak signal images represent a random point pattern.
 There are two available tests: *Clark-Evans* and *Kolmogorov-Smirnov*.
 We show here how to apply the *Clark-Evans* test on the MALDI-MSI data.
 
@@ -264,11 +253,6 @@ print(dim(getIntensityMat(msiX)))
 ```
 
 ```{r pca image csr}
-pca <- prcomp(getIntensityMat(msiX), center = TRUE, scale. = TRUE)
-pcaRGB <- matrix(NA, prod(getShapeMSI(msiX)), 3)
-for (i in 1:3)
-  pcaRGB[, i] <- (pca$x[, i] - min(pca$x[, i])) / (max(pca$x[, i]) - min(pca$x[, i]))
-pcaRGB <- rgb(pcaRGB)
-plot(as.raster(matrix(pcaRGB, getShapeMSI(msiX)[1], getShapeMSI(msiX)[2])),
-     interpolate = F)
+pca.img <- PCAImage(msiX)
+plot(pca.img)
 ```

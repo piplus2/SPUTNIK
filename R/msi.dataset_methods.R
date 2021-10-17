@@ -66,7 +66,8 @@ setMethod(
   f = "PCAImage",
   signature = signature(object = "msi.dataset"),
   definition = function(object, alignToSample = TRUE) {
-    pca <- prcomp_irlba(object@matrix, center = TRUE, scale. = TRUE, n = 3)
+    set.seed(123)
+    pca <- prcomp_irlba(object@matrix, center = TRUE, scale. = TRUE, n = 3,)
     if (alignToSample) {
       if (cor(apply(object@matrix, 1, mean), pca$x[, 1]) < 0) {
         pca$x <- -pca$x
