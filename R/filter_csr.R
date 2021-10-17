@@ -20,27 +20,7 @@
 #' }
 #'
 #' @param covariateImage \link{ms.image-class} object. An image used as covariate
-#' (necessary for Kolmogorov-Smirnov test). If NULL, the covariate image is
-#' calculated using the method defined by `covMethod`.
-#' @param covMethod string (default = \code{"sum"}). Method used to calculate the
-#' reference image. Read only when \code{method = "KS"}. Possible values
-#' are described in \code{'refAndROIimages'}.
-#' @param mzQueryCov numeric. Values of m/z used to calculate the reference image.
-#' 2 values are interpreted as interval, multiple or single values are searched
-#' in the m/z vector. It should be left unset when using \code{useFullMZCov = TRUE}.
-#' Read only when \code{method = "KS"}.
-#' @param mzTolerance numeric. Tolerance in PPM to match the \code{mzQueryCov}
-#' values in the m/z vector. It should be left unset when using
-#' \code{useFullMZCov = TRUE}.Read only when \code{method = "KS"}.
-#' @param useFullMZCov logical (default = \code{TRUE}). Whether all the peaks should be
-#' used to calculate the covariate image. Read only when \code{method = "KS"}.
-#' @param smoothCov logical (default = \code{FALSE}). Whether the covariate image
-#' should be smoothed using a Gaussian kernel. Read only when \code{method = "KS"}.
-#' @param smoothCovSigma numeric (default = 2). Standard deviation of the smoothing
-#' Gaussian kernel. Read only when \code{method = "KS"}.
-#' @param invertCov logical (default = \code{FALSE}). Whether the covariate image
-#' colors should be inverted.]
-#'
+#' (required for Kolmogorov-Smirnov test).
 #' @param adjMethod string (default = \code{"bonferroni"}). Multiple testing correction
 #' method. Possible values coincide with those of the \code{stats::p.adjust} function.
 #' @param returnQvalues logical (default = \code{TRUE}). Whether the computed
@@ -70,13 +50,6 @@
 CSRPeaksFilter <- function(msiData,
                            method = "ClarkEvans",
                            covariateImage = NULL,
-                           covMethod = "sum", # --------------------
-                           mzQueryCov = numeric(), # Covariate arguments
-                           mzTolerance = numeric(), #
-                           useFullMZCov = TRUE, #
-                           smoothCov = FALSE, #
-                           smoothCovSigma = 2, #
-                           invertCov = FALSE, #---------------------
                            adjMethod = "bonferroni",
                            returnQvalues = TRUE,
                            plotCovariate = FALSE,
@@ -110,26 +83,14 @@ CSRPeaksFilter <- function(msiData,
   # Calculate the reference image. This is used as reference for Kolmogorov-
   # Smirnov test.
   if (method == "KS" && is.null(covariateImage)) {
-    if (verbose) {
-      cat("Calculating the reference image. This may take a while...\n")
-    }
-    # Convert the reference image for the spatstat test
-    covariateImage <- .refImage(
-      msiData = msiData,
-      method = covMethod,
-      mzQuery = mzQueryCov,
-      mzTolerance = mzTolerance,
-      useFullMZ = useFullMZCov,
-      smoothIm = smoothCov,
-      smoothSigma = smoothCovSigma,
-      invertIm = invertCov,
-      verbose = TRUE
-    )
+    stop('`KS` method requires a reference continuous image in `covariateImage`.')
+  }
+  
+  # Convert the reference image for the spatstat test
+  
+  if (plotCovariate) {
     covariateImage@name <- "Covariate"
-
-    if (plotCovariate) {
-      plot(covariateImage)
-    }
+    plot(covariateImage)
   }
 
   if (!is.null(covariateImage)) {
@@ -217,7 +178,7 @@ CSRPeaksFilter <- function(msiData,
     "KS" = {
       im.ppp <- ppp(x = pix[, 1], y = pix[, 2], window = win)
       return(cdf.test(
-        X = im.ppp, covariate = ref.im,
+        X = im.ppp, covariate = ref.im, jitter = TRUE,
         test = "ks", ...
       )$p.value)
     }
