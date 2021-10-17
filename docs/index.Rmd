@@ -100,57 +100,40 @@ msiX <- varTransform(msiX, 'log2')
 
 ## Generating reference image and sample region-of-interest (ROI)
 
-The `refAndRoiImages` command generates the continuous reference and ROI.
+We can now generate the continuous and binary reference images.
 
 ***NOTE***: since the number of detected ions is greater outside of the tissue,
 we need to set the argument `alignToReference` to FALSE:
 
-```{r ref and roi}
-ref_roi <- refAndROIimages(msiData = msiX, refMethod = "pca", roiMethod = "otsu",
-                           alignToReference = FALSE)
+```{r cont}
+ref.cont <- RefImageContinuous(msiData = msiX, method = "pca",
+                               alignToReference = FALSE)
+plot(ref.cont)
 ```
+The first principal component show clearly the area occupied by the
+sample.
 
-Both the continuous reference and ROI can be plotted using the `plot` command
-
-```{r plot ref}
-plot(ref_roi$Reference)
-```
-```{r plot roi}
-plot(ref_roi$ROI)
-```
-
-The sum of the peaks intensities does not show clearly the area occupied by the
-sample. Therefore, we can use k-means to extract the ROI, setting the
-`roifMethod` to `kmeans2`.
+Now we can generate the binary reference using k-means
 
 ```{r ref and roi 2}
-ref_roi <- refAndROIimages(msiData = msiX, refMethod = "pca", roiMethod = "kmeans2",
-                           alignToReference = FALSE, sampleReference = "detected")
+ref.bin <- refImageBinaryKmeans(dataset = msiX,
+                                alignTo = "detected",
+                                invertAligned = FALSE)
+plot(ref.bin)
 ```
-
-Now the images are positively correlated with the sample region.
-```{r plot ref 2}
-plot(ref_roi$Reference)
-```
-```{r plot roi 2}
-plot(ref_roi$ROI)
-```
-
-Often the ROI contains several scattered pixels, as result of the presence of noise
-in the original data. The isolated pixels can be removed through the `removeSmallObjects`
-command. Now we remove all the connected objects smaller than 5 pixels.
+Often the binary reference contains several scattered pixels, as result of the presence of noise in the original data. The isolated pixels can be removed through the `removeSmallObjects`
+command. Now we remove all the connected objects smaller than 50 pixels.
 
 ```{r remove small objects}
-ref_roi$ROI <- removeSmallObjects(ref_roi$ROI, threshold = 5)
-plot(ref_roi$ROI)
+ref.bin <- removeSmallObjects(ref.bin, threshold = 50)
+plot(ref.bin)
 ```
 
 The global reference filter uses the similarity between the peak intensity image
-and the continuous reference or the binary ROI. In this case, we calculate the
-normalized mutual information (NMI) with the ROI
+and the reference image In this case, we calculate the normalized mutual information (NMI) with the binary reference:
 
 ```{r gpf}
-gpf <- globalPeaksFilter(msiData = msiX, referenceImage = ref_roi$ROI,
+gpf <- globalPeaksFilter(msiData = msiX, referenceImage = ref.bin,
                          method = 'nmi', threshold = 0, cores = 4)
 ```
 
@@ -167,7 +150,7 @@ the spatial structures present in the dataset
 
 ```{r pca image}
 pca.img <- PCAImage(msiX)
-plot(pca.img, interpolate = F)
+plot(pca.img)
 ```
 
 ```{r TIC.after}
