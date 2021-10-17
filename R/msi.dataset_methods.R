@@ -36,29 +36,86 @@ if (is.null(getGeneric("varTransform"))) {
   setGeneric("varTransform", function(object, ...) standardGeneric("varTransform"))
 }
 
-if (is.null(getGeneric("numDetected"))) {
-  setGeneric("numDetected", function(object, ...) standardGeneric("numDetected"))
+if (is.null(getGeneric("numDetectedMSI"))) {
+  setGeneric("numDetectedMSI", function(object, ...) standardGeneric("numDetectedMSI"))
+}
+
+if (is.null(getGeneric("totalIonCountMSI"))) {
+  setGeneric("totalIonCountMSI", function(object, ...) standardGeneric("totalIonCountMSI"))
+}
+
+if (is.null(getGeneric('PCAImage'))) {
+  setGeneric("PCAImage", function(object, ...) standardGeneric("PCAImage"))
 }
 
 ## Methods ---------------------------------------------------------------------
 
 
-## numDetected ----
+## PCAImage ----
+
+#' @param object \link{msi.dataset-class} object.
+#' @param alignToSample boolean (default = TRUE). If TRUE, the principal component
+#' scores are aligned to the pixel mean intensity.
+#' 
+#' @return RGB raster representing the first 3 principal components
+#' 
+#' @import irlba
+#' @export
+#' 
+setMethod(
+  f = "PCAImage",
+  signature = signature(object = "msi.dataset"),
+  definition = function(object, alignToSample = TRUE) {
+    pca <- prcomp_irlba(object@matrix, center = TRUE, scale. = TRUE, n = 3)
+    if (alignToSample) {
+      if (cor(apply(object@matrix, 1, mean), pca$x[, 1]) < 0) {
+        pca$x <- -pca$x
+      }
+    }
+    colors <- apply(pca$x, 2, function(x) (x - min(x)) / (max(x) - min(x)))
+    colors <- rgb(colors[, 1], colors[, 2], colors[, 3])
+    colors <- matrix(colors, object@nrow, object@ncol)
+    return (msImage(values = colors, name = 'PCA', scale = FALSE))
+  }
+)
+
+## totalIonCountMSI ----
+
+#' @param object \link{msi.dataset-class} object.
+#' 
+#' @return \link{msi.image-class} object representing the total ion counts.
+#' 
+#' @export
+#' @aliases totalIonCountMSI
+#' 
+setMethod(
+  f = "totalIonCountMSI",
+  signature = signature(object = "msi.dataset"),
+  definition = function(object) {
+    tic <- apply(object@matrix, 1, function(x) sum(x, na.rm = TRUE))
+    im <- msImage(values = matrix(tic, object@nrow, object@ncol),
+                  name = "Total-ion-count", scale = FALSE)
+    return(im)
+  }
+)
+
+
+## numDetectedMSI ----
 
 #' @param object \link{msi.dataset-class} object.
 #' 
 #' @return \link{msi.image-class} object representing the detected ions per pixel.
 #' 
 #' @export
-#' @aliases numDetected
+#' @aliases numDetectedMSI
 #' 
 setMethod(
-  f = "numDetected",
+  f = "numDetectedMSI",
   signature = signature(object = "msi.dataset"),
   definition = function(object) {
-    ndet = apply(object@matrix, 1, function(x) sum(x != 0, na.rm = TRUE))
-    im = msImage(values = matrix(ndet, object@nrow, object@ncol),
-                 name = "Num. detected ions", scale = FALSE)
+    ndet <- apply(object@matrix, 1, function(x) sum(x != 0, na.rm = TRUE))
+    im <- msImage(values = matrix(ndet, object@nrow, object@ncol),
+                  name = "Num. detected ions", scale = FALSE)
     return(im)
   }
 )
@@ -118,6 +175,10 @@ setMethod(
 #' on first 10 principal components of peaks intensities.
 #'
 #' @param object \link{msi.dataset-class} object
+#' @param ref string (default = "detected). Sample reference image used to align
+#' the clusters.
+#' @param align boolean (default = TRUE). If TRUE, the clusters are aligned to the
+#' sample reference image.
 #'
 #' @return \link{ms.image-class} object representing the binary mask image.
 #'
@@ -130,22 +191,40 @@ setMethod(
 #'
 setMethod(
   f = "binKmeans",
-  signature = signature(object = "msi.dataset", ref = "tic", align = FALSE),
-  definition = function(object) {
+  signature = signature(object = "msi.dataset"),
+  definition = function(object, ref = "detected", align = TRUE) {
     object@matrix[is.na(object@matrix)] <- 0
     n.comps <- min(dim(object@matrix) - 1, 10)
     pca <- prcomp_irlba(object@matrix, n=n.comps)
-    if (cor(pca$x[, 1], c(object@numdetected@values)) < 0) {
-      pca$x <- (-1) * pca$x
-    }
+    
     y.clust <- kmeans(pca$x, centers = 2, iter.max = 1000, nstart = 5)
     y.clust <- (y.clust$cluster == 2) * 1
     
     values <- matrix(y.clust, object@nrow, object@ncol)
     bw.img <- msImage(values = values, name = "ROI", scale = FALSE)
-    if (cor(y.clust, mean.sig) < 0) {
-      bw.img <- invertImage(bw.img)
+    
+    if (ref == "detected") {
+      if (align) {
+        if (cor(y.clust, c(object@numdetected@values)) < 0) {
+          bw.img <- invertImage(bw.img)
+        }
+      } else {
+        if (cor(y.clust, c(object@numdetected@values)) > 0) {
+          bw.img <- invertImage(bw.img)
+        }
+      }
+    } else if (ref == "tic") {
+      if (align) {
+        if (cor(y.clust, c(object@totalioncount@values)) < 0) {
+          bw.img <- invertImage(bw.img)
+        }
+      } else {
+        if (cor(y.clust, c(object@totalioncount@values)) > 0) {
+          bw.img <- invertImage(bw.img)
+        }
+      }
     }
+    
     return(bw.img)
   }
 )

@@ -85,7 +85,7 @@ to contain more ions or more intense signals:
 plot(msiX@totalioncount)
 ```
 
-```{r numDetected}
+```{r numDetectedMSI}
 plot(msiX@numdetected)
 ```
 Unfortunately, in this case, it seems that more ions with higher TIC are detected _outside_ of the tissue,
@@ -100,10 +100,14 @@ msiX <- varTransform(msiX, 'log2')
 
 ## Generating reference image and sample region-of-interest (ROI)
 
-The `refAndRoiImages` command generates the continuous reference and ROI
+The `refAndRoiImages` command generates the continuous reference and ROI.
+
+***NOTE***: since the number of detected ions is greater outside of the tissue,
+we need to set the argument `alignToReference` to FALSE:
 
 ```{r ref and roi}
-ref_roi <- refAndROIimages(msiData = msiX, refMethod = "sum", roiMethod = "otsu")
+ref_roi <- refAndROIimages(msiData = msiX, refMethod = "pca", roiMethod = "otsu",
+                           alignToReference = FALSE)
 ```
 
 Both the continuous reference and ROI can be plotted using the `plot` command
@@ -120,7 +124,8 @@ sample. Therefore, we can use k-means to extract the ROI, setting the
 `roifMethod` to `kmeans2`.
 
 ```{r ref and roi 2}
-ref_roi <- refAndROIimages(msiData = msiX, refMethod = "sum", roiMethod = "kmeans2")
+ref_roi <- refAndROIimages(msiData = msiX, refMethod = "pca", roiMethod = "kmeans2",
+                           alignToReference = FALSE, sampleReference = "detected")
 ```
 
 Now the images are positively correlated with the sample region.
@@ -161,14 +166,17 @@ the scores of the first 3 principal components. This gives a qualitative idea of
 the spatial structures present in the dataset
 
 ```{r pca image}
-pca <- prcomp(getIntensityMat(msiX), center = TRUE, scale. = TRUE)
-pcaRGB <- matrix(NA, prod(getShapeMSI(msiX)), 3)
-for (i in 1:3)
-  pcaRGB[, i] <- (pca$x[, i] - min(pca$x[, i])) / (max(pca$x[, i]) - min(pca$x[, i]))
-pcaRGB <- rgb(pcaRGB)
-plot(as.raster(matrix(pcaRGB, getShapeMSI(msiX)[1], getShapeMSI(msiX)[2])),
-     interpolate = F)
+pca.img <- PCAImage(msiX)
+plot(pca.img, interpolate = F)
 ```
+
+```{r TIC.after}
+
+tic.img <- totalIonCountMSI(msiX)
+plot(tic.img)
+
+```
+
 
 ## Pixel count filter
 

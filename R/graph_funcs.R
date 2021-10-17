@@ -34,7 +34,13 @@
 #' should be smoothed before binarizing. Only valid for \code{roiMethod = "otsu"}.
 #' @param smoothSigma numeric (default = 2). Standard deviation of Gaussian
 #' kernel.
-#' @param alignToDetected logical (default = TRUE). Whether the reference image
+#' @param sampleReference string (default = "detected"). Image used as reference for
+#' aligning the estimated reference and ROI image. Valid values are:
+#' \itemize{
+#'  \item "detected": number of detected peaks
+#'  \item "tic": total-ion-count image
+#' }
+#' @param alignToReference logical (default = TRUE). Whether the reference image
 #' colors should correlate with the number of detected ions. In case the number
 #' of detected ions is larger outside of the sample, set it to FALSE.
 #' @param verbose logical (default = TRUE). Additional output text.
@@ -103,21 +109,23 @@ refAndROIimages <- function(msiData,
     smoothIm = smoothRef,
     smoothSigma = smoothSigma,
     sampleReference = sampleReference,
-    alignToDetected = alignToReference
+    alignToReference = alignToReference
   )
   # ROI
   roi.im <- switch(
     roiMethod,
     "otsu" = binOtsu(ref.image),
-    "kmeans" = binKmeans(msiData),
+    "kmeans" = binKmeans(msiData,
+                         ref = sampleReference,
+                         align = alignToReference),
     "kmeans2" = binKmeans2(msiData,
-      mzQuery = mzQueryRef,
-      mzTolerance = mzTolerance,
-      useFullMZ = useFullMZRef,
-      numClusters = numClusters,
-      numCores = numCores,
-      kernelSize = sizeKernel,
-      verbose = verbose
+                           mzQuery = mzQueryRef,
+                           mzTolerance = mzTolerance,
+                           useFullMZ = useFullMZRef,
+                           numClusters = numClusters,
+                           numCores = numCores,
+                           kernelSize = sizeKernel,
+                           verbose = verbose
     ),
     "supervised" = binSupervised(msiData,
       refImage = ref.image,
@@ -214,16 +222,26 @@ refAndROIimages <- function(msiData,
   if (smoothIm) {
     ref.image <- smoothImage(ref.image, smoothSigma)
   }
-  if (alignToReference) {
-    if (sampleReference == "detected") {
+  
+  # Align to reference image
+  if (sampleReference == "detected") {
+    if (alignToReference) {
       if (cor(c(ref.image@values), c(msiData@numdetected@values)) < 0)
         ref.image <- invertImage(ref.image)
-    } else if (sampleReference == "tic") {
+    } else {
+      if (cor(c(ref.image@values), c(msiData@numdetected@values)) > 0)
+        ref.image <- invertImage(ref.image)
+    }
+  } else if (sampleReference == "tic") {
+    if (alignToReference) {
       if (cor(c(ref.image@values), c(msiData@totalioncount@values)) < 0)
         ref.image <- invertImage(ref.image)
     } else {
-      stop("Invalid `sampleReference` value.")
+      if (cor(c(ref.image@values), c(msiData@totalioncount@values)) > 0)
+        ref.image <- invertImage(ref.image)
     }
+  } else {
+    stop("Invalid `sampleReference` value.")
   }
 
   return(ref.image)

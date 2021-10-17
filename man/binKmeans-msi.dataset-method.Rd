@@ -6,10 +6,16 @@
 \title{Return a binary mask generated applying k-means clustering
 on first 10 principal components of peaks intensities.}
 \usage{
-\S4method{binKmeans}{msi.dataset}(object)
+\S4method{binKmeans}{msi.dataset}(object, ref = "detected", align = TRUE)
 }
 \arguments{
 \item{object}{\link{msi.dataset-class} object}
+
+\item{ref}{string (default = "detected). Sample reference image used to align
+the clusters.}
+
+\item{align}{boolean (default = TRUE). If TRUE, the clusters are aligned to the
+sample reference image.}
 }
 \value{
 \link{ms.image-class} object representing the binary mask image.

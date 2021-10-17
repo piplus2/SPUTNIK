@@ -71,8 +71,11 @@ setMethod("plot",
   function(x, palette = "inferno") {
     # Are you plotting the binary mask?
     is.bin <- .isBinary(x)
-
+    
     df <- melt(x@values)
+    
+    is.rgb <- all(grepl('^#[0-9A-Fa-f]{6}$', df$values))
+    
     if (is.bin) {
       df$value <- factor(df$value)
     }
@@ -85,6 +88,8 @@ setMethod("plot",
       {
         if (is.bin) {
           scale_fill_grey(start = 0, end = 1)
+        } else if (is.rgb) {
+          scale_fill_identity()
         } else {
           scale_fill_viridis(option = palette)
         }

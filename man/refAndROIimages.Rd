@@ -13,7 +13,8 @@ refAndROIimages(
   useFullMZRef = TRUE,
   smoothRef = FALSE,
   smoothSigma = 2,
-  alignToDetected = TRUE,
+  sampleReference = "detected",
+  alignToReference = TRUE,
   numClusters = 4,
   sizeKernel = 5,
   numCores = 1,
@@ -59,7 +60,14 @@ should be smoothed before binarizing. Only valid for \code{roiMethod = "otsu"}.}
 \item{smoothSigma}{numeric (default = 2). Standard deviation of Gaussian
 kernel.}
 
-\item{alignToDetected}{logical (default = TRUE). Whether the reference image
+\item{sampleReference}{string (default = "detected"). Image used as reference for
+aligning the estimated reference and ROI image. Valid values are:
+\itemize{
+ \item "detected": number of detected peaks
+ \item "tic": total-ion-count image
+}}
+
+\item{alignToReference}{logical (default = TRUE). Whether the reference image
 colors should correlate with the number of detected ions. In case the number
 of detected ions is larger outside of the sample, set it to FALSE.}
 
