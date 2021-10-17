@@ -184,7 +184,6 @@ setMethod(
 #'
 #' @example R/examples/msiDataset_binKmeans.R
 #'
-#' @export
 #' @importFrom stats kmeans cor
 #' @importFrom irlba prcomp_irlba
 #' @aliases binKmeans
@@ -192,10 +191,11 @@ setMethod(
 setMethod(
   f = "binKmeans",
   signature = signature(object = "msi.dataset"),
-  definition = function(object, ref = "detected", align = TRUE) {
+  definition = function(object, ref = "detected", align = TRUE,
+                        npcs = 10) {
     object@matrix[is.na(object@matrix)] <- 0
-    n.comps <- min(dim(object@matrix) - 1, 10)
-    pca <- prcomp_irlba(object@matrix, n=n.comps)
+    npcs <- min(dim(object@matrix) - 1, 10)
+    pca <- prcomp_irlba(object@matrix, n = npcs)
     
     y.clust <- kmeans(pca$x, centers = 2, iter.max = 1000, nstart = 5)
     y.clust <- (y.clust$cluster == 2) * 1
@@ -259,7 +259,6 @@ setMethod(
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #'
-#' @export
 #' @importFrom stats kmeans
 #' @import imager parallel
 #' @aliases binKmeans2
@@ -408,7 +407,6 @@ setMethod(
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #'
-#' @export
 #' @import imager e1071
 #' @importFrom stats predict quantile
 #' @aliases binSupervised

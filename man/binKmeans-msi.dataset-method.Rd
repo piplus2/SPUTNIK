@@ -6,7 +6,7 @@
 \title{Return a binary mask generated applying k-means clustering
 on first 10 principal components of peaks intensities.}
 \usage{
-\S4method{binKmeans}{msi.dataset}(object, ref = "detected", align = TRUE)
+\S4method{binKmeans}{msi.dataset}(object, ref = "detected", align = TRUE, npcs = 10)
 }
 \arguments{
 \item{object}{\link{msi.dataset-class} object}
