@@ -53,6 +53,8 @@ setMethod(
 #'
 #' @param x \link{ms.image-class} object. See \link{msImage}.
 #' @param palette string. Color palette. See \link{viridis}.
+#' 
+#' @return a ggplot2 plot.
 #'
 #' @import ggplot2
 #' @importFrom viridis scale_fill_viridis
@@ -71,17 +73,12 @@ setMethod("plot",
     is.bin <- .isBinary(x)
 
     df <- melt(x@values)
+    if (is.bin) {
+      df$value <- factor(df$value)
+    }
 
-    gg <- ggplot(df, aes(
-      x = df$X1, y = df$X2,
-      fill = {
-        if (is.bin) {
-          factor(df$value)
-        } else {
-          df$value
-        }
-      }
-    )) +
+    gg <- ggplot(df, aes_string(
+      x = "X1", y = "X2", fill = "value")) +
       geom_raster() +
       xlab("X") + ylab("Y") +
       # Use the right palette for continuous or binary valued image
@@ -104,6 +101,8 @@ setMethod("plot",
       theme_bw()
 
     plot(gg)
+    
+    return(gg)
   }
 )
 
