@@ -74,7 +74,7 @@ setMethod("plot",
     
     df <- melt(x@values)
     
-    is.rgb <- all(grepl('^#[0-9A-Fa-f]{6}$', df$values))
+    is.rgb <- all(grepl('^#[0-9A-Fa-f]{6}$', df$value))
     
     if (is.bin) {
       df$value <- factor(df$value)
