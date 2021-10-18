@@ -102,7 +102,7 @@ globalPeaksFilter <- function(msiData,
   
   if (cores > 1) {
 
-    cl <- doSNOW::makeCluster(cores)
+    cl <- makeCluster(cores)
     doSNOW::registerDoSNOW(cl)
     
     i <- NULL

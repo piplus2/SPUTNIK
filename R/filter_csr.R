@@ -120,7 +120,7 @@ CSRPeaksFilter <- function(msiData,
     
     # Run parallel
     
-    cl <- doSNOW::makeCluster(cores)
+    cl <- makeCluster(cores)
     doSNOW::registerDoSNOW(cl)
     
     i <- NULL
