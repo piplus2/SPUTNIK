@@ -55,7 +55,7 @@ refImageContinuous <- function(msiData,
                                doSmooth = FALSE,
                                smoothSigma = 2,
                                alignTo = "detected",
-                               invertAlign = FALSE,
+                               invertAligned = FALSE,
                                verbose = TRUE) {
   .stopIfNotValidMSIDataset(msiData)
   
@@ -69,7 +69,7 @@ refImageContinuous <- function(msiData,
     smoothIm = doSmooth,
     smoothSigma = smoothSigma,
     sampleReference = alignTo,
-    invertAlign = invertAlign
+    invertAlign = invertAligned
   )
   
   return(ref.image)

@@ -30,6 +30,8 @@ represent peaks.}
 \item{\code{vartroffset}}{numeric offset used for the variance stabilizing transformation.}
 
 \item{\code{numdetected}}{msImage of number of detected peaks.}
+
+\item{\code{totalioncount}}{msImage of total-ion-count per pixel.}
 }}
 
 \author{

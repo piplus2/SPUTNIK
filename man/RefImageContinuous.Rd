@@ -15,7 +15,7 @@ refImageContinuous(
   doSmooth = FALSE,
   smoothSigma = 2,
   alignTo = "detected",
-  invertAlign = FALSE,
+  invertAligned = FALSE,
   verbose = TRUE
 )
 }
@@ -54,12 +54,12 @@ aligning the estimated reference and ROI image. Valid values are:
  \item "tic": total-ion-count image
 }}
 
-\item{verbose}{logical (default = TRUE). Additional output text.}
-
 \item{invertAligned}{logical (default = FALSE). Whether the reference image
 colors should be positively or negatively correlated with the sample reference
 (defined by the argument \code{alignTo}). In case the sample reference is **higher**
 outside of the sample region, set it to TRUE.}
+
+\item{verbose}{logical (default = TRUE). Additional output text.}
 }
 \description{
 \code{refImageContinuous} returns the reference image, calculated using the

@@ -9,7 +9,7 @@ refImageBinarySVM(
   dataset,
   mzQueryRef = numeric(),
   mzTolerance = Inf,
-  useFullMZRef = TRUE
+  useFullMZ = TRUE
 )
 }
 \arguments{
@@ -17,12 +17,12 @@ refImageBinarySVM(
 
 \item{mzQueryRef}{numeric. Values of m/z used to calculate the reference image.
 2 values are interpreted as interval, multiple or single values are searched
-in the m/z vector. It overrides the argument \code{useFullMZRef}.}
+in the m/z vector. It overrides the argument \code{useFullMZ}.}
 
 \item{mzTolerance}{numeric (default = Inf). Tolerance in PPM to match the
 \code{mzQueryRef} values in the m/z vector.}
 
-\item{useFullMZRef}{logical (default = TRUE). Whether all the peaks should be
+\item{useFullMZ}{logical (default = TRUE). Whether all the peaks should be
 used to calculate the reference image.}
 }
 \value{

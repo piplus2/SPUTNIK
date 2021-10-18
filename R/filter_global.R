@@ -59,10 +59,6 @@ globalPeaksFilter <- function(msiData,
   .stopIfNotValidMSIDataset(msiData)
   .stopIfNotValidMSImage(referenceImage)
   .stopIfNotValidGlobalMethod(method)
-
-  if (threshold < -1 || threshold > 1) {
-    stop("threshold must be in [-1, 1].")
-  }
   
   if (.isBinary(referenceImage) && method == "pearson") {
     warning("For binary reference images, it is suggested to use the other available methods.\n")
@@ -75,6 +71,10 @@ globalPeaksFilter <- function(msiData,
     } else {
       threshold <- 0
     }
+  }
+  
+  if (threshold < -1 || threshold > 1) {
+    stop("threshold must be in [-1, 1].")
   }
 
   # Calculate the similarity between the ion images and the reference image
@@ -104,8 +104,8 @@ globalPeaksFilter <- function(msiData,
 
     cl <- makeCluster(cores)
     registerDoSNOW(cl)
-    r <- foreach(i = 1:niter, .combine = c, .options.snow = opts) %dopar% {
-      method.func(msiData@matrix[, i], ref.values)
+    r <- foreach(ion = 1:niter, .combine = c, .options.snow = opts) %dopar% {
+      method.func(msiData@matrix[, ion], ref.values)
     }
     stopCluster(cl)
 

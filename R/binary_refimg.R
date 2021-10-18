@@ -43,10 +43,10 @@ refImageBinaryKmeans <- function(dataset, npcs = 10, alignTo = "detected",
 #' @param npcs int (default = 10). Number of principal components to calculate.
 #' @param mzQuery numeric. Values of m/z used to calculate the reference image.
 #' 2 values are interpreted as interval, multiple or single values are searched
-#' in the m/z vector. It overrides the argument \code{useFullMZRef}.
+#' in the m/z vector. It overrides the argument \code{useFullMZ}.
 #' @param mzTolerance numeric (default = Inf). Tolerance in PPM to match the
 #' \code{mzQueryRef} values in the m/z vector.
-#' @param useFullMZRef logical (default = TRUE). Whether all the peaks should be
+#' @param useFullMZ logical (default = TRUE). Whether all the peaks should be
 #' used to calculate the reference image.
 #' @param numClusters numeric (default = 4). Number of clusters.
 #' @param kernelSize 4-D numeric array or numeric (default = 5).
@@ -56,6 +56,7 @@ refImageBinaryKmeans <- function(dataset, npcs = 10, alignTo = "detected",
 #' corner is skipped. If only a single value is passed, the same kernel size is
 #' used for the 4 corners.
 #' @param cores numeric (default = 1). Number of CPU cores for parallel k-means.
+#' @param verbose boolean (default = TRUE). Additional output.
 #'
 #' @return \link{ms.image-class} object with binary intensities.
 #'
@@ -87,10 +88,10 @@ refImageBinaryKmeansMulti <- function(dataset,
 #' @param dataset \link{msi.dataset-class} object. See \link{msiDataset}.
 #' @param mzQueryRef numeric. Values of m/z used to calculate the reference image.
 #' 2 values are interpreted as interval, multiple or single values are searched
-#' in the m/z vector. It overrides the argument \code{useFullMZRef}.
+#' in the m/z vector. It overrides the argument \code{useFullMZ}.
 #' @param mzTolerance numeric (default = Inf). Tolerance in PPM to match the
 #' \code{mzQueryRef} values in the m/z vector.
-#' @param useFullMZRef logical (default = TRUE). Whether all the peaks should be
+#' @param useFullMZ logical (default = TRUE). Whether all the peaks should be
 #' used to calculate the reference image.
 #' 
 #' @return \link{ms.image-class} object with binary intensities.
@@ -102,14 +103,14 @@ refImageBinaryKmeansMulti <- function(dataset,
 refImageBinarySVM <- function(dataset,
                               mzQueryRef = numeric(),
                               mzTolerance = Inf,
-                              useFullMZRef = TRUE) {
+                              useFullMZ = TRUE) {
   pc <- irlba::prcomp_irlba(dataset@matrix, center = TRUE, scale. = TRUE, n = 1)
   ref.img <- msImage(matrix(pc$x[, 1], dataset@nrow, dataset@ncol),
                      name = 'PC1', scale = TRUE)
   bw <- binSupervised(dataset,
                       refImage = ref.img,
                       mzQuery = mzQueryRef,
-                      useFullMZ = useFullMZRef,
+                      useFullMZ = useFullMZ,
                       mzTolerance = mzTolerance,
                       method = "svm")
 }

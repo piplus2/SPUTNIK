@@ -138,23 +138,25 @@ CSRPeaksFilter <- function(msiData,
     stopCluster(cl)
     
   } else {
+    
     p_ <- array(NA, length(msiData@mz))
-    for (ion in 1:length(msiData@mz)) {
-      progress(ion)
-      if (var(msiData@matrix[, ion]) == 0) {
+    for (i in 1:length(msiData@mz)) {
+      progress(i)
+      if (var(msiData@matrix[, i]) == 0) {
         next()
       }
       
-      im <- msImage(matrix(msiData@matrix[, ion], msiData@nrow, msiData@ncol),
+      im <- msImage(matrix(msiData@matrix[, i], msiData@nrow, msiData@ncol),
                     scale = FALSE)
       
-      p_[ion] <- .csr.test.im(
+      p_[i] <- .csr.test.im(
         im = im,
         method = method,
         ref.im = ref.covariate,
         ...
       )
     }
+    
   }
   
   names(p_) <- msiData@mz

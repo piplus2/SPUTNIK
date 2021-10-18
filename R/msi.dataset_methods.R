@@ -67,6 +67,8 @@ if (is.null(getGeneric('PCAImage'))) {
 #' @import irlba
 #' @export
 #' 
+#' @aliases PCAImage
+#' 
 setMethod(
   f = "PCAImage",
   signature = signature(object = "msi.dataset"),
