@@ -20,7 +20,7 @@
 #' similarity with the reference image (typically representing the spatial
 #' distribution of the signal source) are retrieved. For consistency, the NMI are
 #' scaled in [-1, 1] to match the same range of correlations.
-#'
+#' @param cores integer (default = 1). Number of cores for parallel computing.
 #' @param verbose logical (default = \code{TRUE}). Additional output text.
 #'
 #' @return \code{peak.filter} object. See link{applyPeaksFilter}.
@@ -41,16 +41,20 @@
 #' IEEE transactions on image processing, 13(4), 600-612.
 #' @references Meyer, P. E. (2009). Infotheo: information-theoretic measures.
 #' R package. Version, 1(0).
+#' 
+#' @import doSNOW foreach
 #'
 #' @example R/examples/filter_global.R
 #'
 #' @seealso \code{\link{countPixelsFilter}} \code{\link{applyPeaksFilter-msi.dataset-method}}
+#' 
 #' @export
 #'
 globalPeaksFilter <- function(msiData,
                               referenceImage,
                               method = "pearson",
                               threshold = NULL,
+                              cores = 1,
                               verbose = TRUE) {
   .stopIfNotValidMSIDataset(msiData)
   .stopIfNotValidMSImage(referenceImage)
@@ -78,25 +82,39 @@ globalPeaksFilter <- function(msiData,
     cat("Calculating the similarity values...\n")
   }
 
-  ## Use NMI only if the reference image is binary
+  # Use NMI only if the reference image is binary
   if (method == "nmi" && !.isBinary(referenceImage)) {
     stop("globalPeaksFilter: 'nmi' can be only used with binary reference images.")
   }
+  
+  method.func <- switch(method,
+                        "pearson" = function(x, y) { cor(x, y, method = "pearson") },
+                        "spearman" = function(x, y) { cor(x, y, method = "spearman") },
+                        "ssim" = function(x, y) { SSIM(x, y) },
+                        "nmi" = function(x, y) { NMI(x, y) })
 
-  r <- array(NA, ncol(msiData@matrix))
-  idx.non.const <- apply(msiData@matrix, 2, var) != 0
+  niter <- ncol(msiData@matrix)
+  pb <- txtProgressBar(max = niter, style = 3, width = 80)
+  progress <- function(n) setTxtProgressBar(pb, n)
+  opts <- list(progress = progress)
+  
+  ref.values <- c(referenceImage@values)
+  
+  if (cores > 1) {
 
-  r[idx.non.const] <- switch(method,
-    "pearson" = apply(msiData@matrix[, idx.non.const], 2, function(z)
-      cor(z, c(referenceImage@values), method = method)),
-    "spearman" = apply(msiData@matrix[, idx.non.const], 2, function(z)
-      cor(z, c(referenceImage@values), method = method)),
-    "ssim" = apply(msiData@matrix[, idx.non.const], 2, function(z)
-      SSIM(z, referenceImage@values)),
-    "nmi" = apply(msiData@matrix[, idx.non.const], 2, function(z)
-      NMI(z, c(referenceImage@values)))
-  )
+    cl <- makeCluster(cores)
+    registerDoSNOW(cl)
+    r <- foreach(i = 1:niter, .combine = c, .options.snow = opts) %dopar% {
+      method.func(msiData@matrix[, i], ref.values)
+    }
+    stopCluster(cl)
 
+  } else {
+    r <- apply(msiData@matrix, 2, function(z) method.func(z, ref.values))
+  }
+
+  close(pb)
+  
   if (verbose) {
     cat("Similarity measure quantiles (after removing NAs):\n")
     print(quantile(r, na.rm = TRUE))

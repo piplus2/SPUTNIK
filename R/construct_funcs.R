@@ -46,6 +46,22 @@ msiDataset <- function(values, mz, rsize, csize, verbose = TRUE) {
   }
   object <- .remove.const.peaks(object)
   
+  # Detected peaks
+  if (verbose) {
+    cat("Generating image of detected peaks...\n")
+  }
+  ndet = apply(object@matrix, 1, function(x) sum(x != 0, na.rm = TRUE))
+  object@numdetected <- msImage(values = matrix(ndet, object@nrow, object@ncol),
+               name = "Num. detected ions", scale = FALSE)
+  
+  # Total ion count image
+  if (verbose) {
+    cat("Generating total-ion-count image...\n")
+    object@totalioncount <- msImage(
+      values = matrix(apply(object@matrix, 1, sum), object@nrow, object@ncol),
+      name = "Total-ion-count", scale = FALSE)
+  }
+
   return(object)
 }
 

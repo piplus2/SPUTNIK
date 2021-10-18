@@ -18,11 +18,11 @@ imSize <- c(20, 20)
 msiX <- msiDataset(X, mzVector, imSize[1], imSize[2])
 
 ## Generate the reference image and the ROI mask
-ref.roi <- refAndROIimages(msiX, refMethod = "sum", roiMethod = "otsu")
+refImg <- refImageContinuous(msiX, method = "sum")
 
 ## Perform global peaks filter
 glob.peaks <- globalPeaksFilter(
-  msiData = msiX, referenceImage = ref.roi$Reference,
+  msiData = msiX, referenceImage = refImg,
   method = "pearson", threshold = 0
 )
 

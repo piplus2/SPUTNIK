@@ -30,16 +30,16 @@ setClass(
     if (length(dim(object@values)) != 2) {
       return("Values must be 2-D numeric matrix.")
     }
+    
+    # if (any(!is.finite(c(object@values)))) {
+    #   return("Values must be finite")
+    # }
 
-    if (any(!is.finite(c(object@values)))) {
-      return("Values must be finite")
-    }
+    # if (min(c(object@values)) < 0 || max(c(object@values)) > 1) {
+    #   return("Values are not between 0 and 1.")
+    # }
 
-    if (min(c(object@values)) < 0 || max(c(object@values)) > 1) {
-      return("Values are not between 0 and 1.")
-    }
-
-    if (var(c(object@values)) == 0) {
+    if (length(unique(c(object@values))) == 0) {
       return("Constant image.")
     }
     return(TRUE)

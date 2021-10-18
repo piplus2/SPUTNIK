@@ -9,7 +9,7 @@ mz <- sort(sample(100, ncol(x)))
 msiX <- msiDataset(x, mz, sz[1], sz[2])
 
 ## Generate binary mask by applying k-means on the entire dataset
-refBin <- binKmeans(msiX)
+roiImg <- refImageBinaryKmeans(msiX, npcs = 3)
 
 ## Plot the mask
-plot(refBin)
+# plot(roiImg)

@@ -9,6 +9,9 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+**NOTE**: this tutorial is designed for version 1.4. Please update SPUTNIK before from
+https://github.com/paoloinglese/SPUTNIK.
+
 # Introduction
 
 Welcome to SPUTNIK Github Page!
@@ -62,67 +65,87 @@ dataset are calculated as follows.
 library(SPUTNIK)
 ```
 
-First load the example MALDI-MSI data
+First let's load the example MALDI-MSI data
+
 ```{r load Rompp}
 bladderMALDI <- bladderMALDIRompp2010() 
 ```
 
-Then, create the msiDataset object using the `msiDataset` command, and apply the
-normalization and log2-transformation
+Then, we create the dataset object using the `msiDataset` command:
+
 ```{r create msiDataset}
 msiX <- msiDataset(values = bladderMALDI,
                    mz = attr(bladderMALDI, 'mass'),
                    rsize = attr(bladderMALDI, 'size')[1],
                    csize = attr(bladderMALDI, 'size')[2])
+```
+
+The first thing to do is to plot the image of the number of detected peaks and total ion count (TIC). These
+image are useful to capture the spatial location of the sample, as we expect its spectra
+to contain more ions or more intense signals:
+
+```{r TIC}
+plot(msiX@totalioncount)
+```
+
+```{r numDetectedMSI}
+plot(msiX@numdetected)
+```
+
+Unfortunately, in this case, it seems that more ions with higher TIC are detected _outside_ of the tissue,
+***we will need to remember this in the following steps***.
+
+Now we can normalize and apply the variable stabilizing transformation:
+
+```{r norm}
 msiX <- normIntensity(msiX, 'PQN')
 msiX <- varTransform(msiX, 'log2')
 ```
 
-The `refAndRoiImages` command generates the continuous reference and ROI
-```{r ref and roi}
-ref_roi <- refAndROIimages(msiData = msiX, refMethod = "sum", roiMethod = "otsu")
+## Generating reference image and sample region-of-interest (ROI)
+
+We can now generate the continuous and binary reference images.
+
+***NOTE***: we are aligning the PCA image with the number of detected peaks, but ,
+since the number of detected ions is greater outside of the tissue,
+we need to set the argument `invertAlign` to TRUE:
+
+```{r cont}
+ref.cont <- refImageContinuous(msiData = msiX, method = "pca",
+                               alignTo = 'detected',
+                               invertAlign = TRUE)
+plot(ref.cont)
 ```
 
-Both the continuous reference and ROI can be plotted using the `plot` command
-```{r plot ref}
-plot(ref_roi$Reference)
-```
-```{r plot roi}
-plot(ref_roi$ROI)
-```
+The first principal component show clearly the area occupied by the
+sample.
 
-The sum of the peaks intensities does not show clearly the area occupied by the
-sample. Therefore, we can use k-means to extract the ROI, setting the
-`roifMethod` to `kmeans2`.
+Now we can generate the binary reference using k-means
 
-```{r ref and roi 2}
-ref_roi <- refAndROIimages(msiData = msiX, refMethod = "sum", roiMethod = "kmeans2")
-```
+***NOTE***: again we invert the binary ROI after aligning it to the number of detected peaks.
 
-Now the images are positively correlated with the sample region.
-```{r plot ref 2}
-plot(ref_roi$Reference)
+```{r roi}
+ref.bin <- refImageBinaryKmeans(dataset = msiX,
+                                alignTo = "detected",
+                                invertAligned = TRUE)
+plot(ref.bin)
 ```
-```{r plot roi 2}
-plot(ref_roi$ROI)
-```
-
-Often the ROI contains several scattered pixels, as result of the presence of noise
-in the original data. The isolated pixels can be removed through the `removeSmallObjects`
-command. Now we remove all the connected objects smaller than 5 pixels.
+Often the binary reference contains several scattered pixels, as result of the presence of noise in the original data. The isolated pixels can be removed through the `removeSmallObjects`
+command. Now we remove all the connected objects smaller than 50 pixels.
 
 ```{r remove small objects}
-ref_roi$ROI <- removeSmallObjects(ref_roi$ROI, threshold = 5)
-plot(ref_roi$ROI)
+ref.bin <- removeSmallObjects(ref.bin, threshold = 50)
+plot(ref.bin)
 ```
 
 The global reference filter uses the similarity between the peak intensity image
-and the continuous reference or the binary ROI. In this case, we calculate the
-normalized mutual information (NMI) with the ROI
+and the reference image In this case, we calculate the normalized mutual information (NMI) with the binary reference.
+
+The argument `cores` > 1 allows multicore processing.
 
 ```{r gpf}
-gpf <- globalPeaksFilter(msiData = msiX, referenceImage = ref_roi$ROI,
-                         method = 'nmi', threshold = 0)
+gpf <- globalPeaksFilter(msiData = msiX, referenceImage = ref.bin,
+                         method = 'spearman', threshold = 0, cores = 1)
 ```
 
 Then, we can apply the filter to remove the uninformative peaks.
@@ -136,15 +159,18 @@ We can check the effect of filtering by plotting the RGB image corresponding to
 the scores of the first 3 principal components. This gives a qualitative idea of
 the spatial structures present in the dataset
 
-```{r pca image}
-pca <- prcomp(getIntensityMat(msiX), center = TRUE, scale. = TRUE)
-pcaRGB <- matrix(NA, prod(getShapeMSI(msiX)), 3)
-for (i in 1:3)
-  pcaRGB[, i] <- (pca$x[, i] - min(pca$x[, i])) / (max(pca$x[, i]) - min(pca$x[, i]))
-pcaRGB <- rgb(pcaRGB)
-plot(as.raster(matrix(pcaRGB, getShapeMSI(msiX)[1], getShapeMSI(msiX)[2])),
-     interpolate = F)
+```{r gpf pca}
+pca.img <- PCAImage(msiX)
+plot(pca.img)
 ```
+
+```{r gpf tic}
+
+tic.img <- totalIonCountMSI(msiX)
+plot(tic.img)
+
+```
+
 
 ## Pixel count filter
 
@@ -164,27 +190,24 @@ msiX <- msiDataset(values = bladderMALDI,
                    mz = attr(bladderMALDI, 'mass'),
                    rsize = attr(bladderMALDI, 'size')[1],
                    csize = attr(bladderMALDI, 'size')[2])
+```
+
+We normalize and transform as before:
+
+```{r norm cpf}
 msiX <- normIntensity(msiX, 'PQN')
 msiX <- varTransform(msiX, 'log2')
 ```
 
-We extract the sample-related ROI, as done in the previous section
+We use the binary reference generated in the previous section.
 
-The `refAndRoiImages` command generates the continuous reference and ROI, and we
-remove the connected objects smaller than 5 pixels
-```{r ref and roi cpf}
-ref_roi <- refAndROIimages(msiData = msiX, refMethod = "sum", roiMethod = "kmeans2")
-ref_roi$ROI <- removeSmallObjects(ref_roi$ROI, threshold = 5)
-plot(ref_roi$ROI)
-```
-
-and we define the filter, requesting the smallest number of connected signal pixels
+Now we define the filter, requesting the smallest number of connected signal pixels
 to be larger than 9. Also, we set the aggressiveness to 1, through the parameter
 `agressive = 1`. In this way, we request that the largest connected object outside
 the ROI is smaller than the largest one within the ROI
 
 ```{r cpf}
-cpf <- countPixelsFilter(msiData = msiX, roiImage = ref_roi$ROI, minNumPixels = 9,
+cpf <- countPixelsFilter(msiData = msiX, roiImage = ref.bin, minNumPixels = 9,
                          aggressive = 1)
 ```
 
@@ -195,21 +218,18 @@ components scores
 msiX <- applyPeaksFilter(msiX, cpf)
 print(dim(getIntensityMat(msiX)))
 ```
+We can then plot the RGB image representing the first 3 principal components. The
+contrast between the sample and off-sample regions is now much stronger:
 
-```{r pca image cpf}
-pca <- prcomp(getIntensityMat(msiX), center = TRUE, scale. = TRUE)
-pcaRGB <- matrix(NA, prod(getShapeMSI(msiX)), 3)
-for (i in 1:3)
-  pcaRGB[, i] <- (pca$x[, i] - min(pca$x[, i])) / (max(pca$x[, i]) - min(pca$x[, i]))
-pcaRGB <- rgb(pcaRGB)
-plot(as.raster(matrix(pcaRGB, getShapeMSI(msiX)[1], getShapeMSI(msiX)[2])),
-     interpolate = F)
+```{r pca cpf}
+pca.img <- PCAImage(msiX)
+plot(pca.img)
 ```
 
 # Complete spatial randomness
 
 The third class of filters use the complete spatial randomness tests to determine
-whether the - binarized - peak signal images represent a random point pattern.
+whether the ***binarized*** peak signal images represent a random point pattern.
 There are two available tests: *Clark-Evans* and *Kolmogorov-Smirnov*.
 We show here how to apply the *Clark-Evans* test on the MALDI-MSI data.
 
@@ -220,6 +240,11 @@ msiX <- msiDataset(values = bladderMALDI,
                    mz = attr(bladderMALDI, 'mass'),
                    rsize = attr(bladderMALDI, 'size')[1],
                    csize = attr(bladderMALDI, 'size')[2])
+```
+
+Let's normalize and transform the intensities:
+
+```{r csr norm}
 msiX <- normIntensity(msiX, 'PQN')
 msiX <- varTransform(msiX, 'log2')
 ```
@@ -227,33 +252,58 @@ msiX <- varTransform(msiX, 'log2')
 Now we run the filter
 
 ```{r csr}
-csr <- CSRPeaksFilter(msiData = msiX, method = 'ClarkEvans', verbose = T)
+csr <- CSRPeaksFilter(msiData = msiX, method = 'ClarkEvans', verbose = TRUE,
+                      cores = 1)  # running in serial mode (parallel if cores > 1)
 ```
 
 By default, `CSRPeaksFilter` calculates the p-values for the selected test, and
 applies the Bonferroni multiple testing correction. The adjusted p-values are
-denoted q-values. We can use the 0.05 threshold to define the peak filter.
-It is important to notice that the Clark-Evans test does not distinguish between
-signals localized outside or within the ROI, so it is better to run it after the
+saved in the element `q.value`. We can use the 0.05 threshold to define the peak filter.
+
+***NOTE***: The Clark-Evans test does not distinguish between
+signals localized outside or within the sample, so it is better to run it after the
 global reference filter.
+
+We can check the distributions of p-values and q-values:
+
+```{r csr results}
+hist(csr$p.value)
+hist(csr$q.value)
+```
+
+We define the new filter setting a threshold of 0.05 for the `q.value`:
 
 ```{r csr filter}
 csrFilter <- createPeaksFilter(which(csr$q.value < 0.05))
 ```
 
-We can apply the filter and plot the RGB image
+and we can check the number of kept peaks:
+
+```{r csr details}
+# Number of kept peaks (non-random)
+length(csrFilter$sel.peaks)
+```
+
+We are ready to apply the filter on the dataset:
 
 ```{r apply csr}
 msiX <- applyPeaksFilter(msiX, csrFilter)
 print(dim(getIntensityMat(msiX)))
 ```
 
-```{r pca image csr}
-pca <- prcomp(getIntensityMat(msiX), center = TRUE, scale. = TRUE)
-pcaRGB <- matrix(NA, prod(getShapeMSI(msiX)), 3)
-for (i in 1:3)
-  pcaRGB[, i] <- (pca$x[, i] - min(pca$x[, i])) / (max(pca$x[, i]) - min(pca$x[, i]))
-pcaRGB <- rgb(pcaRGB)
-plot(as.raster(matrix(pcaRGB, getShapeMSI(msiX)[1], getShapeMSI(msiX)[2])),
-     interpolate = F)
+Let's have a look at the RGB image of the first 3 principal components:
+
+```{r pca csr}
+pca.img <- PCAImage(msiX)
+plot(pca.img)
 ```
+
+As you can see, the CSR filter does not remove off-sample signals because they are not
+recognized as spatially random.
+
+# Conclusion
+
+In this short tutorial, we have seen how to apply spatial filters using SPUTNIK. In this case,
+the filters were applied separately, but they can also be combined to get improved results.  
+We suggest to start with the global filter, which removes most of the signal spatially detected outside
+of the sample region, followed by one or both the other filters.

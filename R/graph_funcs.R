@@ -1,134 +1,3 @@
-#' Compute the reference image and the ROI mask.
-#'
-#' \code{refAndROIimages} returns the reference image, calculated using the
-#' \code{refMethod}, and the ROI binary mask, calculated using \code{roiMethod}.
-#' These images represent the basic measures for the filters in SPUTNIK.
-#'
-#' @param msiData \link[SPUTNIK]{msiDataset} object..
-#' @param refMethod string (default = "sum"). Method used to calculate the
-#' reference image. Valid values are:
-#' \itemize{
-#'   \item "sum": peak intensities sum
-#'   \item "mean": average peak intensities (without zeros)
-#'   \item "median": median peak intensities (without zeros)
-#'   \item "pca": first principal component scores.
-#' }
-#' @param roiMethod string (default = "otsu"). Method used to extract the ROI
-#' binary mask. Valid values are:
-#' \itemize{
-#'   \item "otsu": the reference image is binarized using Otsu's thresholding
-#'   \item "kmeans": msiData is partitioned in 2 clusters using k-means
-#'   \item "kmeans2": k-means is applied with a user-defined number of clusters
-#'   (see Details)
-#'   \item "supervised": supervised segmentation based on user-defined areas
-#'   corresponding to off-sample and sample regions.
-#' }
-#' @param mzQueryRef numeric. Values of m/z used to calculate the reference image.
-#' 2 values are interpreted as interval, multiple or single values are searched
-#' in the m/z vector. It overrides the param \code{useFullMZRef}.
-#' @param mzTolerance numeric (default = Inf). Tolerance in PPM to match the
-#' \code{mzQueryRef} values in the m/z vector.
-#' @param useFullMZRef logical (default = TRUE). Whether all the peaks should be
-#' used to calculate the reference image.
-#' @param smoothRef logical (default = FALSE). Whether the reference image
-#' should be smoothed before binarizing. Only valid for \code{roiMethod = "otsu"}.
-#' @param smoothSigma numeric (default = 2). Standard deviation of Gaussian
-#' kernel.
-#' @param invertRef logical (default = FALSE). Whether the reference image
-#' colors should be inverted. This can be necessary when the signal is more
-#' intense outside the ROI.
-#' @param verbose logical (default = TRUE). Additional output text.
-#' @param numClusters numeric (default = 4). Only for 'kmeans2' method. Number
-#' of clusters.
-#' @param sizeKernel 4-D numeric array or numeric (default = 5). Only for 'kmeans2'.
-#' Each element of the 4-D array represents the size of the corners square kernels
-#' used to determine the off-tissue clusters. The element order is clockwise:
-#' top-left, top-right, bottom-left, bottom-right. If negative, the corresponding
-#' corner is skipped. If only a single value is passed, the same kernel size is
-#' used for the 4 corners.
-#' @param numCores numeric (default = 1). Only for 'kmeans2' method. Number of
-#' CPU cores for parallel k-means. It must be smaller than the number of
-#' available cores.
-#'
-#' @details Function to extract the reference image from a \code{\link{msi.dataset-class}}
-#' object. Two references images are returned, a continuous-valued and a binary-valued.
-#' Multiple methods can be used to extract both the continuous and the binary
-#' reference images, which afterwards can be used as argument for the \code{\link{globalPeaksFilter}}
-#' filter. When 'kmeans2' is applied, the ROI is obtained by merging the sample-related
-#' clusters. The user can set a larger number of cluster than 2 (like in 'kmeans'), in
-#' such a way a finer segmentation of the sample-related area can be generated.
-#' Currently, the off-sample clusters are identified by looking at the most frequent
-#' (statistical mode) labels in the corners of the image.
-#'
-#' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
-#'
-#' @example R/examples/graph_funcs.R
-#'
-#' @seealso msiDataset, binOtsu, binKmeans
-#' @export
-#'
-refAndROIimages <- function(msiData,
-                            refMethod = "sum",
-                            roiMethod = "otsu",
-                            mzQueryRef = numeric(),
-                            mzTolerance = Inf,
-                            useFullMZRef = TRUE,
-                            smoothRef = FALSE,
-                            smoothSigma = 2,
-                            invertRef = FALSE,
-                            ## Parameters for kmeans2 ##
-                            numClusters = 4, # number of clusters
-                            sizeKernel = 5, # number of corners pixels used to
-                            # identify the off-sample clusters
-                            numCores = 1, # parallel computation for k-means2
-                            verbose = TRUE) {
-  .stopIfNotValidMSIDataset(msiData)
-
-  accept.method.roi <- c("otsu", "kmeans", "kmeans2", "supervised")
-  if (!any(roiMethod %in% accept.method.roi)) {
-    stop(
-      "valid roiMethod values are: ",
-      paste0(accept.method.roi, collapse = ", "), "."
-    )
-  }
-
-  # Reference image
-  ref.image <- .refImage(
-    msiData = msiData,
-    method = refMethod,
-    mzQuery = mzQueryRef,
-    mzTolerance = mzTolerance,
-    useFullMZ = useFullMZRef,
-    smoothIm = smoothRef,
-    smoothSigma = smoothSigma,
-    invertIm = invertRef
-  )
-  # ROI
-  roi.im <- switch(
-    roiMethod,
-    "otsu" = binOtsu(ref.image),
-    "kmeans" = binKmeans(msiData),
-    "kmeans2" = binKmeans2(msiData,
-      mzQuery = mzQueryRef,
-      mzTolerance = mzTolerance,
-      useFullMZ = useFullMZRef,
-      numClusters = numClusters,
-      numCores = numCores,
-      kernelSize = sizeKernel,
-      verbose = verbose
-    ),
-    "supervised" = binSupervised(msiData,
-      refImage = ref.image,
-      mzQuery = mzQueryRef, # Filter m/z values
-      useFullMZ = useFullMZRef, #
-      mzTolerance = mzTolerance, #
-      method = "svm"
-    ) # Currently only 'svm' available
-  )
-
-  return(list(Reference = ref.image, ROI = roi.im))
-}
-
 ## .refImage
 #' @importFrom stats median prcomp
 #' @import irlba
@@ -139,7 +8,8 @@ refAndROIimages <- function(msiData,
                       useFullMZ = TRUE,
                       smoothIm = FALSE,
                       smoothSigma = 2,
-                      invertIm = FALSE,
+                      sampleReference = "detected",
+                      invertAlign = FALSE,
                       verbose = TRUE) {
   accept.method.ref <- c("sum", "median", "mean", "pca")
   if (!any(method %in% accept.method.ref)) {
@@ -190,7 +60,7 @@ refAndROIimages <- function(msiData,
       "pca" = {
         msiData@matrix[is.na(msiData@matrix)] <- 0
         message("Calculating first principal component...\n")
-        pca <- prcomp_irlba(msiData@matrix[, mz.indices], 1, center=T, scale.=T)
+        pca <- prcomp_irlba(msiData@matrix[, mz.indices], 1, center = TRUE, scale. = TRUE)
         if (cor(pca$x[, 1], apply(msiData@matrix, 1, mean)) < 0) {
           pca$x[, 1] <- (-1) * pca$x[, 1]
         }
@@ -211,8 +81,26 @@ refAndROIimages <- function(msiData,
   if (smoothIm) {
     ref.image <- smoothImage(ref.image, smoothSigma)
   }
-  if (invertIm) {
-    ref.image <- invertImage(ref.image)
+  
+  # Align to reference image
+  if (sampleReference == "detected") {
+    if (invertAlign) {
+      if (cor(c(ref.image@values), c(msiData@numdetected@values)) > 0)
+        ref.image <- invertImage(ref.image)
+    } else {
+      if (cor(c(ref.image@values), c(msiData@numdetected@values)) < 0)
+        ref.image <- invertImage(ref.image)
+    }
+  } else if (sampleReference == "tic") {
+    if (invertAlign) {
+      if (cor(c(ref.image@values), c(msiData@totalioncount@values)) > 0)
+        ref.image <- invertImage(ref.image)
+    } else {
+      if (cor(c(ref.image@values), c(msiData@totalioncount@values)) < 0)
+        ref.image <- invertImage(ref.image)
+    }
+  } else {
+    stop("Invalid `sampleReference` value.")
   }
 
   return(ref.image)

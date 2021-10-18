@@ -34,11 +34,7 @@ To install it, run the command:
 
 ## Example SPUTNIK workflow on MALDI mass spectrometry imaging data
 
-https://github.com/paoloinglese/SPUTNIK/blob/master/tutorials/workflow_maldi.html
-
-## Example SPUTNIK workflow on DESI mass spectrometry imaging data
-
-http://htmlpreview.github.com/?https://github.com/paoloinglese/SPUTNIK/blob/master/tutorials/workflow_desi.html
+https://paoloinglese.github.io/SPUTNIK/
 	
 ## Example data ##
 

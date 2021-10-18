@@ -13,6 +13,9 @@
 
 \item{palette}{string. Color palette. See \link{viridis}.}
 }
+\value{
+a ggplot2 plot.
+}
 \description{
 Visualize an MS image.
 \code{plot} extends the generic function to \link{ms.image-class} objects.

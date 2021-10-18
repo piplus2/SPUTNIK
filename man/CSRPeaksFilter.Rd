@@ -8,16 +8,10 @@ CSRPeaksFilter(
   msiData,
   method = "ClarkEvans",
   covariateImage = NULL,
-  covMethod = "sum",
-  mzQueryCov = numeric(),
-  mzTolerance = numeric(),
-  useFullMZCov = TRUE,
-  smoothCov = FALSE,
-  smoothCovSigma = 2,
-  invertCov = FALSE,
   adjMethod = "bonferroni",
   returnQvalues = TRUE,
   plotCovariate = FALSE,
+  cores = 1,
   verbose = TRUE,
   ...
 )
@@ -37,33 +31,7 @@ applied to the peaks signal. Accepted values are:
 }}
 
 \item{covariateImage}{\link{ms.image-class} object. An image used as covariate
-(necessary for Kolmogorov-Smirnov test). If NULL, the covariate image is
-calculated using the method defined by `covMethod`.}
-
-\item{covMethod}{string (default = \code{"sum"}). Method used to calculate the
-reference image. Read only when \code{method = "KS"}. Possible values
-are described in \code{'refAndROIimages'}.}
-
-\item{mzQueryCov}{numeric. Values of m/z used to calculate the reference image.
-2 values are interpreted as interval, multiple or single values are searched
-in the m/z vector. It should be left unset when using \code{useFullMZCov = TRUE}.
-Read only when \code{method = "KS"}.}
-
-\item{mzTolerance}{numeric. Tolerance in PPM to match the \code{mzQueryCov}
-values in the m/z vector. It should be left unset when using
-\code{useFullMZCov = TRUE}.Read only when \code{method = "KS"}.}
-
-\item{useFullMZCov}{logical (default = \code{TRUE}). Whether all the peaks should be
-used to calculate the covariate image. Read only when \code{method = "KS"}.}
-
-\item{smoothCov}{logical (default = \code{FALSE}). Whether the covariate image
-should be smoothed using a Gaussian kernel. Read only when \code{method = "KS"}.}
-
-\item{smoothCovSigma}{numeric (default = 2). Standard deviation of the smoothing
-Gaussian kernel. Read only when \code{method = "KS"}.}
-
-\item{invertCov}{logical (default = \code{FALSE}). Whether the covariate image
-colors should be inverted.]}
+(required for Kolmogorov-Smirnov test).}
 
 \item{adjMethod}{string (default = \code{"bonferroni"}). Multiple testing correction
 method. Possible values coincide with those of the \code{stats::p.adjust} function.}
@@ -73,6 +41,9 @@ q-values should be returned together with the p-values.}
 
 \item{plotCovariate}{logical (default = \code{FALSE}). Whether the covariate image
 should be visualized. Read only when \code{method = "KS"}.}
+
+\item{cores}{integer (default = 1). Number of CPU cores. Parallel computation if
+greater than 1.}
 
 \item{verbose}{logical (default = \code{TRUE}). Additional output texts are
 generated.}

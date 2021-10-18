@@ -20,33 +20,15 @@
 #' }
 #'
 #' @param covariateImage \link{ms.image-class} object. An image used as covariate
-#' (necessary for Kolmogorov-Smirnov test). If NULL, the covariate image is
-#' calculated using the method defined by `covMethod`.
-#' @param covMethod string (default = \code{"sum"}). Method used to calculate the
-#' reference image. Read only when \code{method = "KS"}. Possible values
-#' are described in \code{'refAndROIimages'}.
-#' @param mzQueryCov numeric. Values of m/z used to calculate the reference image.
-#' 2 values are interpreted as interval, multiple or single values are searched
-#' in the m/z vector. It should be left unset when using \code{useFullMZCov = TRUE}.
-#' Read only when \code{method = "KS"}.
-#' @param mzTolerance numeric. Tolerance in PPM to match the \code{mzQueryCov}
-#' values in the m/z vector. It should be left unset when using
-#' \code{useFullMZCov = TRUE}.Read only when \code{method = "KS"}.
-#' @param useFullMZCov logical (default = \code{TRUE}). Whether all the peaks should be
-#' used to calculate the covariate image. Read only when \code{method = "KS"}.
-#' @param smoothCov logical (default = \code{FALSE}). Whether the covariate image
-#' should be smoothed using a Gaussian kernel. Read only when \code{method = "KS"}.
-#' @param smoothCovSigma numeric (default = 2). Standard deviation of the smoothing
-#' Gaussian kernel. Read only when \code{method = "KS"}.
-#' @param invertCov logical (default = \code{FALSE}). Whether the covariate image
-#' colors should be inverted.]
-#'
+#' (required for Kolmogorov-Smirnov test).
 #' @param adjMethod string (default = \code{"bonferroni"}). Multiple testing correction
 #' method. Possible values coincide with those of the \code{stats::p.adjust} function.
 #' @param returnQvalues logical (default = \code{TRUE}). Whether the computed
 #' q-values should be returned together with the p-values.
 #' @param plotCovariate logical (default = \code{FALSE}). Whether the covariate image
 #' should be visualized. Read only when \code{method = "KS"}.
+#' @param cores integer (default = 1). Number of CPU cores. Parallel computation if
+#' greater than 1.
 #' @param verbose logical (default = \code{TRUE}). Additional output texts are
 #' generated.
 #' @param ... additional parameters compatible with the \code{statspat.core} functions.
@@ -64,22 +46,17 @@
 #'
 #' @example R/examples/filter_csr.R
 #' @export
+#' @import doSNOW foreach
 #' @importFrom stats p.adjust.methods p.adjust cor
 #' @importFrom spatstat.geom as.im
 #'
 CSRPeaksFilter <- function(msiData,
                            method = "ClarkEvans",
                            covariateImage = NULL,
-                           covMethod = "sum", # --------------------
-                           mzQueryCov = numeric(), # Covariate arguments
-                           mzTolerance = numeric(), #
-                           useFullMZCov = TRUE, #
-                           smoothCov = FALSE, #
-                           smoothCovSigma = 2, #
-                           invertCov = FALSE, #---------------------
                            adjMethod = "bonferroni",
                            returnQvalues = TRUE,
                            plotCovariate = FALSE,
+                           cores = 1,
                            verbose = TRUE,
                            ...) {
   .stopIfNotValidMSIDataset(msiData)
@@ -110,26 +87,14 @@ CSRPeaksFilter <- function(msiData,
   # Calculate the reference image. This is used as reference for Kolmogorov-
   # Smirnov test.
   if (method == "KS" && is.null(covariateImage)) {
-    if (verbose) {
-      cat("Calculating the reference image. This may take a while...\n")
-    }
-    # Convert the reference image for the spatstat test
-    covariateImage <- .refImage(
-      msiData = msiData,
-      method = covMethod,
-      mzQuery = mzQueryCov,
-      mzTolerance = mzTolerance,
-      useFullMZ = useFullMZCov,
-      smoothIm = smoothCov,
-      smoothSigma = smoothCovSigma,
-      invertIm = invertCov,
-      verbose = TRUE
-    )
+    stop('`KS` method requires a reference continuous image in `covariateImage`.')
+  }
+  
+  # Convert the reference image for the spatstat test
+  
+  if (plotCovariate) {
     covariateImage@name <- "Covariate"
-
-    if (plotCovariate) {
-      plot(covariateImage)
-    }
+    plot(covariateImage)
   }
 
   if (!is.null(covariateImage)) {
@@ -143,33 +108,55 @@ CSRPeaksFilter <- function(msiData,
   msiData <- .scale.all(msiData)
 
   # Calculate the p-value for the ion images
-  cat("Starting CSR tests. This may take a while...\n")
-
-  p_ <- array(NA, length(msiData@mz), dimnames = list(msiData@mz))
-  for (ion in 1:length(msiData@mz))
-  {
-    if (verbose && ion %% 500 == 0) {
-      cat(ion, "")
+  cat("Testing ion images for complete spatial randomness...\n")
+  
+  niter <- length(msiData@mz)
+  pb <- txtProgressBar(max = niter, style = 3, width = 80)
+  progress <- function(n) setTxtProgressBar(pb, n)
+  opts <- list(progress = progress)
+  
+  if (cores > 1) {
+    
+    # Run parallel
+    
+    cl <- makeCluster(cores)
+    registerDoSNOW(cl)
+    
+    p_ <- foreach(i = 1:niter, .combine = c, .options.snow = opts) %dopar% {
+      if (var(msiData@matrix[, i]) == 0) {
+        return(NA)
+      } else {
+        im <- msImage(matrix(msiData@matrix[, i], msiData@nrow, msiData@ncol),
+                      scale = FALSE)
+        return(
+          .csr.test.im(im = im, method = method, ref.im = ref.covariate, ...)
+        )
+      }
     }
-
-    ## Skip constant images
-    if (var(msiData@matrix[, ion]) == 0) {
-      next()
+    stopCluster(cl)
+    
+  } else {
+    p_ <- array(NA, length(msiData@mz))
+    for (ion in 1:length(msiData@mz)) {
+      progress(ion)
+      if (var(msiData@matrix[, ion]) == 0) {
+        next()
+      }
+      
+      im <- msImage(matrix(msiData@matrix[, ion], msiData@nrow, msiData@ncol),
+                    scale = FALSE)
+      
+      p_[ion] <- .csr.test.im(
+        im = im,
+        method = method,
+        ref.im = ref.covariate,
+        ...
+      )
     }
-
-    # Transform into a 2D matrix
-    im <- msImage(matrix(msiData@matrix[, ion], msiData@nrow, msiData@ncol),
-      scale = F
-    )
-
-    p_[ion] <- .csr.test.im(
-      im = im,
-      method = method,
-      ref.im = ref.covariate,
-      ...
-    )
   }
-  cat("\n")
+  
+  names(p_) <- msiData@mz
+  close(pb)
 
   # Multiple testing correction
   q_ <- NULL
@@ -217,7 +204,7 @@ CSRPeaksFilter <- function(msiData,
     "KS" = {
       im.ppp <- ppp(x = pix[, 1], y = pix[, 2], window = win)
       return(cdf.test(
-        X = im.ppp, covariate = ref.im,
+        X = im.ppp, covariate = ref.im, jitter = TRUE,
         test = "ks", ...
       )$p.value)
     }

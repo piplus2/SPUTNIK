@@ -90,14 +90,13 @@ imSize <- c(20, 20)
 msiX <- msiDataset(X, mzVector, imSize[1], imSize[2])
 
 ## Extract the ROI using k-means
-ref.roi <- refAndROIimages(
-  msiData = msiX, refMethod = "sum",
-  roiMethod = "otsu", useFullMZRef = TRUE
-)
+
+refImg <- refImageContinuous(msiX, method = "sum")
+roiImg <- refImageBinaryOtsu(refImg)
 
 ## Perform count pixels filtering
 count.sel <- countPixelsFilter(
-  msiData = msiX, roiImage = ref.roi$ROI,
+  msiData = msiX, roiImage = roiImg,
   minNumPixels = 4, aggressive = 1
 )
 
