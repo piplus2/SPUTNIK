@@ -17,6 +17,11 @@ refImageBinaryOtsu <- function(image) {
 #' on the first `npcs` principal components to speed up the calculations.
 #'
 #' @param dataset \link{msi.dataset-class} object. See \link{msiDataset}.
+#' @param npcs int (default = 10). Number of principal components to calculate.
+#' @param alignTo string (default = "detected"). Sample reference image to align
+#' the estimate binary image. It is expected to correlate with the sample location.
+#' @param invertAligned boolean (default = FALSE). If TRUE, the binary image is
+#' inverted after being aligned to the sample reference (\code{alignTo}).
 #'
 #' @return \link{ms.image-class} object with binary intensities.
 #'
@@ -35,7 +40,8 @@ refImageBinaryKmeans <- function(dataset, npcs = 10, alignTo = "detected",
 #' components to speed up the calculations.
 #'
 #' @param dataset \link{msi.dataset-class} object. See \link{msiDataset}.
-#' @param mzQueryRef numeric. Values of m/z used to calculate the reference image.
+#' @param npcs int (default = 10). Number of principal components to calculate.
+#' @param mzQuery numeric. Values of m/z used to calculate the reference image.
 #' 2 values are interpreted as interval, multiple or single values are searched
 #' in the m/z vector. It overrides the argument \code{useFullMZRef}.
 #' @param mzTolerance numeric (default = Inf). Tolerance in PPM to match the
@@ -43,7 +49,7 @@ refImageBinaryKmeans <- function(dataset, npcs = 10, alignTo = "detected",
 #' @param useFullMZRef logical (default = TRUE). Whether all the peaks should be
 #' used to calculate the reference image.
 #' @param numClusters numeric (default = 4). Number of clusters.
-#' @param sizeKernel 4-D numeric array or numeric (default = 5).
+#' @param kernelSize 4-D numeric array or numeric (default = 5).
 #' Each element of the 4-D array represents the size of the corners square kernels
 #' used to determine the off-tissue clusters. The element order is clockwise:
 #' top-left, top-right, bottom-left, bottom-right. If negative, the corresponding

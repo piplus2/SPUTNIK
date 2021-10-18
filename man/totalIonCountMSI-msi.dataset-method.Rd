@@ -13,7 +13,7 @@ sample.}
 \item{object}{\link{msi.dataset-class} object.}
 }
 \value{
-\link{msi.image-class} object representing the total ion counts.
+\link{ms.image-class} object representing the total ion counts.
 }
 \description{
 Generates an msImage representing pixels total-ion-counts. This

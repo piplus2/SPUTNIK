@@ -21,26 +21,28 @@ refImageBinaryKmeansMulti(
 \arguments{
 \item{dataset}{\link{msi.dataset-class} object. See \link{msiDataset}.}
 
+\item{npcs}{int (default = 10). Number of principal components to calculate.}
+
+\item{mzQuery}{numeric. Values of m/z used to calculate the reference image.
+2 values are interpreted as interval, multiple or single values are searched
+in the m/z vector. It overrides the argument \code{useFullMZRef}.}
+
 \item{mzTolerance}{numeric (default = Inf). Tolerance in PPM to match the
 \code{mzQueryRef} values in the m/z vector.}
 
 \item{numClusters}{numeric (default = 4). Number of clusters.}
 
-\item{cores}{numeric (default = 1). Number of CPU cores for parallel k-means.}
-
-\item{mzQueryRef}{numeric. Values of m/z used to calculate the reference image.
-2 values are interpreted as interval, multiple or single values are searched
-in the m/z vector. It overrides the argument \code{useFullMZRef}.}
-
-\item{useFullMZRef}{logical (default = TRUE). Whether all the peaks should be
-used to calculate the reference image.}
-
-\item{sizeKernel}{4-D numeric array or numeric (default = 5).
+\item{kernelSize}{4-D numeric array or numeric (default = 5).
 Each element of the 4-D array represents the size of the corners square kernels
 used to determine the off-tissue clusters. The element order is clockwise:
 top-left, top-right, bottom-left, bottom-right. If negative, the corresponding
 corner is skipped. If only a single value is passed, the same kernel size is
 used for the 4 corners.}
+
+\item{cores}{numeric (default = 1). Number of CPU cores for parallel k-means.}
+
+\item{useFullMZRef}{logical (default = TRUE). Whether all the peaks should be
+used to calculate the reference image.}
 }
 \value{
 \link{ms.image-class} object with binary intensities.

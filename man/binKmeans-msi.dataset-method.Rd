@@ -16,6 +16,8 @@ the clusters.}
 
 \item{invert}{boolean (default = FALSE). If FALSE, the clusters are inversely aligned to the
 sample reference image.}
+
+\item{npcs}{int (default = 10). Number of principal components to calculate.}
 }
 \value{
 \link{ms.image-class} object representing the binary mask image.

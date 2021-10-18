@@ -13,7 +13,7 @@ sample.}
 \item{object}{\link{msi.dataset-class} object.}
 }
 \value{
-\link{msi.image-class} object representing the detected ions per pixel.
+\link{ms.image-class} object representing the detected ions per pixel.
 }
 \description{
 Generates an msImage representing the number of detected peaks per pixel. This

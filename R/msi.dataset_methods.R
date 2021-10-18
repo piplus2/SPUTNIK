@@ -63,6 +63,7 @@ if (is.null(getGeneric('PCAImage'))) {
 #' 
 #' @return RGB raster representing the first 3 principal components
 #' 
+#' @importFrom grDevices rgb
 #' @import irlba
 #' @export
 #' 
@@ -92,7 +93,7 @@ setMethod(
 #' 
 #' @param object \link{msi.dataset-class} object.
 #' 
-#' @return \link{msi.image-class} object representing the total ion counts.
+#' @return \link{ms.image-class} object representing the total ion counts.
 #' 
 #' @export
 #' @aliases totalIonCountMSI
@@ -117,7 +118,7 @@ setMethod(
 #' 
 #' @param object \link{msi.dataset-class} object.
 #' 
-#' @return \link{msi.image-class} object representing the detected ions per pixel.
+#' @return \link{ms.image-class} object representing the detected ions per pixel.
 #' 
 #' @export
 #' @aliases numDetectedMSI
@@ -188,6 +189,7 @@ setMethod(
 #' on first 10 principal components of peaks intensities.
 #'
 #' @param object \link{msi.dataset-class} object
+#' @param npcs int (default = 10). Number of principal components to calculate.
 #' @param ref string (default = "detected). Sample reference image used to align
 #' the clusters.
 #' @param invert boolean (default = FALSE). If FALSE, the clusters are inversely aligned to the

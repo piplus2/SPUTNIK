@@ -11,6 +11,7 @@
 #' @slot vartr variance stabilizing transformation.
 #' @slot vartroffset numeric offset used for the variance stabilizing transformation.
 #' @slot numdetected msImage of number of detected peaks.
+#' @slot totalioncount msImage of total-ion-count per pixel.
 #'
 #' @name msi.dataset-class
 #' @rdname msi.dataset-class

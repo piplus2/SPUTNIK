@@ -49,6 +49,7 @@
 #' @import doSNOW foreach
 #' @importFrom stats p.adjust.methods p.adjust cor
 #' @importFrom spatstat.geom as.im
+#' @importFrom utils setTxtProgressBar txtProgressBar
 #'
 CSRPeaksFilter <- function(msiData,
                            method = "ClarkEvans",
@@ -122,17 +123,18 @@ CSRPeaksFilter <- function(msiData,
     cl <- makeCluster(cores)
     registerDoSNOW(cl)
     
-    p_ <- foreach(i = 1:niter, .combine = c, .options.snow = opts) %dopar% {
-      if (var(msiData@matrix[, i]) == 0) {
+    p_ <- foreach(ion = 1:niter, .combine = c, .options.snow = opts) %dopar% {
+      if (var(msiData@matrix[, ion]) == 0) {
         return(NA)
       } else {
-        im <- msImage(matrix(msiData@matrix[, i], msiData@nrow, msiData@ncol),
+        im <- msImage(matrix(msiData@matrix[, ion], msiData@nrow, msiData@ncol),
                       scale = FALSE)
         return(
           .csr.test.im(im = im, method = method, ref.im = ref.covariate, ...)
         )
       }
     }
+    
     stopCluster(cl)
     
   } else {
