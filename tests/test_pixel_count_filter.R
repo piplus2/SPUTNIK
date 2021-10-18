@@ -13,17 +13,20 @@ test_that("pixel count filter", {
   msX <- msiDataset(values = x, mz = mz, rsize = shape[1], csize = shape[2])
   msX <- normIntensity(msX, "PQN")
   msX <- varTransform(msX, "log2")
-  refRoi <- refAndROIimages(msX, refMethod = "sum", roiMethod = "otsu")
+  
+  refImg <- refImageContinuous(msX, method = "sum")
+  roiImg <- refImageBinaryOtsu(refImg)
+  
   cpfAggr0 <- countPixelsFilter(
-    msiData = msX, roiImage = refRoi$ROI,
+    msiData = msX, roiImage = roiImg,
     minNumPixels = MIN_NUM_PIXELS, aggressive = 0
   )
   cpfAggr1 <- countPixelsFilter(
-    msiData = msX, roiImage = refRoi$ROI,
+    msiData = msX, roiImage = roiImg,
     minNumPixels = MIN_NUM_PIXELS, aggressive = 1
   )
   cpfAggr2 <- countPixelsFilter(
-    msiData = msX, roiImage = refRoi$ROI,
+    msiData = msX, roiImage = roiImg,
     minNumPixels = MIN_NUM_PIXELS, aggressive = 2
   )
   expect_is(cpfAggr0, "list")

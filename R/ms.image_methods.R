@@ -105,8 +105,6 @@ setMethod("plot",
       ) +
       theme_bw()
 
-    plot(gg)
-    
     return(gg)
   }
 )

@@ -26,7 +26,7 @@ refImageBinaryOtsu <- function(image) {
 refImageBinaryKmeans <- function(dataset, npcs = 10, alignTo = "detected",
                                  invertAligned = FALSE) {
   .stopIfNotValidMSIDataset(dataset)
-  return(binKmeans(dataset, npcs = npcs, ref = alignTo, align = invertAligned))
+  return(binKmeans(dataset, npcs = npcs, ref = alignTo, invert = invertAligned))
 }
 
 

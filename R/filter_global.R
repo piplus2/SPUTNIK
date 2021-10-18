@@ -93,7 +93,7 @@ globalPeaksFilter <- function(msiData,
                         "ssim" = function(x, y) { SSIM(x, y) },
                         "nmi" = function(x, y) { NMI(x, y) })
 
-  niter = ncol(msiData@matrix)
+  niter <- ncol(msiData@matrix)
   pb <- txtProgressBar(max = niter, style = 3, width = 80)
   progress <- function(n) setTxtProgressBar(pb, n)
   opts <- list(progress = progress)
@@ -107,13 +107,14 @@ globalPeaksFilter <- function(msiData,
     r <- foreach(i = 1:niter, .combine = c, .options.snow = opts) %dopar% {
       method.func(msiData@matrix[, i], ref.values)
     }
-    close(pb)
     stopCluster(cl)
 
   } else {
     r <- apply(msiData@matrix, 2, function(z) method.func(z, ref.values))
   }
 
+  close(pb)
+  
   if (verbose) {
     cat("Similarity measure quantiles (after removing NAs):\n")
     print(quantile(r, na.rm = TRUE))

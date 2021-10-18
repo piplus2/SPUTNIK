@@ -5,4 +5,4 @@ library("SPUTNIK")
 msIm <- msImage(values = matrix(rnorm(200), 40, 50), name = "test", scale = TRUE)
 
 ## Generate binary image
-binIm <- binOtsu(msIm)
+binIm <- refImageBinaryOtsu(msIm)

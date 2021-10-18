@@ -9,6 +9,9 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+**NOTE**: this tutorial is designed for version 1.4. Please update SPUTNIK before from
+https://github.com/paoloinglese/SPUTNIK.
+
 # Introduction
 
 Welcome to SPUTNIK Github Page!
@@ -88,6 +91,7 @@ plot(msiX@totalioncount)
 ```{r numDetectedMSI}
 plot(msiX@numdetected)
 ```
+
 Unfortunately, in this case, it seems that more ions with higher TIC are detected _outside_ of the tissue,
 ***we will need to remember this in the following steps***.
 
@@ -102,23 +106,28 @@ msiX <- varTransform(msiX, 'log2')
 
 We can now generate the continuous and binary reference images.
 
-***NOTE***: since the number of detected ions is greater outside of the tissue,
-we need to set the argument `alignToReference` to FALSE:
+***NOTE***: we are aligning the PCA image with the number of detected peaks, but ,
+since the number of detected ions is greater outside of the tissue,
+we need to set the argument `invertAlign` to TRUE:
 
 ```{r cont}
-ref.cont <- RefImageContinuous(msiData = msiX, method = "pca",
-                               alignToReference = FALSE)
+ref.cont <- refImageContinuous(msiData = msiX, method = "pca",
+                               alignTo = 'detected',
+                               invertAlign = TRUE)
 plot(ref.cont)
 ```
+
 The first principal component show clearly the area occupied by the
 sample.
 
 Now we can generate the binary reference using k-means
 
-```{r ref and roi 2}
+***NOTE***: again we invert the binary ROI after aligning it to the number of detected peaks.
+
+```{r roi}
 ref.bin <- refImageBinaryKmeans(dataset = msiX,
                                 alignTo = "detected",
-                                invertAligned = FALSE)
+                                invertAligned = TRUE)
 plot(ref.bin)
 ```
 Often the binary reference contains several scattered pixels, as result of the presence of noise in the original data. The isolated pixels can be removed through the `removeSmallObjects`
@@ -130,11 +139,13 @@ plot(ref.bin)
 ```
 
 The global reference filter uses the similarity between the peak intensity image
-and the reference image In this case, we calculate the normalized mutual information (NMI) with the binary reference:
+and the reference image In this case, we calculate the normalized mutual information (NMI) with the binary reference.
+
+The argument `cores` > 1 allows multicore processing.
 
 ```{r gpf}
 gpf <- globalPeaksFilter(msiData = msiX, referenceImage = ref.bin,
-                         method = 'nmi', threshold = 0, cores = 4)
+                         method = 'spearman', threshold = 0, cores = 1)
 ```
 
 Then, we can apply the filter to remove the uninformative peaks.
@@ -148,12 +159,12 @@ We can check the effect of filtering by plotting the RGB image corresponding to
 the scores of the first 3 principal components. This gives a qualitative idea of
 the spatial structures present in the dataset
 
-```{r pca image}
+```{r gpf pca}
 pca.img <- PCAImage(msiX)
 plot(pca.img)
 ```
 
-```{r TIC.after}
+```{r gpf tic}
 
 tic.img <- totalIonCountMSI(msiX)
 plot(tic.img)
@@ -179,6 +190,11 @@ msiX <- msiDataset(values = bladderMALDI,
                    mz = attr(bladderMALDI, 'mass'),
                    rsize = attr(bladderMALDI, 'size')[1],
                    csize = attr(bladderMALDI, 'size')[2])
+```
+
+We normalize and transform as before:
+
+```{r norm cpf}
 msiX <- normIntensity(msiX, 'PQN')
 msiX <- varTransform(msiX, 'log2')
 ```
@@ -205,7 +221,7 @@ print(dim(getIntensityMat(msiX)))
 We can then plot the RGB image representing the first 3 principal components. The
 contrast between the sample and off-sample regions is now much stronger:
 
-```{r pca image cpf}
+```{r pca cpf}
 pca.img <- PCAImage(msiX)
 plot(pca.img)
 ```
@@ -224,6 +240,11 @@ msiX <- msiDataset(values = bladderMALDI,
                    mz = attr(bladderMALDI, 'mass'),
                    rsize = attr(bladderMALDI, 'size')[1],
                    csize = attr(bladderMALDI, 'size')[2])
+```
+
+Let's normalize and transform the intensities:
+
+```{r csr norm}
 msiX <- normIntensity(msiX, 'PQN')
 msiX <- varTransform(msiX, 'log2')
 ```
@@ -231,28 +252,58 @@ msiX <- varTransform(msiX, 'log2')
 Now we run the filter
 
 ```{r csr}
-csr <- CSRPeaksFilter(msiData = msiX, method = 'ClarkEvans', verbose = T)
+csr <- CSRPeaksFilter(msiData = msiX, method = 'ClarkEvans', verbose = TRUE,
+                      cores = 1)  # running in serial mode (parallel if cores > 1)
 ```
 
 By default, `CSRPeaksFilter` calculates the p-values for the selected test, and
 applies the Bonferroni multiple testing correction. The adjusted p-values are
-denoted q-values. We can use the 0.05 threshold to define the peak filter.
-It is important to notice that the Clark-Evans test does not distinguish between
-signals localized outside or within the ROI, so it is better to run it after the
+saved in the element `q.value`. We can use the 0.05 threshold to define the peak filter.
+
+***NOTE***: The Clark-Evans test does not distinguish between
+signals localized outside or within the sample, so it is better to run it after the
 global reference filter.
+
+We can check the distributions of p-values and q-values:
+
+```{r csr results}
+hist(csr$p.value)
+hist(csr$q.value)
+```
+
+We define the new filter setting a threshold of 0.05 for the `q.value`:
 
 ```{r csr filter}
 csrFilter <- createPeaksFilter(which(csr$q.value < 0.05))
 ```
 
-We can apply the filter and plot the RGB image
+and we can check the number of kept peaks:
+
+```{r csr details}
+# Number of kept peaks (non-random)
+length(csrFilter$sel.peaks)
+```
+
+We are ready to apply the filter on the dataset:
 
 ```{r apply csr}
 msiX <- applyPeaksFilter(msiX, csrFilter)
 print(dim(getIntensityMat(msiX)))
 ```
 
-```{r pca image csr}
+Let's have a look at the RGB image of the first 3 principal components:
+
+```{r pca csr}
 pca.img <- PCAImage(msiX)
 plot(pca.img)
 ```
+
+As you can see, the CSR filter does not remove off-sample signals because they are not
+recognized as spatially random.
+
+# Conclusion
+
+In this short tutorial, we have seen how to apply spatial filters using SPUTNIK. In this case,
+the filters were applied separately, but they can also be combined to get improved results.  
+We suggest to start with the global filter, which removes most of the signal spatially detected outside
+of the sample region, followed by one or both the other filters.

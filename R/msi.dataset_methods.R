@@ -53,6 +53,10 @@ if (is.null(getGeneric('PCAImage'))) {
 
 ## PCAImage ----
 
+#' Generates an RGB msImage representing the first 3 principal components. This
+#' image can be used to qualitatively evaluate the spatial heterogeneity of the
+#' sample.
+#' 
 #' @param object \link{msi.dataset-class} object.
 #' @param alignToSample boolean (default = TRUE). If TRUE, the principal component
 #' scores are aligned to the pixel mean intensity.
@@ -82,6 +86,10 @@ setMethod(
 
 ## totalIonCountMSI ----
 
+#' Generates an msImage representing pixels total-ion-counts. This
+#' image can be used to qualitatively evaluate the spatial heterogeneity of the
+#' sample.
+#' 
 #' @param object \link{msi.dataset-class} object.
 #' 
 #' @return \link{msi.image-class} object representing the total ion counts.
@@ -103,6 +111,10 @@ setMethod(
 
 ## numDetectedMSI ----
 
+#' Generates an msImage representing the number of detected peaks per pixel. This
+#' image can be used to qualitatively evaluate the spatial heterogeneity of the
+#' sample.
+#' 
 #' @param object \link{msi.dataset-class} object.
 #' 
 #' @return \link{msi.image-class} object representing the detected ions per pixel.
@@ -178,7 +190,7 @@ setMethod(
 #' @param object \link{msi.dataset-class} object
 #' @param ref string (default = "detected). Sample reference image used to align
 #' the clusters.
-#' @param align boolean (default = TRUE). If TRUE, the clusters are aligned to the
+#' @param invert boolean (default = FALSE). If FALSE, the clusters are inversely aligned to the
 #' sample reference image.
 #'
 #' @return \link{ms.image-class} object representing the binary mask image.
@@ -192,7 +204,7 @@ setMethod(
 setMethod(
   f = "binKmeans",
   signature = signature(object = "msi.dataset"),
-  definition = function(object, ref = "detected", align = TRUE,
+  definition = function(object, ref = "detected", invert = FALSE,
                         npcs = 10) {
     object@matrix[is.na(object@matrix)] <- 0
     npcs <- min(dim(object@matrix) - 1, 10)
@@ -205,22 +217,22 @@ setMethod(
     bw.img <- msImage(values = values, name = "ROI", scale = FALSE)
     
     if (ref == "detected") {
-      if (align) {
-        if (cor(y.clust, c(object@numdetected@values)) < 0) {
+      if (invert) {
+        if (cor(y.clust, c(object@numdetected@values)) > 0) {
           bw.img <- invertImage(bw.img)
         }
       } else {
-        if (cor(y.clust, c(object@numdetected@values)) > 0) {
+        if (cor(y.clust, c(object@numdetected@values)) < 0) {
           bw.img <- invertImage(bw.img)
         }
       }
     } else if (ref == "tic") {
-      if (align) {
-        if (cor(y.clust, c(object@totalioncount@values)) < 0) {
+      if (invert) {
+        if (cor(y.clust, c(object@totalioncount@values)) > 0) {
           bw.img <- invertImage(bw.img)
         }
       } else {
-        if (cor(y.clust, c(object@totalioncount@values)) > 0) {
+        if (cor(y.clust, c(object@totalioncount@values)) < 0) {
           bw.img <- invertImage(bw.img)
         }
       }

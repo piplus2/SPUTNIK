@@ -9,7 +9,7 @@
                       smoothIm = FALSE,
                       smoothSigma = 2,
                       sampleReference = "detected",
-                      alignToReference = TRUE,
+                      invertAlign = FALSE,
                       verbose = TRUE) {
   accept.method.ref <- c("sum", "median", "mean", "pca")
   if (!any(method %in% accept.method.ref)) {
@@ -84,19 +84,19 @@
   
   # Align to reference image
   if (sampleReference == "detected") {
-    if (alignToReference) {
-      if (cor(c(ref.image@values), c(msiData@numdetected@values)) < 0)
+    if (invertAlign) {
+      if (cor(c(ref.image@values), c(msiData@numdetected@values)) > 0)
         ref.image <- invertImage(ref.image)
     } else {
-      if (cor(c(ref.image@values), c(msiData@numdetected@values)) > 0)
+      if (cor(c(ref.image@values), c(msiData@numdetected@values)) < 0)
         ref.image <- invertImage(ref.image)
     }
   } else if (sampleReference == "tic") {
-    if (alignToReference) {
-      if (cor(c(ref.image@values), c(msiData@totalioncount@values)) < 0)
+    if (invertAlign) {
+      if (cor(c(ref.image@values), c(msiData@totalioncount@values)) > 0)
         ref.image <- invertImage(ref.image)
     } else {
-      if (cor(c(ref.image@values), c(msiData@totalioncount@values)) > 0)
+      if (cor(c(ref.image@values), c(msiData@totalioncount@values)) < 0)
         ref.image <- invertImage(ref.image)
     }
   } else {

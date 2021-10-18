@@ -5,7 +5,7 @@ library("SPUTNIK")
 msIm <- msImage(values = matrix(rnorm(200), 40, 50), name = "test", scale = TRUE)
 
 ## Generate binary image
-msImBin <- binOtsu(msIm)
+msImBin <- refImageBinaryOtsu(msIm)
 
 ## Apply the morphological closing
 msImClosed <- closeImage(msImBin, kern.size = 3)

@@ -27,6 +27,8 @@
 #' q-values should be returned together with the p-values.
 #' @param plotCovariate logical (default = \code{FALSE}). Whether the covariate image
 #' should be visualized. Read only when \code{method = "KS"}.
+#' @param cores integer (default = 1). Number of CPU cores. Parallel computation if
+#' greater than 1.
 #' @param verbose logical (default = \code{TRUE}). Additional output texts are
 #' generated.
 #' @param ... additional parameters compatible with the \code{statspat.core} functions.
@@ -44,6 +46,7 @@
 #'
 #' @example R/examples/filter_csr.R
 #' @export
+#' @import doSNOW foreach
 #' @importFrom stats p.adjust.methods p.adjust cor
 #' @importFrom spatstat.geom as.im
 #'
@@ -53,6 +56,7 @@ CSRPeaksFilter <- function(msiData,
                            adjMethod = "bonferroni",
                            returnQvalues = TRUE,
                            plotCovariate = FALSE,
+                           cores = 1,
                            verbose = TRUE,
                            ...) {
   .stopIfNotValidMSIDataset(msiData)
@@ -104,33 +108,55 @@ CSRPeaksFilter <- function(msiData,
   msiData <- .scale.all(msiData)
 
   # Calculate the p-value for the ion images
-  cat("Starting CSR tests. This may take a while...\n")
-
-  p_ <- array(NA, length(msiData@mz), dimnames = list(msiData@mz))
-  for (ion in 1:length(msiData@mz))
-  {
-    if (verbose && ion %% 500 == 0) {
-      cat(ion, "")
+  cat("Testing ion images for complete spatial randomness...\n")
+  
+  niter <- length(msiData@mz)
+  pb <- txtProgressBar(max = niter, style = 3, width = 80)
+  progress <- function(n) setTxtProgressBar(pb, n)
+  opts <- list(progress = progress)
+  
+  if (cores > 1) {
+    
+    # Run parallel
+    
+    cl <- makeCluster(cores)
+    registerDoSNOW(cl)
+    
+    p_ <- foreach(i = 1:niter, .combine = c, .options.snow = opts) %dopar% {
+      if (var(msiData@matrix[, i]) == 0) {
+        return(NA)
+      } else {
+        im <- msImage(matrix(msiData@matrix[, i], msiData@nrow, msiData@ncol),
+                      scale = FALSE)
+        return(
+          .csr.test.im(im = im, method = method, ref.im = ref.covariate, ...)
+        )
+      }
     }
-
-    ## Skip constant images
-    if (var(msiData@matrix[, ion]) == 0) {
-      next()
+    stopCluster(cl)
+    
+  } else {
+    p_ <- array(NA, length(msiData@mz))
+    for (ion in 1:length(msiData@mz)) {
+      progress(ion)
+      if (var(msiData@matrix[, ion]) == 0) {
+        next()
+      }
+      
+      im <- msImage(matrix(msiData@matrix[, ion], msiData@nrow, msiData@ncol),
+                    scale = FALSE)
+      
+      p_[ion] <- .csr.test.im(
+        im = im,
+        method = method,
+        ref.im = ref.covariate,
+        ...
+      )
     }
-
-    # Transform into a 2D matrix
-    im <- msImage(matrix(msiData@matrix[, ion], msiData@nrow, msiData@ncol),
-      scale = F
-    )
-
-    p_[ion] <- .csr.test.im(
-      im = im,
-      method = method,
-      ref.im = ref.covariate,
-      ...
-    )
   }
-  cat("\n")
+  
+  names(p_) <- msiData@mz
+  close(pb)
 
   # Multiple testing correction
   q_ <- NULL

@@ -23,10 +23,8 @@ msiX <- msiDataset(X, mzVector, imSize[1], imSize[2])
 ## Use only m/z values in the range of [700, 900]. The interval extremal values
 ## are matched within a tolerance of 50 ppm.
 
-ref.roi <- refAndROIimages(
-  msiData = msiX, refMethod = "sum",
-  roiMethod = "otsu", useFullMZRef = TRUE
-)
+refImg <- refImageContinuous(msiX, method = "sum")
+roiImg <- refImageBinaryOtsu(refImg)
 
 ## Plot the reference and region of interest ROI
 ## plot(ref.roi$Reference)

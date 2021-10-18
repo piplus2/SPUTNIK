@@ -11,6 +11,7 @@ CSRPeaksFilter(
   adjMethod = "bonferroni",
   returnQvalues = TRUE,
   plotCovariate = FALSE,
+  cores = 1,
   verbose = TRUE,
   ...
 )
@@ -40,6 +41,9 @@ q-values should be returned together with the p-values.}
 
 \item{plotCovariate}{logical (default = \code{FALSE}). Whether the covariate image
 should be visualized. Read only when \code{method = "KS"}.}
+
+\item{cores}{integer (default = 1). Number of CPU cores. Parallel computation if
+greater than 1.}
 
 \item{verbose}{logical (default = \code{TRUE}). Additional output texts are
 generated.}

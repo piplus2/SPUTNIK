@@ -6,7 +6,7 @@
 \title{Return a binary mask generated applying k-means clustering
 on first 10 principal components of peaks intensities.}
 \usage{
-\S4method{binKmeans}{msi.dataset}(object, ref = "detected", align = TRUE, npcs = 10)
+\S4method{binKmeans}{msi.dataset}(object, ref = "detected", invert = FALSE, npcs = 10)
 }
 \arguments{
 \item{object}{\link{msi.dataset-class} object}
@@ -14,7 +14,7 @@ on first 10 principal components of peaks intensities.}
 \item{ref}{string (default = "detected). Sample reference image used to align
 the clusters.}
 
-\item{align}{boolean (default = TRUE). If TRUE, the clusters are aligned to the
+\item{invert}{boolean (default = FALSE). If FALSE, the clusters are inversely aligned to the
 sample reference image.}
 }
 \value{
@@ -36,8 +36,8 @@ mz <- sort(sample(100, ncol(x)))
 msiX <- msiDataset(x, mz, sz[1], sz[2])
 
 ## Generate binary mask by applying k-means on the entire dataset
-refBin <- binKmeans(msiX)
+roiImg <- refImageBinaryKmeans(msiX, npcs = 3)
 
 ## Plot the mask
-plot(refBin)
+# plot(roiImg)
 }
