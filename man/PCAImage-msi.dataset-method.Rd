@@ -2,6 +2,7 @@
 % Please edit documentation in R/msi.dataset_methods.R
 \name{PCAImage,msi.dataset-method}
 \alias{PCAImage,msi.dataset-method}
+\alias{PCAImage}
 \title{Generates an RGB msImage representing the first 3 principal components. This
 image can be used to qualitatively evaluate the spatial heterogeneity of the
 sample.}

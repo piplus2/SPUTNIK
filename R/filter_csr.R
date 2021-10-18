@@ -120,14 +120,15 @@ CSRPeaksFilter <- function(msiData,
     
     # Run parallel
     
-    cl <- makeCluster(cores)
-    registerDoSNOW(cl)
+    cl <- doSNOW::makeCluster(cores)
+    doSNOW::registerDoSNOW(cl)
     
-    p_ <- foreach(ion = 1:niter, .combine = c, .options.snow = opts) %dopar% {
-      if (var(msiData@matrix[, ion]) == 0) {
+    i <- NULL
+    p_ <- foreach::foreach(i = 1:niter, .combine = c, .options.snow = opts) %dopar% {
+      if (var(msiData@matrix[, i]) == 0) {
         return(NA)
       } else {
-        im <- msImage(matrix(msiData@matrix[, ion], msiData@nrow, msiData@ncol),
+        im <- msImage(matrix(msiData@matrix[, i], msiData@nrow, msiData@ncol),
                       scale = FALSE)
         return(
           .csr.test.im(im = im, method = method, ref.im = ref.covariate, ...)

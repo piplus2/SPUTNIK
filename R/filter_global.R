@@ -102,11 +102,15 @@ globalPeaksFilter <- function(msiData,
   
   if (cores > 1) {
 
-    cl <- makeCluster(cores)
-    registerDoSNOW(cl)
-    r <- foreach(ion = 1:niter, .combine = c, .options.snow = opts) %dopar% {
-      method.func(msiData@matrix[, ion], ref.values)
+    cl <- doSNOW::makeCluster(cores)
+    doSNOW::registerDoSNOW(cl)
+    
+    i <- NULL
+    
+    r <- foreach::foreach(i = 1:niter, .combine = c, .options.snow = opts) %dopar% {
+      method.func(msiData@matrix[, i], ref.values)
     }
+    
     stopCluster(cl)
 
   } else {
