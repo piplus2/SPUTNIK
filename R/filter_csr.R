@@ -121,7 +121,7 @@ CSRPeaksFilter <- function(msiData,
     # Run parallel
     
     cl <- makeCluster(cores)
-    doSNOW::registerDoSNOW(cl)
+    registerDoSNOW(cl)
     
     i <- NULL
     p_ <- foreach::foreach(i = 1:niter, .combine = c, .options.snow = opts) %dopar% {
