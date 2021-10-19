@@ -2,7 +2,7 @@
 [![CRAN](http://www.r-pkg.org/badges/version/SPUTNIK)](http://cran.r-project.org/package=drake)
 [![downloads](http://cranlogs.r-pkg.org/badges/SPUTNIK)](http://cran.rstudio.com/package=SPUTNIK)
 
-<img src="docs/sputnik.svg" alt="drawing" width="200"/>
+<img src="docs/sputnik_sticker.png" alt="drawing" width="200"/>
 
 ## SPUTNIK: an R package for peak selection of Mass spectrometry imaging data ##
 
