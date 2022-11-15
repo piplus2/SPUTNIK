@@ -15,7 +15,7 @@
 #' @param mzQueryRef numeric. Mass-to-charge ratios used to calculate the reference image.
 #' Two values are interpreted as interval, multiple or single values are searched
 #' in the m/z vector. It overrides the \code{useFullMZRef} argument.
-#' @param mzQueryTol numeric (default = Inf). Search window in parts-per-million units
+#' @param mzTolerance numeric (default = Inf). Search window in parts-per-million units
 #' for the \code{mzQueryRef}.
 #' @param useFullMZRef logical (default = \code{TRUE}). Whether all peaks should be
 #' used to calculate the reference image. Ignored if \code{mzQueryRef} is provided.

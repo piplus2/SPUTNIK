@@ -1,2 +1,8 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+tutorials/
+_config.yml
+SPUTNIK.Rproj
+LICENSE
+test_all.R
+docs/

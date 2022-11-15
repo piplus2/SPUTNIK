@@ -1,7 +1,7 @@
 Package: SPUTNIK
 Type: Package
 Title: SPatially aUTomatic deNoising for Ims toolKit
-Version: 1.4
+Version: 1.4.1
 Author: Paolo Inglese [aut, cre], Goncalo Correia [aut, ctb]
 Maintainer: Paolo Inglese <p.inglese@outlook.com>
 Authors@R: c(person("Paolo", "Inglese", email = "p.inglese@outlook.com", role = c("aut", "cre")),
@@ -14,6 +14,8 @@ Description: A set of tools for the peak filtering of mass spectrometry
   reduce the dataset dimensionality and increase its information vs noise ratio,
   improving the quality of the unsupervised analysis results, reducing data
   dimensionality and simplifying the chemical interpretation.
+  "SPUTNIK: an R package for filtering of spatially related peaks in mass 
+  spectrometry imaging data" <doi:10.1093/bioinformatics/bty622>
 Depends: R (>= 3.4.0)
 License: GPL (>= 3)
 Encoding: UTF-8
@@ -34,6 +36,6 @@ Imports:
     doSNOW,
     foreach
 Suggests: testthat
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.2
 URL: https://github.com/paoloinglese/SPUTNIK
 BugReports: https://github.com/paoloinglese/SPUTNIK/issues
