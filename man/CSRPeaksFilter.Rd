@@ -49,7 +49,7 @@ greater than 1.}
 generated.}
 
 \item{...}{additional parameters compatible with the \code{statspat.core} functions.
-See \link[spatstat.core]{cdf.test} for "KS" and \link[spatstat.core]{clarkevans.test}.
+See \link[spatstat.explore]{cdf.test} for "KS" and \link[spatstat.explore]{clarkevans.test}.
 for "ClarkEvans"}
 }
 \description{
