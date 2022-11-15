@@ -21,13 +21,8 @@ LazyData: no
 Imports:
     e1071,
     edgeR,
-    spatstat,
-    spatstat.core,
+    spatstat.explore,
     spatstat.geom,
-    spatstat.data,
-    spatstat.sparse,
-    spatstat.utils,
-    spatstat.linnet,
     viridis,
     ggplot2,
     reshape,
@@ -36,9 +31,9 @@ Imports:
     infotheo,
     parallel,
     irlba,
-    testthat,
     doSNOW,
     foreach
+Suggests: testthat
 RoxygenNote: 7.1.2
 URL: https://github.com/paoloinglese/SPUTNIK
 BugReports: https://github.com/paoloinglese/SPUTNIK/issues
