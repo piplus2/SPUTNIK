@@ -1,5 +1,5 @@
 [![Licence](https://img.shields.io/badge/licence-GPL--3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
-[![CRAN](http://www.r-pkg.org/badges/version/SPUTNIK)](http://cran.r-project.org/package=drake)
+[![CRAN](http://www.r-pkg.org/badges/version/SPUTNIK)](http://cran.r-project.org/package=SPUTNIK)
 [![downloads](http://cranlogs.r-pkg.org/badges/SPUTNIK)](http://cran.rstudio.com/package=SPUTNIK)
 
 <img src="docs/sputnik_sticker.png" alt="drawing" width="200"/>
