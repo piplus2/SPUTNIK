@@ -1,7 +1,7 @@
 Package: SPUTNIK
 Type: Package
-Title: SPatially aUTomatic deNoising for Ims toolKit
-Version: 1.4.1
+Title: Spatially automatic denoising for Ims toolkit
+Version: 1.4.2
 Author: Paolo Inglese [aut, cre], Goncalo Correia [aut, ctb]
 Maintainer: Paolo Inglese <p.inglese@outlook.com>
 Authors@R: c(person("Paolo", "Inglese", email = "p.inglese@outlook.com", role = c("aut", "cre")),
@@ -36,6 +36,6 @@ Imports:
     doSNOW,
     foreach
 Suggests: testthat
-RoxygenNote: 7.2.2
+RoxygenNote: 7.3.1
 URL: https://github.com/paoloinglese/SPUTNIK
 BugReports: https://github.com/paoloinglese/SPUTNIK/issues
