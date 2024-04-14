@@ -34,6 +34,7 @@
 #' @param ... additional parameters compatible with the \code{statspat.core} functions.
 #' See \link[spatstat.explore]{cdf.test} for "KS" and \link[spatstat.explore]{clarkevans.test}.
 #' for "ClarkEvans"
+#' @return List of the p-values and adjusted p-values for the CSR test.
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #'

@@ -52,6 +52,9 @@ generated.}
 See \link[spatstat.explore]{cdf.test} for "KS" and \link[spatstat.explore]{clarkevans.test}.
 for "ClarkEvans"}
 }
+\value{
+List of the p-values and adjusted p-values for the CSR test.
+}
 \description{
 \code{CSRPeaksFilter} returns the significance for the null hypothesis that the
 spatial distribution of the peak intensities follow a random pattern. A

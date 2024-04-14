@@ -9,6 +9,9 @@ scatter.ratio(im)
 \arguments{
 \item{im}{2-D numeric matrix representing the image pixel intensities.}
 }
+\value{
+calculated scatter ratio.
+}
 \description{
 \code{scatter.ratio} returns a measure of image scatteredness represented by
 the ratio between the number of connected components and the total number of

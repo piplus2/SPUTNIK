@@ -23,7 +23,7 @@
 #' @param cores integer (default = 1). Number of cores for parallel computing.
 #' @param verbose logical (default = \code{TRUE}). Additional output text.
 #'
-#' @return \code{peak.filter} object. See link{applyPeaksFilter}.
+#' @return \code{peak.filter} object. See \link{applyPeaksFilter}.
 #'
 #' @details A filter based on the similarity between the peak signals and a reference
 #' signal. The reference signal, passed as an \code{\link{ms.image-class}} object.

@@ -60,6 +60,9 @@ has negative correlation with the selected image in \code{alignTo}.}
 
 \item{verbose}{logical (default = TRUE). Additional output text.}
 }
+\value{
+A continuous valued reference image (see \link{msImage}).
+}
 \description{
 \code{refImageContinuous} returns the reference image, calculated using the
 \code{method}.
@@ -110,5 +113,5 @@ roiImg <- refImageBinaryOtsu(refImg)
 ## plot(ref.roi$ROI)
 }
 \seealso{
-msiDataset
+msiDataset, msImage
 }

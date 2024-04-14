@@ -56,6 +56,8 @@
 #'   \item the merged peaks image should be more structured than the single
 #'   peak images, accordingly to the selected \code{sparseness}.
 #' }
+#' 
+#' @return \code{peak.filter} object. See \link{applyPeaksFilter}.
 #'
 #' @author Paolo Inglese \email{p.inglese14@imperial.ac.uk}
 #'

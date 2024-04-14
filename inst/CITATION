@@ -7,5 +7,5 @@ bibentry(
   volume   = "36",
   number   = "1",
   pages    = "178-180",
-  doi      = "https://doi.org/10.1093/bioinformatics/bty622"
+  url      = "https://doi.org/10.1093/bioinformatics/bty622"
 )

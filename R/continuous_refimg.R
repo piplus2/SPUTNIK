@@ -34,6 +34,8 @@
 #' has negative correlation with the selected image in \code{alignTo}.
 #' @param verbose logical (default = TRUE). Additional output text.
 #'
+#' @return A continuous valued reference image (see \link{msImage}).
+#'
 #' @details Function to extract the continuous reference image from a 
 #' \code{\link{msi.dataset-class}} object.
 #' The continuous reference image represents the spatial location of the sample.
@@ -46,7 +48,7 @@
 #'
 #' @example R/examples/graph_funcs.R
 #'
-#' @seealso msiDataset
+#' @seealso msiDataset, msImage
 #' @export
 #' 
 refImageContinuous <- function(msiData,

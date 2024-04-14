@@ -36,6 +36,9 @@ in the results.}
 
 \item{verbose}{logical (default = \code{TRUE}). Additional output text.}
 }
+\value{
+\code{peak.filter} object. See \link{applyPeaksFilter}.
+}
 \description{
 \link{splitPeaksFilter} returns a list of estimated split peak indices. Each
 element of the list contains an array of the original peak indices that can

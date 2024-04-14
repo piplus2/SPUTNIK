@@ -60,8 +60,10 @@ if (is.null(getGeneric('PCAImage'))) {
 #' @param object \link{msi.dataset-class} object.
 #' @param alignToSample boolean (default = TRUE). If TRUE, the principal component
 #' scores are aligned to the pixel mean intensity.
+#' @param seed set the random seed (default = \code{NULL}).
 #' 
 #' @return RGB raster representing the first 3 principal components
+#' (see \link{msImage}).
 #' 
 #' @importFrom grDevices rgb
 #' @import irlba
@@ -72,8 +74,8 @@ if (is.null(getGeneric('PCAImage'))) {
 setMethod(
   f = "PCAImage",
   signature = signature(object = "msi.dataset"),
-  definition = function(object, alignToSample = TRUE) {
-    set.seed(123)
+  definition = function(object, alignToSample = TRUE, seed = NULL) {
+    set.seed(seed)
     pca <- prcomp_irlba(object@matrix, center = TRUE, scale. = TRUE, n = 3,)
     if (alignToSample) {
       if (cor(apply(object@matrix, 1, mean), pca$x[, 1]) < 0) {
@@ -83,7 +85,7 @@ setMethod(
     colors <- apply(pca$x, 2, function(x) (x - min(x)) / (max(x) - min(x)))
     colors <- rgb(colors[, 1], colors[, 2], colors[, 3])
     colors <- matrix(colors, object@nrow, object@ncol)
-    return (msImage(values = colors, name = 'PCA', scale = FALSE))
+    return(msImage(values = colors, name = 'PCA', scale = FALSE))
   }
 )
 

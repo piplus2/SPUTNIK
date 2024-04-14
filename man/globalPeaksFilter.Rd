@@ -40,7 +40,7 @@ scaled in [-1, 1] to match the same range of correlations.}
 \item{verbose}{logical (default = \code{TRUE}). Additional output text.}
 }
 \value{
-\code{peak.filter} object. See link{applyPeaksFilter}.
+\code{peak.filter} object. See \link{applyPeaksFilter}.
 }
 \description{
 \code{globalPeaksFilter} returns a list of peaks selected by their similarity

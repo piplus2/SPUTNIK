@@ -7,6 +7,8 @@
 #'
 #' @param im 2-D numeric matrix representing the image pixel intensities.
 #'
+#' @return calculated scatter ratio.
+#'
 #' @references Otsu, N. (1979). A threshold selection method from gray-level
 #' histograms. IEEE transactions on systems, man, and cybernetics, 9(1), 62-66.
 #'
