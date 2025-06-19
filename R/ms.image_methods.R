@@ -53,10 +53,10 @@ setMethod(
 #'
 #' @param x \link{ms.image-class} object. See \link{msImage}.
 #' @param palette string. Color palette. See \link{viridis}.
-#' 
+#'
 #' @return a ggplot2 plot.
 #'
-#' @import ggplot2
+#' @importFrom ggplot2 ggplot
 #' @importFrom viridis scale_fill_viridis
 #' @importFrom reshape melt
 #'
@@ -71,11 +71,11 @@ setMethod("plot",
   function(x, palette = "inferno") {
     # Are you plotting the binary mask?
     is.bin <- .isBinary(x)
-    
+
     df <- melt(x@values)
-    
+
     is.rgb <- all(grepl('^#[0-9A-Fa-f]{6}$', df$value))
-    
+
     if (is.bin) {
       df$value <- factor(df$value)
     }

@@ -1,13 +1,13 @@
 Package: SPUTNIK
 Type: Package
 Title: Spatially Automatic Denoising for Imaging Mass Spectrometry Toolkit
-Version: 1.4.2
+Version: 1.4.3
 Author: Paolo Inglese [aut, cre], Goncalo Correia [aut, ctb]
 Maintainer: Paolo Inglese <p.inglese@outlook.com>
-Authors@R: c(person("Paolo", "Inglese", email = "p.inglese@outlook.com", 
+Authors@R: c(person("Paolo", "Inglese", email = "p.inglese@outlook.com",
   role = c("aut", "cre")), person("Goncalo", "Correia", role = c("aut", "ctb")))
 Description: Set of tools for peak filtering of mass spectrometry
-  imaging data based on spatial distribution of signal. Given a 
+  imaging data based on spatial distribution of signal. Given a
   region-of-interest, representing the spatial region where the informative
   signal is expected to be localized, a series of filters determine which peak
   signals are characterized by an implausible spatial distribution. The filters
