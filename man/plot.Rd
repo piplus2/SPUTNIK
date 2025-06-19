@@ -11,7 +11,7 @@
 \arguments{
 \item{x}{\link{ms.image-class} object. See \link{msImage}.}
 
-\item{palette}{string. Color palette. See \link{viridis}.}
+\item{palette}{string. Color palette. @seealso \code{\link[viridis]{viridis}}.}
 }
 \value{
 a ggplot2 plot.

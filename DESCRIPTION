@@ -35,6 +35,6 @@ Imports:
     doSNOW,
     foreach
 Suggests: testthat
-RoxygenNote: 7.3.1
-URL: https://github.com/paoloinglese/SPUTNIK
-BugReports: https://github.com/paoloinglese/SPUTNIK/issues
+RoxygenNote: 7.3.2
+URL: https://github.com/piplus2/SPUTNIK
+BugReports: https://github.com/piplus2/SPUTNIK/issues

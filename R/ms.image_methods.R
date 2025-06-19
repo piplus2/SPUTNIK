@@ -52,11 +52,11 @@ setMethod(
 #' \code{plot} extends the generic function to \link{ms.image-class} objects.
 #'
 #' @param x \link{ms.image-class} object. See \link{msImage}.
-#' @param palette string. Color palette. See \link{viridis}.
+#' @param palette string. Color palette. @seealso \code{\link[viridis]{viridis}}.
 #'
 #' @return a ggplot2 plot.
 #'
-#' @importFrom ggplot2 ggplot
+#' @importFrom ggplot2 ggplot aes_string geom_raster xlab ylab scale_fill_grey scale_fill_identity coord_fixed ggtitle guides theme_bw element_text guide_legend
 #' @importFrom viridis scale_fill_viridis
 #' @importFrom reshape melt
 #'
